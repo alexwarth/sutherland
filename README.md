@@ -7,5 +7,5 @@ yarn install
 yarn dev
 ```
 
-... then point your browser at ttp://localhost:8080
+... then point your browser at http://localhost:8080
 
