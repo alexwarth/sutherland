@@ -179,13 +179,13 @@ const demo2 = {
     for (let idx = 0; idx < 6; idx++) {
       const part = this.makePart(
         lastPart ? lastPart.c : Handle.create({x: 50, y: 50}),
-        lastPart ? lastPart.d : Handle.create({x: 50, y: 200})
+        lastPart ? lastPart.d : Handle.create({x: 50, y: 150})
       );
       if (!lastPart) {
         constraints.pin(part.b);
       }
       if (idx === 1) {
-        const weightHandle = Handle.create({x: part.d.x, y: part.d.y + 200 });
+        const weightHandle = Handle.create({x: part.d.x, y: part.d.y + 150 });
         constraints.polarVector(part.d, weightHandle).distance.lock();
         const weight = constraints.weight(weightHandle, 2).weight;
         weightSlider.value = weight.value;
@@ -198,8 +198,8 @@ const demo2 = {
   },
 
   makePart(a: Handle, b: Handle): Part {
-    const c = Handle.create({ x: a.x + 150, y: a.y});
-    const d = Handle.create({ x: b.x + 150, y: b.y});
+    const c = Handle.create({ x: a.x + 100, y: a.y});
+    const d = Handle.create({ x: b.x + 100, y: b.y});
     constraints.polarVector(a, b).distance.lock();
     constraints.polarVector(a, c).distance.lock();
     constraints.polarVector(b, c).distance.lock();
@@ -211,8 +211,8 @@ const demo2 = {
   },
 
   render() {
-    drawRotated(pinImage, -90, 47, 207);
-    drawRotated(pinImage, -90, 947, 207);
+    drawRotated(pinImage, -90, 47, 157);
+    drawRotated(pinImage, -90, 647, 157);
   
     for (const c of Constraint.all) {
       renderConstraint(c);
