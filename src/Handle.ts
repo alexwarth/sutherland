@@ -17,7 +17,10 @@ export default class Handle {
     return handle;
   }
 
-  static getNearestHandle(pos: Handle | Position, tooFarDist = HANDLE_RADIUS + 1) {
+  static getNearestHandle(
+    pos: Handle | Position,
+    tooFarDist = HANDLE_RADIUS + 1
+  ) {
     let nearestHandle: Handle | null = null;
     let nearestDist = Infinity;
     for (const handle of Handle.all) {
@@ -32,7 +35,6 @@ export default class Handle {
     }
     return nearestHandle;
   }
-
 
   public readonly id = generateId();
 
