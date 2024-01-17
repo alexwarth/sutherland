@@ -34,22 +34,27 @@ function initCanvas() {
 
 let handleUnderMouse: Handle | null = null;
 
-canvas.addEventListener('mousedown', e => {
-  handleUnderMouse = Handle.getNearestHandle({ x: (e as any).layerX, y: (e as any).layerY });
+canvas.addEventListener('pointerdown', e => {
+  handleUnderMouse = Handle.getNearestHandle({
+    x: (e as any).layerX,
+    y: (e as any).layerY,
+  });
   if (handleUnderMouse) {
+    canvas.setPointerCapture(e.pointerId);
     constraints.finger(handleUnderMouse);
   }
 });
 
-canvas.addEventListener('mousemove', e => {
+canvas.addEventListener('pointermove', e => {
   if (handleUnderMouse) {
     const finger = constraints.finger(handleUnderMouse);
     finger.position = { x: (e as any).layerX, y: (e as any).layerY };
   }
 });
 
-canvas.addEventListener('mouseup', e => {
+canvas.addEventListener('pointerup', e => {
   if (handleUnderMouse) {
+    canvas.releasePointerCapture(e.pointerId);
     constraints.finger(handleUnderMouse).remove();
     handleUnderMouse = null;
   }
