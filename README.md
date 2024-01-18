@@ -1,10 +1,14 @@
 # sutherland
 
-To get this going:
+To run the demo:
 
 ```
-yarn install
-yarn dev
+npm install
+npm run dev
 ```
 
-... then point your browser at http://localhost:8080
+To build the library:
+
+```
+npm run build
+```

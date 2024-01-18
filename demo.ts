@@ -1,7 +1,7 @@
-import Handle from './Handle';
-import * as constraints from './constraints';
-import { Constraint, Pin, PolarVector, Weight } from './constraints';
-import Vec from './lib/vec';
+import Handle from './src/Handle';
+import * as constraints from './src/constraints';
+import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
+import Vec from './src/lib/vec';
 
 const pinImage = new Image();
 pinImage.src = 'pin.png';

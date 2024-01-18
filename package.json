@@ -1,11 +1,12 @@
 {
   "name": "sutherland",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "",
   "scripts": {
-    "dev": "snowpack dev",
-    "build": "snowpack build",
+    "dev": "vite",
+    "build": "vite build",
     "format": "prettier --write ."
   },
   "keywords": [],
@@ -13,10 +14,9 @@
   "devDependencies": {
     "gts": "^5.2.0",
     "prettier": "^3.2.4",
-    "snowpack": "3.0.13",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "vite": "^5.0.11"
   },
-  "dependencies": {},
   "prettier": {
     "arrowParens": "avoid",
     "singleQuote": true,
