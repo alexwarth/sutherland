@@ -3,16 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
-    "lib": [
-      "ES2023",
-      "DOM",
-    ],
+    "lib": ["ES2023", "DOM"],
     "esModuleInterop": true,
   },
-  "include": [
-    "src/*.ts",
-    "src/**/*.ts",
-    "test/*.ts",
-    "test/**/*.ts"
-  ]
+  "include": ["src/*.ts", "src/**/*.ts", "test/*.ts", "test/**/*.ts"],
 }

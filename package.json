@@ -6,17 +6,20 @@
   "scripts": {
     "dev": "snowpack dev",
     "build": "snowpack build",
-    "check": "gts check",
-    "clean": "gts clean",
-    "fix": "gts fix"
+    "format": "prettier --write ."
   },
   "keywords": [],
   "license": "MIT",
   "devDependencies": {
     "gts": "^5.2.0",
+    "prettier": "^3.2.4",
     "snowpack": "3.0.13",
     "typescript": "^5.2.2"
   },
-  "dependencies": {
+  "dependencies": {},
+  "prettier": {
+    "arrowParens": "avoid",
+    "singleQuote": true,
+    "trailingComma": "es5"
   }
 }

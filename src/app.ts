@@ -34,22 +34,27 @@ function initCanvas() {
 
 let handleUnderMouse: Handle | null = null;
 
-canvas.addEventListener('mousedown', e => {
-  handleUnderMouse = Handle.getNearestHandle({ x: (e as any).layerX, y: (e as any).layerY });
+canvas.addEventListener('pointerdown', e => {
+  handleUnderMouse = Handle.getNearestHandle({
+    x: (e as any).layerX,
+    y: (e as any).layerY,
+  });
   if (handleUnderMouse) {
+    canvas.setPointerCapture(e.pointerId);
     constraints.finger(handleUnderMouse);
   }
 });
 
-canvas.addEventListener('mousemove', e => {
+canvas.addEventListener('pointermove', e => {
   if (handleUnderMouse) {
     const finger = constraints.finger(handleUnderMouse);
     finger.position = { x: (e as any).layerX, y: (e as any).layerY };
   }
 });
 
-canvas.addEventListener('mouseup', e => {
+canvas.addEventListener('pointerup', e => {
   if (handleUnderMouse) {
+    canvas.releasePointerCapture(e.pointerId);
     constraints.finger(handleUnderMouse).remove();
     handleUnderMouse = null;
   }
@@ -84,48 +89,48 @@ let demo: Demo;
 const demo1 = {
   init() {
     const handles = [
-        {x: 37, y: 44},
-        {x: 99, y: 44},
-        {x: 161, y: 45},
-        {x: 222, y: 45},
-        {x: 283, y: 47},
-        {x: 37, y: 205},
-        {x: 99, y: 147},
-        {x: 160, y: 109},
-        {x: 221, y: 86},
-        {x: 282, y: 73},
-        {x: 343, y: 72},
-        {x: 649, y: 44},
-        {x: 587, y: 44},
-        {x: 525, y: 45},
-        {x: 464, y: 45},
-        {x: 403, y: 47},
-        {x: 649, y: 205},
-        {x: 587, y: 147},
-        {x: 526, y: 109},
-        {x: 465, y: 86},
-        {x: 404, y: 73}
+      { x: 37, y: 44 },
+      { x: 99, y: 44 },
+      { x: 161, y: 45 },
+      { x: 222, y: 45 },
+      { x: 283, y: 47 },
+      { x: 37, y: 205 },
+      { x: 99, y: 147 },
+      { x: 160, y: 109 },
+      { x: 221, y: 86 },
+      { x: 282, y: 73 },
+      { x: 343, y: 72 },
+      { x: 649, y: 44 },
+      { x: 587, y: 44 },
+      { x: 525, y: 45 },
+      { x: 464, y: 45 },
+      { x: 403, y: 47 },
+      { x: 649, y: 205 },
+      { x: 587, y: 147 },
+      { x: 526, y: 109 },
+      { x: 465, y: 86 },
+      { x: 404, y: 73 },
     ].map(pos => Handle.create(pos));
 
     const triangles = [
-        [0,5,6],
-        [0,6,1],
-        [1,6,7],
-        [1,7,2],
-        [2,7,8],
-        [2,8,3],
-        [3,8,9],
-        [3,9,4],
-        [4,9,10],
-        [11,17,16],
-        [11,12,17],
-        [12,18,17],
-        [12,13,18],
-        [13,19,18],
-        [13,14,19],
-        [14,20,19],
-        [14,15,20],
-        [15,10,20]
+      [0, 5, 6],
+      [0, 6, 1],
+      [1, 6, 7],
+      [1, 7, 2],
+      [2, 7, 8],
+      [2, 8, 3],
+      [3, 8, 9],
+      [3, 9, 4],
+      [4, 9, 10],
+      [11, 17, 16],
+      [11, 12, 17],
+      [12, 18, 17],
+      [12, 13, 18],
+      [13, 19, 18],
+      [13, 14, 19],
+      [14, 20, 19],
+      [14, 15, 20],
+      [15, 10, 20],
     ].map(indices => indices.map(idx => handles[idx]));
 
     for (const [a, b, c] of triangles) {
@@ -139,12 +144,12 @@ const demo1 = {
     constraints.pin(handles[11]);
     constraints.pin(handles[16]);
 
-    const weightHandle = Handle.create({x: 343, y: 150});
+    const weightHandle = Handle.create({ x: 343, y: 150 });
     constraints.polarVector(handles[10], weightHandle).distance.lock();
     const weight = constraints.weight(weightHandle, 2).weight;
     weightSlider.value = weight.value;
-    weightSlider.oninput = () => weight.lock(weightSlider.value)
-  
+    weightSlider.oninput = () => weight.lock(weightSlider.value);
+
     weightSlider.style.right = '30px';
     document.body.appendChild(weightSlider);
   },
@@ -157,11 +162,11 @@ const demo1 = {
     // right
     drawRotated(pinImage, 180, 658, 47);
     drawRotated(pinImage, -120, 650, 212);
-  
+
     for (const c of Constraint.all) {
       renderConstraint(c);
     }
-  }
+  },
 };
 
 interface Part {
@@ -178,18 +183,18 @@ const demo2 = {
     let lastPart: Part | null = null;
     for (let idx = 0; idx < 6; idx++) {
       const part = this.makePart(
-        lastPart ? lastPart.c : Handle.create({x: 50, y: 50}),
-        lastPart ? lastPart.d : Handle.create({x: 50, y: 150})
+        lastPart ? lastPart.c : Handle.create({ x: 50, y: 50 }),
+        lastPart ? lastPart.d : Handle.create({ x: 50, y: 150 })
       );
       if (!lastPart) {
         constraints.pin(part.b);
       }
       if (idx === 1) {
-        const weightHandle = Handle.create({x: part.d.x, y: part.d.y + 150 });
+        const weightHandle = Handle.create({ x: part.d.x, y: part.d.y + 150 });
         constraints.polarVector(part.d, weightHandle).distance.lock();
         const weight = constraints.weight(weightHandle, 2).weight;
         weightSlider.value = weight.value;
-        weightSlider.oninput = () => weight.lock(weightSlider.value)
+        weightSlider.oninput = () => weight.lock(weightSlider.value);
       }
       lastPart = part;
     }
@@ -198,8 +203,8 @@ const demo2 = {
   },
 
   makePart(a: Handle, b: Handle): Part {
-    const c = Handle.create({ x: a.x + 100, y: a.y});
-    const d = Handle.create({ x: b.x + 100, y: b.y});
+    const c = Handle.create({ x: a.x + 100, y: a.y });
+    const d = Handle.create({ x: b.x + 100, y: b.y });
     constraints.polarVector(a, b).distance.lock();
     constraints.polarVector(a, c).distance.lock();
     constraints.polarVector(b, c).distance.lock();
@@ -213,11 +218,11 @@ const demo2 = {
   render() {
     drawRotated(pinImage, -90, 47, 157);
     drawRotated(pinImage, -90, 647, 157);
-  
+
     for (const c of Constraint.all) {
       renderConstraint(c);
-    } 
-  }
+    }
+  },
 };
 
 function toggleDemo() {
@@ -244,11 +249,16 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function drawRotated(image: HTMLImageElement, degrees: number, x: number, y: number) {
+function drawRotated(
+  image: HTMLImageElement,
+  degrees: number,
+  x: number,
+  y: number
+) {
   ctx.save();
   ctx.globalAlpha = Math.random() * 0.2 + 0.7;
   ctx.translate(x, y);
-  ctx.rotate(degrees * Math.PI / 180);
+  ctx.rotate((degrees * Math.PI) / 180);
   ctx.translate(-image.width / 2, -image.height / 2);
   ctx.drawImage(image, 0, 0);
   ctx.restore();
@@ -278,7 +288,8 @@ function renderConstraint(c: Constraint) {
     ctx.fillStyle = flickeryWhite();
     const fontSizeInPixels = 12;
     ctx.font = `${fontSizeInPixels}px Major Mono Display`;
-    const delta = (c.distance.value - Vec.dist(a, b)) / c.distance.value * 10000;
+    const delta =
+      ((c.distance.value - Vec.dist(a, b)) / c.distance.value) * 10000;
     let label = delta.toFixed(0);
     if (label === '-0') {
       label = '0';

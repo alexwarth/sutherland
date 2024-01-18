@@ -585,7 +585,7 @@ class LLWeight extends LowLevelConstraint {
     this.variables.push(
       this.weight,
       constraint.handle.xVariable,
-      constraint.handle.yVariable,
+      constraint.handle.yVariable
     );
   }
 
@@ -604,12 +604,13 @@ class LLWeight extends LowLevelConstraint {
     return Vec.dist(
       {
         x: hx,
-        y: hy
+        y: hy,
       },
       {
         x: origX,
-        y: origY + w
-      });
+        y: origY + w,
+      }
+    );
   }
 }
 
@@ -1287,7 +1288,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     messages.add(result.message);
     return messages;
   });
-
 
   /*
   if (!result || result.message?.includes('maxit')) {
