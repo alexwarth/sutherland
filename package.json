@@ -14,6 +14,7 @@
   "devDependencies": {
     "gts": "^5.2.0",
     "prettier": "^3.2.4",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "typescript": "^5.2.2",
     "vite": "^5.0.11"
   },
