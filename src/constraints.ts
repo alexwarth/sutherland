@@ -1,3 +1,5 @@
+import * as k from 'kombu';
+
 import Handle from './Handle';
 import { TAU, forDebugging, generateId, normalizeAngle, sets } from './helpers';
 import { Position } from './types';
@@ -292,6 +294,12 @@ abstract class LowLevelConstraint {
     knowns: Set<Variable>,
     freeVariables: Set<Variable>
   ): number;
+
+  abstract getErrorNum(
+    variableValues: k.Num[],
+    knowns: Set<Variable>,
+    freeVariables: Set<Variable>
+  ): k.Num;
 }
 
 class LLFinger extends LowLevelConstraint {
@@ -312,7 +320,18 @@ class LLFinger extends LowLevelConstraint {
     knowns: Set<Variable>,
     freeVariables: Set<Variable>
   ): number {
+    console.log({ knowns, freeVariables });
     return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
+  }
+
+  getErrorNum(
+    [x, y]: k.Num[],
+    _knowns: Set<Variable>,
+    _freeVariables: Set<Variable>
+  ): k.Num {
+    //    return k.mul(10, k.sqrt(Vec.dist({ x, y }, this.constraint.position)));
+    //    return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
+    return k.num(0);
   }
 }
 
@@ -380,6 +399,15 @@ class LLDistance extends LowLevelConstraint {
       this.distance.value = currDist;
     }
     return currDist - dist;
+  }
+
+  getErrorNum(
+    [dist, ax, ay, bx, by]: k.Num[],
+    _knowns: Set<Variable>,
+    _freeVariables: Set<Variable>
+  ): k.Num {
+    const currDist2 = k.add(k.pow(k.sub(ax, bx), 2), k.pow(k.sub(ay, by), 2));
+    return k.sub(currDist2, k.pow(dist, 2));
   }
 }
 
@@ -511,6 +539,14 @@ class LLAngle extends LowLevelConstraint {
     return error;
   }
 
+  getErrorNum(
+    variableValues: k.Num[],
+    knowns: Set<Variable>,
+    freeVariables: Set<Variable>
+  ): k.Num {
+    return k.num(0);
+  }
+
   static computeAngle(angleVar: Variable, aPos: Position, bPos: Position) {
     const currAngle = normalizeAngle(angleVar.value);
     const newAngle = normalizeAngle(Vec.angle(Vec.sub(bPos, aPos)));
@@ -565,6 +601,14 @@ class LLFormula extends LowLevelConstraint {
     return currValue - this.result.value;
   }
 
+  getErrorNum(
+    variableValues: k.Num[],
+    knowns: Set<Variable>,
+    freeVariables: Set<Variable>
+  ): k.Num {
+    throw new Error('not implemented');
+  }
+
   private computeResult(
     xs: number[] = this.args.map(arg => arg.value)
   ): number {
@@ -611,6 +655,14 @@ class LLWeight extends LowLevelConstraint {
         y: origY + w,
       }
     );
+  }
+
+  getErrorNum(
+    variableValues: k.Num[],
+    knowns: Set<Variable>,
+    freeVariables: Set<Variable>
+  ): k.Num {
+    throw new Error('not implemented');
   }
 }
 
@@ -1025,6 +1077,10 @@ interface ClusterForSolver {
   freeVariables: Set<Variable>;
   // The variables whose values are determined by the solver.
   parameters: Variable[];
+
+  // Kombu stuff.
+  kombuLoss: k.Num;
+  optimizer: k.Optimizer;
 }
 
 let clustersForSolver: Set<ClusterForSolver> | null = null;
@@ -1103,6 +1159,7 @@ function createClusterForSolver(
   constraints: Constraint[],
   lowLevelConstraints: LowLevelConstraint[]
 ): ClusterForSolver {
+  console.log('creating cluster for solver');
   const knowns = computeKnowns(constraints, lowLevelConstraints);
 
   const variables = new Set<Variable>();
@@ -1110,6 +1167,7 @@ function createClusterForSolver(
     for (const variable of constraint.variables) {
       if (!knowns.has(variable.canonicalInstance)) {
         variables.add(variable.canonicalInstance);
+        console.log(variable);
       }
     }
   }
@@ -1136,11 +1194,48 @@ function createClusterForSolver(
   }
 
   const freeVariables = new Set<Variable>();
-  for (const [variable, count] of freeVarCandidateCounts.entries()) {
-    if (count === 1) {
-      freeVariables.add(variable.canonicalInstance);
-    }
+  /*
+    Done on call with Alex - disable free variables entirely, so that none of the
+    special casing is triggered.
+  */
+  // for (const [variable, count] of freeVarCandidateCounts.entries()) {
+  //   if (count === 1) {
+  //     freeVariables.add(variable.canonicalInstance);
+  //   }
+  // }
+
+  function computeKombuLoss() {
+    const kombuParams = new Map<Variable, k.Param>();
+    const paramValues = new Map<k.Param, number>();
+    const toNum = (v: Variable) => {
+      let p = kombuParams.get(v);
+      if (!p) {
+        p = k.param(`p${v.id}`);
+        kombuParams.set(v, p);
+      }
+      return p;
+    };
+    const terms = lowLevelConstraints.map(llc => {
+      const values: k.Num[] = llc.variables.map(variable => {
+        const { m, b } = variable.offset;
+        const p = toNum(variable.canonicalInstance);
+        paramValues.set(p, variable.canonicalInstance.value);
+        return k.div(k.sub(p, b), m);
+        // const pi = paramIdx.get(variable);
+        // return ((pi === undefined ? variable.value : currState[pi]) - b) / m;
+      });
+      return llc.getErrorNum(values, knowns, freeVariables);
+    });
+
+    const r = {
+      kombuLoss: k.loss(terms.reduce(k.add, k.num(0))),
+      paramValues,
+    };
+    return r;
   }
+
+  const { kombuLoss, paramValues } = computeKombuLoss();
+  const optimizer = k.optimizer(kombuLoss, paramValues);
 
   return {
     constraints,
@@ -1150,6 +1245,8 @@ function createClusterForSolver(
     parameters: [...variables].filter(
       v => v.isCanonicalInstance && !knowns.has(v) && !freeVariables.has(v)
     ),
+    kombuLoss: kombuLoss.value,
+    optimizer,
   };
 }
 
@@ -1173,7 +1270,9 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     return;
   }
 
-  // Let the user to modify the locked distance or angle of a polar vector
+  cluster.optimizer.optimize(5);
+
+  // Let the user modify the locked distance or angle of a polar vector
   // constraint by manipulating the handles with their fingers.
   const handleToFinger = getHandleToFingerMap(constraints);
   for (const pv of constraints) {
@@ -1263,6 +1362,15 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     computeTotalError(inputs);
     return;
   }
+
+  // pld: Kombu
+  // const lossValue = totalLoss(m)
+  // if (!optimizer || lossValue !== oldLoss) {
+  //   const loss = k.loss(lossValue)
+  //   optimizer = k.optimizer(loss, m.ev.params)
+  //   oldLoss = lossValue
+  // }
+  // const ev = optimizer.optimize(iterations, new Map(), opts)
 
   let result: ReturnType<typeof minimize>;
   try {

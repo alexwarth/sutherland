@@ -86,6 +86,41 @@ interface Demo {
 
 let demo: Demo;
 
+const demo0 = {
+  init() {
+    const handles = [
+      { x: 37, y: 44 },
+      { x: 99, y: 44 },
+    ].map(pos => Handle.create(pos));
+
+    const [a, b] = handles;
+    // constraints.polarVector(a, b);
+    constraints.polarVector(a, b).distance.lock();
+
+    handles[0].position = { x: 38, y: 45 };
+
+    // pld: Don't worry about angles for now
+    // constraints.polarVector(a, b).angle.lock();
+
+    /*
+    constraints.equal(constraints.polarVector(a, b).distance,
+                      constraints.polarVector(c, d).distance);
+
+    - two distance variables
+    - adding another constraint saying their values must be the same
+    - removed a degree of freedom
+    - constraint merges the variables. When you remove the constraint,
+    they're unmerged.
+    */
+  },
+
+  render() {
+    for (const c of Constraint.all) {
+      renderConstraint(c);
+    }
+  },
+};
+
 const demo1 = {
   init() {
     const handles = [
@@ -234,7 +269,7 @@ function toggleDemo() {
     handle.remove();
   }
 
-  demo = demo === demo1 ? demo2 : demo1;
+  demo = demo === demo0 ? demo2 : demo0;
   demo.init();
 }
 
