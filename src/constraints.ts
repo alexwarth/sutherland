@@ -320,7 +320,6 @@ class LLFinger extends LowLevelConstraint {
     knowns: Set<Variable>,
     freeVariables: Set<Variable>
   ): number {
-    console.log({ knowns, freeVariables });
     return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
   }
 
@@ -329,9 +328,20 @@ class LLFinger extends LowLevelConstraint {
     _knowns: Set<Variable>,
     _freeVariables: Set<Variable>
   ): k.Num {
-    //    return k.mul(10, k.sqrt(Vec.dist({ x, y }, this.constraint.position)));
-    //    return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
-    return k.num(0);
+    const currDist2 = k.add(
+      k.pow(k.sub(x, this.constraint.observations[0]), 2),
+      k.pow(k.sub(y, this.constraint.observations[1]), 2)
+    );
+    const ans = k.pow(k.mul(10, currDist2), 2);
+    // console.log('finger err: ' + ans);
+    return ans;
+  }
+
+  getObservations(): [k.Observation, number][] {
+    return [
+      [this.constraint.observations[0], this.constraint.position.x],
+      [this.constraint.observations[1], this.constraint.position.y],
+    ];
   }
 }
 
@@ -403,11 +413,12 @@ class LLDistance extends LowLevelConstraint {
 
   getErrorNum(
     [dist, ax, ay, bx, by]: k.Num[],
-    _knowns: Set<Variable>,
+    knowns: Set<Variable>,
     _freeVariables: Set<Variable>
   ): k.Num {
     const currDist2 = k.add(k.pow(k.sub(ax, bx), 2), k.pow(k.sub(ay, by), 2));
-    return k.sub(currDist2, k.pow(dist, 2));
+    const ans = k.pow(k.sub(k.pow(dist, 2), currDist2), 2);
+    return ans;
   }
 }
 
@@ -618,6 +629,7 @@ class LLFormula extends LowLevelConstraint {
 
 class LLWeight extends LowLevelConstraint {
   readonly weight: Variable;
+  observations: k.Observation[];
 
   constructor(readonly constraint: Weight) {
     super();
@@ -631,6 +643,10 @@ class LLWeight extends LowLevelConstraint {
       constraint.handle.xVariable,
       constraint.handle.yVariable
     );
+    this.observations = [
+      k.observation('weightX'),
+      k.observation('weightY')
+    ]
   }
 
   addTo(constraints: LowLevelConstraint[]) {
@@ -645,7 +661,7 @@ class LLWeight extends LowLevelConstraint {
     // return -(hy + w - this.constraint.handle.yVariable.value);
     // return w;
     const { x: origX, y: origY } = this.constraint.handle;
-    return Vec.dist(
+    const ans = Vec.dist(
       {
         x: hx,
         y: hy,
@@ -655,14 +671,32 @@ class LLWeight extends LowLevelConstraint {
         y: origY + w,
       }
     );
+    console.log('weight err: ' + ans);
+    return ans;
   }
 
   getErrorNum(
-    variableValues: k.Num[],
+    [w, hx, hy]: k.Num[],
     knowns: Set<Variable>,
     freeVariables: Set<Variable>
   ): k.Num {
-    throw new Error('not implemented');
+    const origX = this.observations[0];
+    const origY = this.observations[1];
+
+    const dist2 = k.add(
+      k.pow(k.sub(hx, origX), 2),
+      k.pow(k.sub(hy, k.add(origY, w)), 2)
+    );
+
+    const ans = k.pow(dist2, 2);
+    return ans;
+  }
+
+  getObservations(): [k.Observation, number][] {
+    return [
+      [this.observations[0], this.constraint.handle.x],
+      [this.observations[1], this.constraint.handle.y]
+    ]
   }
 }
 
@@ -822,6 +856,7 @@ export const pin = Pin.create;
 
 export class Finger extends Constraint {
   private static readonly memo = new Map<Handle, Finger>();
+  observations: [k.Observation, k.Observation];
 
   static create(handle: Handle, position: Position = handle) {
     let finger = Finger.memo.get(handle);
@@ -842,6 +877,7 @@ export class Finger extends Constraint {
     const fc = new LLFinger(this);
     this.lowLevelConstraints.push(fc);
     this.variables.push(handle.xVariable, handle.yVariable);
+    this.observations = [k.observation('fingerX'), k.observation('fingerY')];
   }
 
   public remove() {
@@ -1081,6 +1117,8 @@ interface ClusterForSolver {
   // Kombu stuff.
   kombuLoss: k.Num;
   optimizer: k.Optimizer;
+  evaluator: k.Evaluator;
+  kombuParams: Map<Variable, k.Param>;
 }
 
 let clustersForSolver: Set<ClusterForSolver> | null = null;
@@ -1159,7 +1197,6 @@ function createClusterForSolver(
   constraints: Constraint[],
   lowLevelConstraints: LowLevelConstraint[]
 ): ClusterForSolver {
-  console.log('creating cluster for solver');
   const knowns = computeKnowns(constraints, lowLevelConstraints);
 
   const variables = new Set<Variable>();
@@ -1210,7 +1247,8 @@ function createClusterForSolver(
     const toNum = (v: Variable) => {
       let p = kombuParams.get(v);
       if (!p) {
-        p = k.param(`p${v.id}`);
+        const name = `${v.represents?.property}${v.id}`;
+        p = knowns.has(v) ? k.observation(name) : k.param(name);
         kombuParams.set(v, p);
       }
       return p;
@@ -1221,20 +1259,19 @@ function createClusterForSolver(
         const p = toNum(variable.canonicalInstance);
         paramValues.set(p, variable.canonicalInstance.value);
         return k.div(k.sub(p, b), m);
-        // const pi = paramIdx.get(variable);
-        // return ((pi === undefined ? variable.value : currState[pi]) - b) / m;
       });
       return llc.getErrorNum(values, knowns, freeVariables);
     });
 
     const r = {
+      kombuParams,
       kombuLoss: k.loss(terms.reduce(k.add, k.num(0))),
       paramValues,
     };
     return r;
   }
 
-  const { kombuLoss, paramValues } = computeKombuLoss();
+  const { kombuLoss, paramValues, kombuParams } = computeKombuLoss();
   const optimizer = k.optimizer(kombuLoss, paramValues);
 
   return {
@@ -1247,6 +1284,8 @@ function createClusterForSolver(
     ),
     kombuLoss: kombuLoss.value,
     optimizer,
+    evaluator: k.evaluator(paramValues),
+    kombuParams,
   };
 }
 
@@ -1269,8 +1308,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     // nothing to solve!
     return;
   }
-
-  cluster.optimizer.optimize(5);
 
   // Let the user modify the locked distance or angle of a polar vector
   // constraint by manipulating the handles with their fingers.
@@ -1372,51 +1409,75 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   // }
   // const ev = optimizer.optimize(iterations, new Map(), opts)
 
-  let result: ReturnType<typeof minimize>;
-  try {
-    result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
-  } catch (e) {
-    console.log(
-      'minimizeError threw',
-      e,
-      'while working on cluster',
-      cluster,
-      'with knowns',
-      knowns
-    );
-    throw e;
-  }
-
-  // SVG.showStatus(`${result.iterations} iterations`);
-  forDebugging('solverResult', result);
-  forDebugging('solverResultMessages', (messages?: Set<string>) => {
-    if (!messages) {
-      messages = new Set();
-    }
-    messages.add(result.message);
-    return messages;
+  const obs = new Map<k.Param, number>(
+    lowLevelConstraints.flatMap(llc => {
+      return (llc instanceof LLFinger || llc instanceof LLWeight) ? llc.getObservations() : [];
+    })
+  );
+  knowns.forEach(v => {
+    console.log(v.represents, v.value);
+    obs.set(cluster.kombuParams.get(v)!, v.value);
   });
 
-  /*
-  if (!result || result.message?.includes('maxit')) {
-    // console.error(
-    //   'solveCluster gave up with result',
-    //   result,
-    //   'while working on',
-    //   cluster
-    // );
-    // const lastConstraint = constraints[constraints.length - 1];
-    // lastConstraint.paused = true;
-    // console.log('paused', lastConstraint, 'to see if it helps');
-    return;
-  }
-  */
+  // If the loss is approximately 0, don't even bother solving.
+  // This avoids an exception in LBFGS when all the gradients are zero.
+  const currentLoss = cluster.evaluator.evaluate(cluster.kombuLoss);
 
-  // Now we write the solution from the solver back into our variables.
-  const outputs = result.solution;
-  for (const param of parameters) {
-    param.value = outputs.shift()!;
+  let result: ReturnType<typeof minimize>;
+  const startTime = performance.now()
+  if (true) {
+    const ev = cluster.optimizer.optimize(2, obs);
+    for (const param of parameters) {
+      param.value = ev.evaluate(cluster.kombuParams.get(param)!);
+    }
+   computeTotalError(inputs);
+  } else {
+    try {
+      result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
+    } catch (e) {
+      console.log(
+        'minimizeError threw',
+        e,
+        'while working on cluster',
+        cluster,
+        'with knowns',
+        knowns
+      );
+      throw e;
+    }
+
+    // SVG.showStatus(`${result.iterations} iterations`);
+    forDebugging('solverResult', result);
+    forDebugging('solverResultMessages', (messages?: Set<string>) => {
+      if (!messages) {
+        messages = new Set();
+      }
+      messages.add(result.message);
+      return messages;
+    });
+
+    /*
+    if (!result || result.message?.includes('maxit')) {
+      // console.error(
+      //   'solveCluster gave up with result',
+      //   result,
+      //   'while working on',
+      //   cluster
+      // );
+      // const lastConstraint = constraints[constraints.length - 1];
+      // lastConstraint.paused = true;
+      // console.log('paused', lastConstraint, 'to see if it helps');
+      return;
+    }
+    */
+
+    // Now we write the solution from the solver back into our variables.
+    const outputs = result.solution;
+    for (const param of parameters) {
+      param.value = outputs.shift()!;
+    }
   }
+//  console.log(`solved in ${performance.now() - startTime}ms`)
 }
 
 function computeKnowns(

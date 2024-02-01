@@ -97,7 +97,7 @@ const demo0 = {
     // constraints.polarVector(a, b);
     constraints.polarVector(a, b).distance.lock();
 
-    handles[0].position = { x: 38, y: 45 };
+    handles[0].position = { x: 238, y: 45 };
 
     // pld: Don't worry about angles for now
     // constraints.polarVector(a, b).angle.lock();
@@ -181,7 +181,7 @@ const demo1 = {
 
     const weightHandle = Handle.create({ x: 343, y: 150 });
     constraints.polarVector(handles[10], weightHandle).distance.lock();
-    const weight = constraints.weight(weightHandle, 2).weight;
+    const { weight } = constraints.weight(weightHandle, 2);
     weightSlider.value = weight.value;
     weightSlider.oninput = () => weight.lock(weightSlider.value);
 
@@ -269,7 +269,7 @@ function toggleDemo() {
     handle.remove();
   }
 
-  demo = demo === demo0 ? demo2 : demo0;
+  demo = demo === demo2 ? demo0 : demo2;
   demo.init();
 }
 
