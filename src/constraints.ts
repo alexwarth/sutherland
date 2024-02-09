@@ -332,9 +332,7 @@ class LLFinger extends LowLevelConstraint {
       k.pow(k.sub(x, this.constraint.observations[0]), 2),
       k.pow(k.sub(y, this.constraint.observations[1]), 2)
     );
-    const ans = k.pow(k.mul(10, currDist2), 2);
-    // console.log('finger err: ' + ans);
-    return ans;
+    return k.mul(10, currDist2);
   }
 
   getObservations(): [k.Observation, number][] {
@@ -416,9 +414,10 @@ class LLDistance extends LowLevelConstraint {
     knowns: Set<Variable>,
     _freeVariables: Set<Variable>
   ): k.Num {
-    const currDist2 = k.add(k.pow(k.sub(ax, bx), 2), k.pow(k.sub(ay, by), 2));
-    const ans = k.pow(k.sub(k.pow(dist, 2), currDist2), 2);
-    return ans;
+    const currDist2 = k.add(
+      k.pow(k.sub(ax, bx), 2),
+      k.pow(k.sub(ay, by), 2));
+    return k.sub(k.pow(dist, 2), currDist2)
   }
 }
 
@@ -683,13 +682,19 @@ class LLWeight extends LowLevelConstraint {
     const origX = this.observations[0];
     const origY = this.observations[1];
 
-    const dist2 = k.add(
+    // const dx = origX;
+    // const dy = k.add(origY, w);
+    // const dist = 0;
+
+    // const currDist2 = k.add(
+    //   k.pow(k.sub(hx, dx), 2),
+    //   k.pow(k.sub(hy, dy), 2));
+    // return k.pow(k.sub(k.pow(dist, 2), currDist2), 2);
+
+    return k.add(
       k.pow(k.sub(hx, origX), 2),
       k.pow(k.sub(hy, k.add(origY, w)), 2)
     );
-
-    const ans = k.pow(dist2, 2);
-    return ans;
   }
 
   getObservations(): [k.Observation, number][] {
@@ -1263,9 +1268,12 @@ function createClusterForSolver(
       return llc.getErrorNum(values, knowns, freeVariables);
     });
 
+    const totalLoss = terms.reduce(
+      (acc, t) => k.add(acc, k.pow(t, 2)), k.num(0))
+
     const r = {
       kombuParams,
-      kombuLoss: k.loss(terms.reduce(k.add, k.num(0))),
+      kombuLoss: k.loss(totalLoss),
       paramValues,
     };
     return r;
@@ -1388,6 +1396,11 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
         const pi = paramIdx.get(variable);
         return ((pi === undefined ? variable.value : currState[pi]) - b) / m;
       });
+      const err = llc.getError(values, knowns, freeVariables);
+      if (Number.isNaN(err)) {
+        console.log('NaN: ', llc)
+//        debugger;
+      }
       error += Math.pow(llc.getError(values, knowns, freeVariables), 2);
     }
     return error;
@@ -1426,11 +1439,11 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   let result: ReturnType<typeof minimize>;
   const startTime = performance.now()
   if (true) {
-    const ev = cluster.optimizer.optimize(2, obs);
+    const ev = cluster.optimizer.optimize(20, obs);
     for (const param of parameters) {
       param.value = ev.evaluate(cluster.kombuParams.get(param)!);
     }
-   computeTotalError(inputs);
+    console.log('computeTotalError', computeTotalError(inputs));
   } else {
     try {
       result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
