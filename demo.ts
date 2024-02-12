@@ -91,11 +91,13 @@ const demo0 = {
     const handles = [
       { x: 37, y: 44 },
       { x: 99, y: 44 },
+      { x: 99, y: 54 },
     ].map(pos => Handle.create(pos));
 
-    const [a, b] = handles;
+    const [a, b, c] = handles;
     // constraints.polarVector(a, b);
     constraints.polarVector(a, b).distance.lock();
+    constraints.polarVector(b, c).distance.lock();
 
     handles[0].position = { x: 238, y: 45 };
 
@@ -269,7 +271,7 @@ function toggleDemo() {
     handle.remove();
   }
 
-  demo = demo === demo2 ? demo0 : demo2;
+  demo = demo === demo0 ? demo2 : demo0;
   demo.init();
 }
 

@@ -417,7 +417,7 @@ class LLDistance extends LowLevelConstraint {
     const currDist2 = k.add(
       k.pow(k.sub(ax, bx), 2),
       k.pow(k.sub(ay, by), 2));
-    return k.sub(k.pow(dist, 2), currDist2)
+    return k.sub(dist, k.sqrt(currDist2))
   }
 }
 
@@ -660,7 +660,7 @@ class LLWeight extends LowLevelConstraint {
     // return -(hy + w - this.constraint.handle.yVariable.value);
     // return w;
     const { x: origX, y: origY } = this.constraint.handle;
-    const ans = Vec.dist(
+    return Vec.dist(
       {
         x: hx,
         y: hy,
@@ -670,8 +670,6 @@ class LLWeight extends LowLevelConstraint {
         y: origY + w,
       }
     );
-    console.log('weight err: ' + ans);
-    return ans;
   }
 
   getErrorNum(
@@ -682,19 +680,10 @@ class LLWeight extends LowLevelConstraint {
     const origX = this.observations[0];
     const origY = this.observations[1];
 
-    // const dx = origX;
-    // const dy = k.add(origY, w);
-    // const dist = 0;
-
-    // const currDist2 = k.add(
-    //   k.pow(k.sub(hx, dx), 2),
-    //   k.pow(k.sub(hy, dy), 2));
-    // return k.pow(k.sub(k.pow(dist, 2), currDist2), 2);
-
-    return k.add(
+    return k.sqrt(k.add(
       k.pow(k.sub(hx, origX), 2),
       k.pow(k.sub(hy, k.add(origY, w)), 2)
-    );
+    ));
   }
 
   getObservations(): [k.Observation, number][] {
@@ -1397,10 +1386,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
         return ((pi === undefined ? variable.value : currState[pi]) - b) / m;
       });
       const err = llc.getError(values, knowns, freeVariables);
-      if (Number.isNaN(err)) {
-        console.log('NaN: ', llc)
-//        debugger;
-      }
       error += Math.pow(llc.getError(values, knowns, freeVariables), 2);
     }
     return error;
@@ -1428,7 +1413,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     })
   );
   knowns.forEach(v => {
-    console.log(v.represents, v.value);
     obs.set(cluster.kombuParams.get(v)!, v.value);
   });
 
@@ -1443,7 +1427,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     for (const param of parameters) {
       param.value = ev.evaluate(cluster.kombuParams.get(param)!);
     }
-    console.log('computeTotalError', computeTotalError(inputs));
   } else {
     try {
       result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
