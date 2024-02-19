@@ -6,6 +6,8 @@ import { Position } from './types';
 import { minimize } from './lib/g9';
 import Vec from './lib/vec';
 
+const USE_KOMBU = false;
+
 // #region variables
 
 type VariableInfo = CanonicalVariableInfo | AbsorbedVariableInfo;
@@ -335,8 +337,9 @@ class LLFinger extends LowLevelConstraint {
 
   getKombuError([x, y]: k.Num[]): k.Num {
     const [fingerX, fingerY] = this.kombuObservations;
-    const currDist2 =
-      k.add(k.pow(k.sub(x, fingerX), 2), k.pow(k.sub(y, fingerY), 2)
+    const currDist2 = k.add(
+      k.pow(k.sub(x, fingerX), 2),
+      k.pow(k.sub(y, fingerY), 2)
     );
     return currDist2;
   }
@@ -1100,11 +1103,70 @@ interface ClusterForSolver {
   // The variables whose values are determined by the solver.
   parameters: Variable[];
 
-  // Kombu stuff
-  kombuLoss: k.Num;
+  kombuSolver: KombuSolver;
+}
+
+class KombuSolver {
+  paramsByVar = new Map<Variable, k.Param>();
+  initialParamValues = new Map<k.Param, number>();
+  totalLoss: k.Loss;
   optimizer: k.Optimizer;
-  evaluator: k.Evaluator;
-  kombuParams: Map<Variable, k.Param>;
+
+  constructor(
+    public constraints: LowLevelConstraint[],
+    public knowns: Set<Variable>
+  ) {
+    this.totalLoss = k.loss(this.computeTotalLoss());
+    this.optimizer = k.optimizer(this.totalLoss, this.initialParamValues);
+  }
+
+  asNum(v: Variable) {
+    let p = this.paramsByVar.get(v);
+    if (!p) {
+      const name = `${v.represents?.property}${v.id}`;
+      p = this.knowns.has(v) ? k.observation(name) : k.param(name);
+      this.paramsByVar.set(v, p);
+    }
+    return p;
+  }
+
+  computeTotalLoss() {
+    const terms = this.constraints.map(llc => {
+      const values: k.Num[] = llc.variables.map(variable => {
+        const { m, b } = variable.offset;
+        const p = this.asNum(variable.canonicalInstance);
+        this.initialParamValues.set(p, variable.canonicalInstance.value);
+        return k.div(k.sub(p, b), m);
+      });
+      // TODO: Make the observations dynamically here?
+      return llc.getKombuError(values);
+    });
+
+    return terms.reduce((acc, t) => k.add(acc, k.pow(t, 2)), k.num(0));
+  }
+
+  getObservations() {
+    const obs = new Map<k.Param, number>();
+    const constraints = this.constraints.filter(
+      c => c instanceof LLFinger || c instanceof LLWeight
+    );
+
+    for (const llc of constraints) {
+      for (const [param, value] of llc.getKombuObservations()) {
+        obs.set(param, value);
+      }
+    }
+    for (const k of this.knowns) {
+      obs.set(this.paramsByVar.get(k)!, k.value);
+    }
+    return obs;
+  }
+
+  minimize(vars: Variable[], maxIterations: number) {
+    const obs = this.getObservations();
+    const ev = this.optimizer.optimize(maxIterations, obs);
+    return new Map(vars.map(v => [v, ev.evaluate(this.paramsByVar.get(v)!)]));
+  }
 }
 
 let clustersForSolver: Set<ClusterForSolver> | null = null;
@@ -1223,44 +1285,7 @@ function createClusterForSolver(
   //   }
   // }
 
-  function computeKombuLoss() {
-    const kombuParams = new Map<Variable, k.Param>();
-    const paramValues = new Map<k.Param, number>();
-    const toNum = (v: Variable) => {
-      let p = kombuParams.get(v);
-      if (!p) {
-        const name = `${v.represents?.property}${v.id}`;
-        p = knowns.has(v) ? k.observation(name) : k.param(name);
-        kombuParams.set(v, p);
-      }
-      return p;
-    };
-    const terms = lowLevelConstraints.map(llc => {
-      const values: k.Num[] = llc.variables.map(variable => {
-        const { m, b } = variable.offset;
-        const p = toNum(variable.canonicalInstance);
-        paramValues.set(p, variable.canonicalInstance.value);
-        return k.div(k.sub(p, b), m);
-      });
-      // TODO: Make the observations dynamically here?
-      return llc.getKombuError(values);
-    });
-
-    const totalLoss = terms.reduce(
-      (acc, t) => k.add(acc, k.pow(t, 2)),
-      k.num(0)
-    );
-
-    const r = {
-      kombuParams,
-      kombuLoss: k.loss(totalLoss),
-      paramValues,
-    };
-    return r;
-  }
-
-  const { kombuLoss, paramValues, kombuParams } = computeKombuLoss();
-  const optimizer = k.optimizer(kombuLoss, paramValues);
+  const kombuSolver = new KombuSolver(lowLevelConstraints, knowns);
 
   return {
     constraints,
@@ -1270,10 +1295,7 @@ function createClusterForSolver(
     parameters: [...variables].filter(
       v => v.isCanonicalInstance && !knowns.has(v) && !freeVariables.has(v)
     ),
-    kombuLoss: kombuLoss.value,
-    optimizer,
-    evaluator: k.evaluator(paramValues),
-    kombuParams,
+    kombuSolver,
   };
 }
 
@@ -1388,31 +1410,18 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     return;
   }
 
-  const obs = new Map<k.Param, number>(
-    lowLevelConstraints.flatMap(llc => {
-      return llc instanceof LLFinger || llc instanceof LLWeight
-        ? llc.getKombuObservations()
-        : [];
-    })
-  );
-  knowns.forEach(v => {
-    obs.set(cluster.kombuParams.get(v)!, v.value);
-  });
-
-  let result: ReturnType<typeof minimize>;
   const startTime = performance.now();
   if (true) {
-    // If the loss is approximately 0, don't even bother solving.
-    // This avoids an exception in LBFGS when all the gradients are zero.
-    const currentLoss = cluster.evaluator.evaluate(cluster.kombuLoss);
-    const ev = cluster.optimizer.optimize(20, obs);
-    for (const param of parameters) {
-      param.value = ev.evaluate(cluster.kombuParams.get(param)!);
+    const newValues = cluster.kombuSolver.minimize(parameters, 20);
+    for (const [param, val] of newValues.entries()) {
+      param.value = val;
     }
+    // console.log(`solver finished in ${performance.now() - startTime}ms`);
   } else {
     let result: ReturnType<typeof minimize>;
     try {
       result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
+      // console.log(`solver finished in ${performance.now() - startTime}ms`);
     } catch (e) {
       console.log(
         'minimizeError threw',
