@@ -6,7 +6,7 @@ import { Position } from './types';
 import { minimize } from './lib/g9';
 import Vec from './lib/vec';
 
-const USE_KOMBU = false;
+const USE_KOMBU = true;
 
 // #region variables
 
@@ -305,7 +305,9 @@ abstract class LowLevelConstraint {
   abstract getKombuError(variableValues: k.Num[]): k.Num;
 
   /**
-   * TODO
+   * An _observation_ in Kombu is a parameter whose value should not be
+   * adjusted by the solver. This method returns the current values for any
+   * observations owned by this constraint.
    */
   abstract getKombuObservations(): [k.Param, number][];
 }
@@ -1120,10 +1122,16 @@ class KombuSolver {
     this.optimizer = k.optimizer(this.totalLoss, this.initialParamValues);
   }
 
+  /**
+   * Return the Kombu parameter associated with the given Variable.
+   * If there isn't one, create it.
+   */
   asNum(v: Variable) {
     let p = this.paramsByVar.get(v);
     if (!p) {
       const name = `${v.represents?.property}${v.id}`;
+
+      // Knowns are observations in Kombu, unknowns are regular params.
       p = this.knowns.has(v) ? k.observation(name) : k.param(name);
       this.paramsByVar.set(v, p);
     }
@@ -1138,20 +1146,18 @@ class KombuSolver {
         this.initialParamValues.set(p, variable.canonicalInstance.value);
         return k.div(k.sub(p, b), m);
       });
-      // TODO: Make the observations dynamically here?
       return llc.getKombuError(values);
     });
-
     return terms.reduce((acc, t) => k.add(acc, k.pow(t, 2)), k.num(0));
   }
 
-  getObservations() {
+  collectObservations() {
     const obs = new Map<k.Param, number>();
     const constraints = this.constraints.filter(
       c => c instanceof LLFinger || c instanceof LLWeight
     );
 
-    for (const llc of constraints) {
+    for (const llc of this.constraints) {
       for (const [param, value] of llc.getKombuObservations()) {
         obs.set(param, value);
       }
@@ -1163,7 +1169,7 @@ class KombuSolver {
   }
 
   minimize(vars: Variable[], maxIterations: number) {
-    const obs = this.getObservations();
+    const obs = this.collectObservations();
     const ev = this.optimizer.optimize(maxIterations, obs);
     return new Map(vars.map(v => [v, ev.evaluate(this.paramsByVar.get(v)!)]));
   }
