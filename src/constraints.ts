@@ -1105,7 +1105,7 @@ interface ClusterForSolver {
   // The variables whose values are determined by the solver.
   parameters: Variable[];
 
-  kombuSolver: KombuSolver;
+  kombuSolver?: KombuSolver;
 }
 
 class KombuSolver {
@@ -1283,15 +1283,19 @@ function createClusterForSolver(
     }
   }
 
-  const freeVariables = new Set<Variable>();
-  // TODO: Condition this on Kombu flag.
-  // for (const [variable, count] of freeVarCandidateCounts.entries()) {
-  //   if (count === 1) {
-  //     freeVariables.add(variable.canonicalInstance);
-  //   }
-  // }
+  const kombuSolver = USE_KOMBU
+    ? new KombuSolver(lowLevelConstraints, knowns)
+    : undefined;
 
-  const kombuSolver = new KombuSolver(lowLevelConstraints, knowns);
+  const freeVariables = new Set<Variable>();
+  // TODO: Figure out how to deal with free variables and Kombu.
+  if (!kombuSolver) {
+    for (const [variable, count] of freeVarCandidateCounts.entries()) {
+      if (count === 1) {
+        freeVariables.add(variable.canonicalInstance);
+      }
+    }
+  }
 
   return {
     constraints,
@@ -1417,7 +1421,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   }
 
   const startTime = performance.now();
-  if (true) {
+  if (cluster.kombuSolver) {
     const newValues = cluster.kombuSolver.minimize(parameters, 20);
     for (const [param, val] of newValues.entries()) {
       param.value = val;
