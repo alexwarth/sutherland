@@ -6,7 +6,7 @@ import { Position } from './types';
 import { minimize } from './lib/g9';
 import Vec from './lib/vec';
 
-const USE_KOMBU = true;
+const USE_KOMBU = false;
 
 // #region variables
 
@@ -1153,9 +1153,6 @@ class KombuSolver {
 
   collectObservations() {
     const obs = new Map<k.Param, number>();
-    const constraints = this.constraints.filter(
-      c => c instanceof LLFinger || c instanceof LLWeight
-    );
 
     for (const llc of this.constraints) {
       for (const [param, value] of llc.getKombuObservations()) {
@@ -1427,53 +1424,53 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
       param.value = val;
     }
     // console.log(`solver finished in ${performance.now() - startTime}ms`);
-  } else {
-    let result: ReturnType<typeof minimize>;
-    try {
-      result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
-      // console.log(`solver finished in ${performance.now() - startTime}ms`);
-    } catch (e) {
-      console.log(
-        'minimizeError threw',
-        e,
-        'while working on cluster',
-        cluster,
-        'with knowns',
-        knowns
-      );
-      throw e;
-    }
+    return;
+  }
+  let result: ReturnType<typeof minimize>;
+  try {
+    result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
+    // console.log(`solver finished in ${performance.now() - startTime}ms`);
+  } catch (e) {
+    console.log(
+      'minimizeError threw',
+      e,
+      'while working on cluster',
+      cluster,
+      'with knowns',
+      knowns
+    );
+    throw e;
+  }
 
-    // SVG.showStatus(`${result.iterations} iterations`);
-    forDebugging('solverResult', result);
-    forDebugging('solverResultMessages', (messages?: Set<string>) => {
-      if (!messages) {
-        messages = new Set();
-      }
-      messages.add(result.message);
-      return messages;
-    });
-
-    /*
-    if (!result || result.message?.includes('maxit')) {
-      // console.error(
-      //   'solveCluster gave up with result',
-      //   result,
-      //   'while working on',
-      //   cluster
-      // );
-      // const lastConstraint = constraints[constraints.length - 1];
-      // lastConstraint.paused = true;
-      // console.log('paused', lastConstraint, 'to see if it helps');
-      return;
+  // SVG.showStatus(`${result.iterations} iterations`);
+  forDebugging('solverResult', result);
+  forDebugging('solverResultMessages', (messages?: Set<string>) => {
+    if (!messages) {
+      messages = new Set();
     }
-    */
+    messages.add(result.message);
+    return messages;
+  });
 
-    // Now we write the solution from the solver back into our variables.
-    const outputs = result.solution;
-    for (const param of parameters) {
-      param.value = outputs.shift()!;
-    }
+  /*
+  if (!result || result.message?.includes('maxit')) {
+    // console.error(
+    //   'solveCluster gave up with result',
+    //   result,
+    //   'while working on',
+    //   cluster
+    // );
+    // const lastConstraint = constraints[constraints.length - 1];
+    // lastConstraint.paused = true;
+    // console.log('paused', lastConstraint, 'to see if it helps');
+    return;
+  }
+  */
+
+  // Now we write the solution from the solver back into our variables.
+  const outputs = result.solution;
+  for (const param of parameters) {
+    param.value = outputs.shift()!;
   }
 }
 
