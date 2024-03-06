@@ -1,8 +1,12 @@
+import * as k from 'kombu';
+
 import Handle from './Handle';
 import { TAU, forDebugging, generateId, normalizeAngle, sets } from './helpers';
 import { Position } from './types';
 import { minimize } from './lib/g9';
 import Vec from './lib/vec';
+
+const USE_KOMBU = false;
 
 // #region variables
 
@@ -262,8 +266,9 @@ export const variable = Variable.create;
 // #region low-level constraints
 
 abstract class LowLevelConstraint {
-  readonly variables = [] as Variable[];
+  readonly variables: Variable[] = [];
   readonly ownVariables = new Set<Variable>();
+  readonly kombuObservations: k.Param[] = [];
 
   /**
    * Add this constraint to the list of constraints. In case of clashes,
@@ -292,6 +297,19 @@ abstract class LowLevelConstraint {
     knowns: Set<Variable>,
     freeVariables: Set<Variable>
   ): number;
+
+  /**
+   * Returns a Kombu expression, which can be evaluated to get the current
+   * error for this constraint.
+   */
+  abstract getKombuError(variableValues: k.Num[]): k.Num;
+
+  /**
+   * An _observation_ in Kombu is a parameter whose value should not be
+   * adjusted by the solver. This method returns the current values for any
+   * observations owned by this constraint.
+   */
+  abstract getKombuObservations(): [k.Param, number][];
 }
 
 class LLFinger extends LowLevelConstraint {
@@ -300,6 +318,10 @@ class LLFinger extends LowLevelConstraint {
     this.variables.push(
       constraint.handle.xVariable,
       constraint.handle.yVariable
+    );
+    this.kombuObservations.push(
+      k.observation('fingerX'),
+      k.observation('fingerY')
     );
   }
 
@@ -313,6 +335,23 @@ class LLFinger extends LowLevelConstraint {
     freeVariables: Set<Variable>
   ): number {
     return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
+  }
+
+  getKombuError([x, y]: k.Num[]): k.Num {
+    const [fingerX, fingerY] = this.kombuObservations;
+    const currDist2 = k.add(
+      k.pow(k.sub(x, fingerX), 2),
+      k.pow(k.sub(y, fingerY), 2)
+    );
+    return currDist2;
+  }
+
+  getKombuObservations(): [k.Param, number][] {
+    const [fingerX, fingerY] = this.kombuObservations;
+    return [
+      [fingerX, this.constraint.position.x],
+      [fingerY, this.constraint.position.y],
+    ];
   }
 }
 
@@ -380,6 +419,17 @@ class LLDistance extends LowLevelConstraint {
       this.distance.value = currDist;
     }
     return currDist - dist;
+  }
+
+  getKombuError([dist, ax, ay, bx, by]: k.Num[]): k.Num {
+    const currDist = k.sqrt(
+      k.add(k.pow(k.sub(ax, bx), 2), k.pow(k.sub(ay, by), 2))
+    );
+    return k.sub(dist, currDist);
+  }
+
+  getKombuObservations(): [k.Param, number][] {
+    return [];
   }
 }
 
@@ -511,6 +561,14 @@ class LLAngle extends LowLevelConstraint {
     return error;
   }
 
+  getKombuError(variableValues: k.Num[]): k.Num {
+    return k.num(0); // TODO
+  }
+
+  getKombuObservations(): [k.Param, number][] {
+    return [];
+  }
+
   static computeAngle(angleVar: Variable, aPos: Position, bPos: Position) {
     const currAngle = normalizeAngle(angleVar.value);
     const newAngle = normalizeAngle(Vec.angle(Vec.sub(bPos, aPos)));
@@ -587,6 +645,11 @@ class LLWeight extends LowLevelConstraint {
       constraint.handle.xVariable,
       constraint.handle.yVariable
     );
+    this.kombuObservations.push(
+      k.observation('weight'),
+      k.observation('handleX'),
+      k.observation('handleY')
+    );
   }
 
   addTo(constraints: LowLevelConstraint[]) {
@@ -611,6 +674,22 @@ class LLWeight extends LowLevelConstraint {
         y: origY + w,
       }
     );
+  }
+
+  getKombuError([_, hx, hy]: k.Num[]): k.Num {
+    const [w, origX, origY] = this.kombuObservations;
+    return k.sqrt(
+      k.add(k.pow(k.sub(hx, origX), 2), k.pow(k.sub(hy, k.add(origY, w)), 2))
+    );
+  }
+
+  getKombuObservations(): [k.Param, number][] {
+    const [w, hx, hy] = this.kombuObservations;
+    return [
+      [w, this.weight.value],
+      [hx, this.constraint.handle.x],
+      [hy, this.constraint.handle.y],
+    ];
   }
 }
 
@@ -1025,6 +1104,72 @@ interface ClusterForSolver {
   freeVariables: Set<Variable>;
   // The variables whose values are determined by the solver.
   parameters: Variable[];
+
+  kombuSolver?: KombuSolver;
+}
+
+class KombuSolver {
+  paramsByVar = new Map<Variable, k.Param>();
+  initialParamValues = new Map<k.Param, number>();
+  totalLoss: k.Loss;
+  optimizer: k.Optimizer;
+
+  constructor(
+    public constraints: LowLevelConstraint[],
+    public knowns: Set<Variable>
+  ) {
+    this.totalLoss = k.loss(this.computeTotalLoss());
+    this.optimizer = k.optimizer(this.totalLoss, this.initialParamValues);
+  }
+
+  /**
+   * Return the Kombu parameter associated with the given Variable.
+   * If there isn't one, create it.
+   */
+  asNum(v: Variable) {
+    let p = this.paramsByVar.get(v);
+    if (!p) {
+      const name = `${v.represents?.property}${v.id}`;
+
+      // Knowns are observations in Kombu, unknowns are regular params.
+      p = this.knowns.has(v) ? k.observation(name) : k.param(name);
+      this.paramsByVar.set(v, p);
+    }
+    return p;
+  }
+
+  computeTotalLoss() {
+    const terms = this.constraints.map(llc => {
+      const values: k.Num[] = llc.variables.map(variable => {
+        const { m, b } = variable.offset;
+        const p = this.asNum(variable.canonicalInstance);
+        this.initialParamValues.set(p, variable.canonicalInstance.value);
+        return k.div(k.sub(p, b), m);
+      });
+      return llc.getKombuError(values);
+    });
+    return terms.reduce((acc, t) => k.add(acc, k.pow(t, 2)), k.num(0));
+  }
+
+  collectObservations() {
+    const obs = new Map<k.Param, number>();
+
+    for (const llc of this.constraints) {
+      for (const [param, value] of llc.getKombuObservations()) {
+        obs.set(param, value);
+      }
+    }
+    for (const k of this.knowns) {
+      obs.set(this.paramsByVar.get(k)!, k.value);
+    }
+    return obs;
+  }
+
+  minimize(vars: Variable[], maxIterations: number) {
+    const obs = this.collectObservations();
+    const ev = this.optimizer.optimize(maxIterations, obs);
+    return new Map(vars.map(v => [v, ev.evaluate(this.paramsByVar.get(v)!)]));
+  }
 }
 
 let clustersForSolver: Set<ClusterForSolver> | null = null;
@@ -1135,10 +1280,17 @@ function createClusterForSolver(
     }
   }
 
+  const kombuSolver = USE_KOMBU
+    ? new KombuSolver(lowLevelConstraints, knowns)
+    : undefined;
+
   const freeVariables = new Set<Variable>();
-  for (const [variable, count] of freeVarCandidateCounts.entries()) {
-    if (count === 1) {
-      freeVariables.add(variable.canonicalInstance);
+  // TODO: Figure out how to deal with free variables and Kombu.
+  if (!kombuSolver) {
+    for (const [variable, count] of freeVarCandidateCounts.entries()) {
+      if (count === 1) {
+        freeVariables.add(variable.canonicalInstance);
+      }
     }
   }
 
@@ -1150,6 +1302,7 @@ function createClusterForSolver(
     parameters: [...variables].filter(
       v => v.isCanonicalInstance && !knowns.has(v) && !freeVariables.has(v)
     ),
+    kombuSolver,
   };
 }
 
@@ -1173,7 +1326,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     return;
   }
 
-  // Let the user to modify the locked distance or angle of a polar vector
+  // Let the user modify the locked distance or angle of a polar vector
   // constraint by manipulating the handles with their fingers.
   const handleToFinger = getHandleToFingerMap(constraints);
   for (const pv of constraints) {
@@ -1264,9 +1417,19 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     return;
   }
 
+  const startTime = performance.now();
+  if (cluster.kombuSolver) {
+    const newValues = cluster.kombuSolver.minimize(parameters, 20);
+    for (const [param, val] of newValues.entries()) {
+      param.value = val;
+    }
+    // console.log(`solver finished in ${performance.now() - startTime}ms`);
+    return;
+  }
   let result: ReturnType<typeof minimize>;
   try {
     result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
+    // console.log(`solver finished in ${performance.now() - startTime}ms`);
   } catch (e) {
     console.log(
       'minimizeError threw',
