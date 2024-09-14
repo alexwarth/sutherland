@@ -34,7 +34,7 @@ function initCanvas() {
 
 let handleUnderMouse: Handle | null = null;
 
-canvas.addEventListener('pointerdown', e => {
+canvas.addEventListener('pointerdown', (e) => {
   handleUnderMouse = Handle.getNearestHandle({
     x: (e as any).layerX,
     y: (e as any).layerY,
@@ -45,14 +45,14 @@ canvas.addEventListener('pointerdown', e => {
   }
 });
 
-canvas.addEventListener('pointermove', e => {
+canvas.addEventListener('pointermove', (e) => {
   if (handleUnderMouse) {
     const finger = constraints.finger(handleUnderMouse);
     finger.position = { x: (e as any).layerX, y: (e as any).layerY };
   }
 });
 
-canvas.addEventListener('pointerup', e => {
+canvas.addEventListener('pointerup', (e) => {
   if (handleUnderMouse) {
     canvas.releasePointerCapture(e.pointerId);
     constraints.finger(handleUnderMouse).remove();
@@ -110,7 +110,7 @@ const demo1 = {
       { x: 526, y: 109 },
       { x: 465, y: 86 },
       { x: 404, y: 73 },
-    ].map(pos => Handle.create(pos));
+    ].map((pos) => Handle.create(pos));
 
     const triangles = [
       [0, 5, 6],
@@ -131,7 +131,7 @@ const demo1 = {
       [14, 20, 19],
       [14, 15, 20],
       [15, 10, 20],
-    ].map(indices => indices.map(idx => handles[idx]));
+    ].map((indices) => indices.map((idx) => handles[idx]));
 
     for (const [a, b, c] of triangles) {
       constraints.polarVector(a, b).distance.lock();
@@ -184,7 +184,7 @@ const demo2 = {
     for (let idx = 0; idx < 6; idx++) {
       const part = this.makePart(
         lastPart ? lastPart.c : Handle.create({ x: 50, y: 50 }),
-        lastPart ? lastPart.d : Handle.create({ x: 50, y: 150 })
+        lastPart ? lastPart.d : Handle.create({ x: 50, y: 150 }),
       );
       if (!lastPart) {
         constraints.pin(part.b);
@@ -249,12 +249,7 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function drawRotated(
-  image: HTMLImageElement,
-  degrees: number,
-  x: number,
-  y: number
-) {
+function drawRotated(image: HTMLImageElement, degrees: number, x: number, y: number) {
   ctx.save();
   ctx.globalAlpha = Math.random() * 0.2 + 0.7;
   ctx.translate(x, y);
@@ -288,8 +283,7 @@ function renderConstraint(c: Constraint) {
     ctx.fillStyle = flickeryWhite();
     const fontSizeInPixels = 12;
     ctx.font = `${fontSizeInPixels}px Major Mono Display`;
-    const delta =
-      ((c.distance.value - Vec.dist(a, b)) / c.distance.value) * 10000;
+    const delta = ((c.distance.value - Vec.dist(a, b)) / c.distance.value) * 10000;
     let label = delta.toFixed(0);
     if (label === '-0') {
       label = '0';
@@ -302,14 +296,10 @@ function renderConstraint(c: Constraint) {
       ctx.fillText(
         label,
         (a.x + 2 * b.x) / 3 - labelWidth / 2,
-        (a.y + 2 * b.y) / 3 + fontSizeInPixels / 2
+        (a.y + 2 * b.y) / 3 + fontSizeInPixels / 2,
       );
     } else {
-      ctx.fillText(
-        label,
-        (a.x + b.x) / 2 - labelWidth / 2,
-        (a.y + b.y) / 2 + fontSizeInPixels / 2
-      );
+      ctx.fillText(label, (a.x + b.x) / 2 - labelWidth / 2, (a.y + b.y) / 2 + fontSizeInPixels / 2);
     }
   } else if (c instanceof Weight) {
     // ctx.fillStyle = flickeryWhite();
