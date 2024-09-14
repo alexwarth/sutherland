@@ -36,7 +36,7 @@ export class Variable {
 
   private constructor(
     private _value: number = 0,
-    represents?: { object: object; property: string }
+    represents?: { object: object; property: string },
   ) {
     this.represents = represents;
     Variable.all.add(this);
@@ -202,7 +202,7 @@ export class Variable {
     if (!this.info.isCanonical) {
       this.canonicalInstance.lock(
         value !== undefined ? this.toCanonicalValue(value) : undefined,
-        scrub
+        scrub,
       );
       return;
     }
@@ -238,12 +238,8 @@ export class Variable {
 
   equals(that: Variable) {
     return (
-      (this.canonicalInstance === that &&
-        this.offset.m === 1 &&
-        this.offset.b === 0) ||
-      (that.canonicalInstance === this &&
-        that.offset.m === 1 &&
-        that.offset.b === 0) ||
+      (this.canonicalInstance === that && this.offset.m === 1 && this.offset.b === 0) ||
+      (that.canonicalInstance === this && that.offset.m === 1 && that.offset.b === 0) ||
       (this.canonicalInstance === that.canonicalInstance &&
         this.offset.m === that.offset.m &&
         this.offset.b === that.offset.b)
@@ -290,28 +286,21 @@ abstract class LowLevelConstraint {
   abstract getError(
     variableValues: number[],
     knowns: Set<Variable>,
-    freeVariables: Set<Variable>
+    freeVariables: Set<Variable>,
   ): number;
 }
 
 class LLFinger extends LowLevelConstraint {
   constructor(private constraint: Finger) {
     super();
-    this.variables.push(
-      constraint.handle.xVariable,
-      constraint.handle.yVariable
-    );
+    this.variables.push(constraint.handle.xVariable, constraint.handle.yVariable);
   }
 
   addTo(constraints: LowLevelConstraint[]) {
     constraints.push(this);
   }
 
-  getError(
-    [x, y]: number[],
-    knowns: Set<Variable>,
-    freeVariables: Set<Variable>
-  ): number {
+  getError([x, y]: number[], knowns: Set<Variable>, freeVariables: Set<Variable>): number {
     return 10 * Math.sqrt(Vec.dist({ x, y }, this.constraint.position));
   }
 }
@@ -320,7 +309,7 @@ class LLDistance extends LowLevelConstraint {
   constructor(
     constraint: Constraint,
     public readonly a: Handle,
-    public readonly b: Handle
+    public readonly b: Handle,
   ) {
     super();
     this.variables.push(
@@ -331,7 +320,7 @@ class LLDistance extends LowLevelConstraint {
       a.xVariable,
       a.yVariable,
       b.xVariable,
-      b.yVariable
+      b.yVariable,
     );
     this.ownVariables.add(this.distance);
   }
@@ -371,7 +360,7 @@ class LLDistance extends LowLevelConstraint {
   getError(
     [dist, ax, ay, bx, by]: number[],
     knowns: Set<Variable>,
-    freeVariables: Set<Variable>
+    freeVariables: Set<Variable>,
   ): number {
     const aPos = { x: ax, y: ay };
     const bPos = { x: bx, y: by };
@@ -387,7 +376,7 @@ class LLAngle extends LowLevelConstraint {
   constructor(
     constraint: Constraint,
     public readonly a: Handle,
-    public readonly b: Handle
+    public readonly b: Handle,
   ) {
     super();
     this.variables.push(
@@ -398,7 +387,7 @@ class LLAngle extends LowLevelConstraint {
       a.xVariable,
       a.yVariable,
       b.xVariable,
-      b.yVariable
+      b.yVariable,
     );
     this.ownVariables.add(this.angle);
   }
@@ -439,7 +428,7 @@ class LLAngle extends LowLevelConstraint {
   getError(
     [angle, ax, ay, bx, by]: number[],
     knowns: Set<Variable>,
-    freeVariables: Set<Variable>
+    freeVariables: Set<Variable>,
   ): number {
     // The old way, which has problems b/c errors are in terms of angles.
     // const aPos = { x: ax, y: ay };
@@ -504,7 +493,7 @@ class LLAngle extends LowLevelConstraint {
         Vec.dist(aPos, {
           x: bx + r * Math.cos(angle + Math.PI),
           y: by + r * Math.sin(angle + Math.PI),
-        })
+        }),
       );
     }
 
@@ -528,7 +517,7 @@ class LLFormula extends LowLevelConstraint {
   constructor(
     constraint: Constraint,
     readonly args: Variable[],
-    private readonly fn: (xs: number[]) => number
+    private readonly fn: (xs: number[]) => number,
   ) {
     super();
     this.result = variable(this.computeResult(), {
@@ -546,18 +535,14 @@ class LLFormula extends LowLevelConstraint {
   propagateKnowns(knowns: Set<Variable>) {
     if (
       !knowns.has(this.result.canonicalInstance) &&
-      this.args.every(arg => knowns.has(arg.canonicalInstance))
+      this.args.every((arg) => knowns.has(arg.canonicalInstance))
     ) {
       this.result.value = this.computeResult();
       knowns.add(this.result.canonicalInstance);
     }
   }
 
-  getError(
-    variableValues: number[],
-    knowns: Set<Variable>,
-    freeVariables: Set<Variable>
-  ): number {
+  getError(variableValues: number[], knowns: Set<Variable>, freeVariables: Set<Variable>): number {
     const currValue = this.computeResult(variableValues);
     if (freeVariables.has(this.result.canonicalInstance)) {
       this.result.value = currValue;
@@ -565,9 +550,7 @@ class LLFormula extends LowLevelConstraint {
     return currValue - this.result.value;
   }
 
-  private computeResult(
-    xs: number[] = this.args.map(arg => arg.value)
-  ): number {
+  private computeResult(xs: number[] = this.args.map((arg) => arg.value)): number {
     return this.fn(xs);
   }
 }
@@ -582,22 +565,14 @@ class LLWeight extends LowLevelConstraint {
       property: 'weight',
     });
     this.ownVariables.add(this.weight);
-    this.variables.push(
-      this.weight,
-      constraint.handle.xVariable,
-      constraint.handle.yVariable
-    );
+    this.variables.push(this.weight, constraint.handle.xVariable, constraint.handle.yVariable);
   }
 
   addTo(constraints: LowLevelConstraint[]) {
     constraints.push(this);
   }
 
-  getError(
-    [w, hx, hy]: number[],
-    knowns: Set<Variable>,
-    freeVariables: Set<Variable>
-  ): number {
+  getError([w, hx, hy]: number[], knowns: Set<Variable>, freeVariables: Set<Variable>): number {
     // return -(hy + w - this.constraint.handle.yVariable.value);
     // return w;
     const { x: origX, y: origY } = this.constraint.handle;
@@ -609,7 +584,7 @@ class LLWeight extends LowLevelConstraint {
       {
         x: origX,
         y: origY + w,
-      }
+      },
     );
   }
 }
@@ -669,7 +644,7 @@ export abstract class Constraint {
 
   /** Returns the set of (canonical) variables that are referenced by this constraint. */
   getManipulationSet(): Set<Variable> {
-    return new Set(this.variables.map(v => v.canonicalInstance));
+    return new Set(this.variables.map((v) => v.canonicalInstance));
   }
 
   public remove() {
@@ -706,7 +681,7 @@ export class Constant extends Constraint {
 
   private constructor(
     public readonly variable: Variable,
-    public value: number
+    public value: number,
   ) {
     super();
     this.variables.push(variable);
@@ -744,7 +719,7 @@ export class Pin extends Constraint {
 
   private constructor(
     public readonly handle: Handle,
-    public position: Position
+    public position: Position,
   ) {
     super();
     this.variables.push(handle.xVariable, handle.yVariable);
@@ -771,25 +746,40 @@ export const pin = Pin.create;
 export class Finger extends Constraint {
   private static readonly memo = new Map<Handle, Finger>();
 
-  static create(handle: Handle, position: Position = handle) {
+  static create(fingerOfGod: boolean, handle: Handle, position: Position = handle) {
     let finger = Finger.memo.get(handle);
     if (finger) {
       finger.position = position;
     } else {
-      finger = new Finger(handle, position);
+      finger = new Finger(fingerOfGod, handle, position);
       Finger.memo.set(handle, finger);
     }
     return finger;
   }
 
   private constructor(
+    public readonly fingerOfGod: boolean,
     public readonly handle: Handle,
-    public position: Position
+    public position: Position,
   ) {
     super();
-    const fc = new LLFinger(this);
-    this.lowLevelConstraints.push(fc);
-    this.variables.push(handle.xVariable, handle.yVariable);
+    if (!this.fingerOfGod) {
+      const fc = new LLFinger(this);
+      this.lowLevelConstraints.push(fc);
+      this.variables.push(handle.xVariable, handle.yVariable);
+    }
+  }
+
+  propagateKnowns(knowns: Set<Variable>) {
+    if (this.fingerOfGod) {
+      const { xVariable: x, yVariable: y } = this.handle;
+      if (!knowns.has(x.canonicalInstance) || !knowns.has(y.canonicalInstance)) {
+        ({ x: x.value, y: y.value } = this.position);
+        knowns.add(x.canonicalInstance);
+        knowns.add(y.canonicalInstance);
+      }
+    }
+    super.propagateKnowns(knowns);
   }
 
   public remove() {
@@ -801,10 +791,7 @@ export class Finger extends Constraint {
 export const finger = Finger.create;
 
 export class LinearRelationship extends Constraint {
-  private static readonly memo = new Map<
-    Variable,
-    Map<Variable, LinearRelationship>
-  >();
+  private static readonly memo = new Map<Variable, Map<Variable, LinearRelationship>>();
 
   static create(y: Variable, m: number, x: Variable, b: number) {
     if (m === 0) {
@@ -837,7 +824,7 @@ export class LinearRelationship extends Constraint {
     readonly y: Variable,
     private m: number,
     readonly x: Variable,
-    private b: number
+    private b: number,
   ) {
     super();
     this.variables.push(y, x);
@@ -870,8 +857,7 @@ export class LinearRelationship extends Constraint {
 
 export const linearRelationship = LinearRelationship.create;
 
-export const equals = (x: Variable, y: Variable) =>
-  linearRelationship(y, 1, x, 0);
+export const equals = (x: Variable, y: Variable) => linearRelationship(y, 1, x, 0);
 
 export class Absorb extends Constraint {
   // child handle -> Absorb constraint
@@ -889,15 +875,10 @@ export class Absorb extends Constraint {
 
   private constructor(
     readonly parent: Handle,
-    readonly child: Handle
+    readonly child: Handle,
   ) {
     super();
-    this.variables.push(
-      parent.xVariable,
-      parent.yVariable,
-      child.xVariable,
-      child.yVariable
-    );
+    this.variables.push(parent.xVariable, parent.yVariable, child.xVariable, child.yVariable);
   }
 
   setUpVariableRelationships() {
@@ -936,7 +917,7 @@ export class PolarVector extends Constraint {
 
   private constructor(
     readonly a: Handle,
-    readonly b: Handle
+    readonly b: Handle,
   ) {
     super();
 
@@ -954,7 +935,7 @@ export class PolarVector extends Constraint {
       b.xVariable,
       b.yVariable,
       this.distance,
-      this.angle
+      this.angle,
     );
   }
 
@@ -1044,9 +1025,7 @@ function getClustersForSolver(): Set<ClusterForSolver> {
   }
 
   // ignore constraints that are paused
-  const activeConstraints = [...Constraint.all].filter(
-    constraint => !constraint.paused
-  );
+  const activeConstraints = [...Constraint.all].filter((constraint) => !constraint.paused);
 
   // set up updated relationships among handles and variables
   for (const constraint of activeConstraints) {
@@ -1059,9 +1038,7 @@ function getClustersForSolver(): Set<ClusterForSolver> {
   return clustersForSolver;
 }
 
-function computeClusters(
-  activeConstraints: Constraint[]
-): Set<ClusterForSolver> {
+function computeClusters(activeConstraints: Constraint[]): Set<ClusterForSolver> {
   interface Cluster {
     constraints: Constraint[];
     lowLevelConstraints: LowLevelConstraint[];
@@ -1085,9 +1062,7 @@ function computeClusters(
       // this step must be done *after* adding the LLCs b/c that operation creates new
       // linear relationships among variables (i.e., variables are absorbed as a result)
       manipulationSet = new Set(
-        [...manipulationSet, ...cluster.manipulationSet].map(
-          v => v.canonicalInstance
-        )
+        [...manipulationSet, ...cluster.manipulationSet].map((v) => v.canonicalInstance),
       );
 
       clusters.delete(cluster);
@@ -1095,13 +1070,13 @@ function computeClusters(
     clusters.add({ constraints, lowLevelConstraints, manipulationSet });
   }
   return sets.map(clusters, ({ constraints, lowLevelConstraints }) =>
-    createClusterForSolver(constraints, lowLevelConstraints)
+    createClusterForSolver(constraints, lowLevelConstraints),
   );
 }
 
 function createClusterForSolver(
   constraints: Constraint[],
-  lowLevelConstraints: LowLevelConstraint[]
+  lowLevelConstraints: LowLevelConstraint[],
 ): ClusterForSolver {
   const knowns = computeKnowns(constraints, lowLevelConstraints);
 
@@ -1148,7 +1123,7 @@ function createClusterForSolver(
     variables: Array.from(variables),
     freeVariables,
     parameters: [...variables].filter(
-      v => v.isCanonicalInstance && !knowns.has(v) && !freeVariables.has(v)
+      (v) => v.isCanonicalInstance && !knowns.has(v) && !freeVariables.has(v),
     ),
   };
 }
@@ -1193,11 +1168,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
           k.value = k.variable.value;
         }
         if (k.variable.hasLinearRelationshipWith(pv.angle)) {
-          pv.angle.value = LLAngle.computeAngle(
-            pv.angle,
-            aFinger.position,
-            bFinger.position
-          );
+          pv.angle.value = LLAngle.computeAngle(pv.angle, aFinger.position, bFinger.position);
           k.value = k.variable.value;
         }
       }
@@ -1219,10 +1190,8 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     }
   }
   if (gizmoHack) {
-    freeVariables = new Set(
-      [...freeVariables].filter(fv => !knowns.has(fv.canonicalInstance))
-    );
-    parameters = parameters.filter(v => !knowns.has(v));
+    freeVariables = new Set([...freeVariables].filter((fv) => !knowns.has(fv.canonicalInstance)));
+    parameters = parameters.filter((v) => !knowns.has(v));
   }
 
   // The state that goes into `inputs` is the stuff that can be modified by the solver.
@@ -1231,11 +1200,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   const inputs: number[] = [];
   const paramIdx = new Map<Variable, number>();
   for (const param of parameters) {
-    if (
-      param.isCanonicalInstance &&
-      !knowns.has(param) &&
-      !freeVariables.has(param)
-    ) {
+    if (param.isCanonicalInstance && !knowns.has(param) && !freeVariables.has(param)) {
       paramIdx.set(param, inputs.length);
       inputs.push(param.value);
     }
@@ -1246,7 +1211,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   function computeTotalError(currState: number[]) {
     let error = 0;
     for (const llc of lowLevelConstraints) {
-      const values = llc.variables.map(variable => {
+      const values = llc.variables.map((variable) => {
         const { m, b } = variable.offset;
         variable = variable.canonicalInstance;
         const pi = paramIdx.get(variable);
@@ -1274,7 +1239,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
       'while working on cluster',
       cluster,
       'with knowns',
-      knowns
+      knowns,
     );
     throw e;
   }
@@ -1311,10 +1276,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   }
 }
 
-function computeKnowns(
-  constraints: Constraint[],
-  lowLevelConstraints: LowLevelConstraint[]
-) {
+function computeKnowns(constraints: Constraint[], lowLevelConstraints: LowLevelConstraint[]) {
   const knowns = new Set<Variable>();
   while (true) {
     const oldNumKnowns = knowns.size;
