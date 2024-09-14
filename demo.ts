@@ -1,6 +1,7 @@
-import Handle from './src/Handle';
+import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
 import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
+import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
 
 const pinImage = new Image();
@@ -32,31 +33,36 @@ function initCanvas() {
   }
 }
 
-let handleUnderMouse: Handle | null = null;
+let pointer = { x: -1, y: -1, down: false };
+let hoverHandle: Handle | null = null;
+let dragHandle: Handle | null = null;
 
 canvas.addEventListener('pointerdown', (e) => {
-  handleUnderMouse = Handle.getNearestHandle({
-    x: (e as any).layerX,
-    y: (e as any).layerY,
-  });
-  if (handleUnderMouse) {
+  pointer.down = true;
+  dragHandle = Handle.getNearestHandle(pointer);
+  if (dragHandle) {
     canvas.setPointerCapture(e.pointerId);
-    constraints.finger(handleUnderMouse);
+    constraints.finger(dragHandle);
   }
 });
 
 canvas.addEventListener('pointermove', (e) => {
-  if (handleUnderMouse) {
-    const finger = constraints.finger(handleUnderMouse);
-    finger.position = { x: (e as any).layerX, y: (e as any).layerY };
+  pointer.x = (e as any).layerX;
+  pointer.y = (e as any).layerY;
+  if (dragHandle) {
+    const finger = constraints.finger(dragHandle);
+    finger.position = { x: pointer.x, y: pointer.y };
+  } else {
+    hoverHandle = Handle.getNearestHandle(pointer);
   }
 });
 
 canvas.addEventListener('pointerup', (e) => {
-  if (handleUnderMouse) {
+  pointer.down = false;
+  if (dragHandle) {
     canvas.releasePointerCapture(e.pointerId);
-    constraints.finger(handleUnderMouse).remove();
-    handleUnderMouse = null;
+    constraints.finger(dragHandle).remove();
+    dragHandle = null;
   }
 });
 
@@ -166,6 +172,10 @@ const demo1 = {
     for (const c of Constraint.all) {
       renderConstraint(c);
     }
+
+    for (const h of Handle.all) {
+      renderHandle(h);
+    }
   },
 };
 
@@ -221,6 +231,10 @@ const demo2 = {
 
     for (const c of Constraint.all) {
       renderConstraint(c);
+    }
+
+    for (const h of Handle.all) {
+      renderHandle(h);
     }
   },
 };
@@ -314,4 +328,16 @@ function renderConstraint(c: Constraint) {
     // ctx.closePath();
     // ctx.fill();
   }
+}
+
+function renderHandle(h: Handle) {
+  if (h !== dragHandle && h !== hoverHandle) {
+    return;
+  }
+
+  ctx.fillStyle = flickeryWhite();
+  ctx.beginPath();
+  ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS, 0, TAU);
+  ctx.closePath();
+  ctx.fill();
 }

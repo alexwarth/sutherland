@@ -17,10 +17,7 @@ export default class Handle {
     return handle;
   }
 
-  static getNearestHandle(
-    pos: Handle | Position,
-    tooFarDist = HANDLE_RADIUS + 1
-  ) {
+  static getNearestHandle(pos: Handle | Position, tooFarDist = HANDLE_RADIUS + 1) {
     let nearestHandle: Handle | null = null;
     let nearestDist = Infinity;
     for (const handle of Handle.all) {
@@ -28,7 +25,7 @@ export default class Handle {
         continue;
       }
       const dist = Vec.dist(pos, handle);
-      if (dist < HANDLE_RADIUS && dist < nearestDist) {
+      if (dist < tooFarDist && dist < nearestDist) {
         nearestDist = dist;
         nearestHandle = handle;
       }
@@ -61,10 +58,7 @@ export default class Handle {
   }
 
   equals(that: Handle) {
-    return (
-      this.xVariable.equals(that.xVariable) &&
-      this.yVariable.equals(that.yVariable)
-    );
+    return this.xVariable.equals(that.xVariable) && this.yVariable.equals(that.yVariable);
   }
 
   get x() {
@@ -168,9 +162,5 @@ export default class Handle {
         constraints.pin(h).remove();
       }
     }
-  }
-
-  render(ctx: CanvasRenderingContext2D) {
-    // TODO: write this
   }
 }
