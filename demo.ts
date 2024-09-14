@@ -36,8 +36,8 @@ function initCanvas() {
   }
 }
 
-let pointer = { x: -1, y: -1, down: false };
-let keysDown = {};
+const pointer = { x: -1, y: -1, down: false };
+const keysDown = {};
 let hoverHandle: Handle | null = null;
 let dragHandle: Handle | null = null;
 const selectedHandles = new Set<Handle>();
