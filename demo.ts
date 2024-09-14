@@ -37,8 +37,17 @@ function initCanvas() {
 }
 
 let pointer = { x: -1, y: -1, down: false };
+let keyDown = {};
 let hoverHandle: Handle | null = null;
 let dragHandle: Handle | null = null;
+
+window.addEventListener('keydown', (e) => {
+  keyDown[e.key] = true;
+});
+
+window.addEventListener('keyup', (e) => {
+  delete keyDown[e.key];
+});
 
 canvas.addEventListener('pointerdown', (e) => {
   pointer.down = true;
