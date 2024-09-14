@@ -1,4 +1,4 @@
-import * as k from '@dubroy/kombu';
+import * as k from 'kombu';
 
 import Handle from './Handle';
 import { TAU, forDebugging, generateId, normalizeAngle, sets } from './helpers';
