@@ -37,21 +37,32 @@ function initCanvas() {
 }
 
 let pointer = { x: -1, y: -1, down: false };
-let keyDown = {};
+let keysDown = {};
 let hoverHandle: Handle | null = null;
 let dragHandle: Handle | null = null;
+const selectedHandles = new Set<Handle>();
 
 window.addEventListener('keydown', (e) => {
-  keyDown[e.key] = true;
+  keysDown[e.key] = true;
 });
 
 window.addEventListener('keyup', (e) => {
-  delete keyDown[e.key];
+  delete keysDown[e.key];
 });
 
 canvas.addEventListener('pointerdown', (e) => {
   pointer.down = true;
-  dragHandle = Handle.getNearestHandle(pointer);
+  const handle = Handle.getNearestHandle(pointer);
+
+  if (handle && 'Shift' in keysDown) {
+    if (selectedHandles.has(handle)) {
+      selectedHandles.delete(handle);
+    } else {
+      selectedHandles.add(handle);
+    }
+  }
+
+  dragHandle = handle;
   if (dragHandle) {
     canvas.setPointerCapture(e.pointerId);
     fingerConstraint(dragHandle);
@@ -343,7 +354,9 @@ function renderConstraint(c: Constraint) {
 }
 
 function renderHandle(h: Handle) {
-  if (h !== dragHandle && h !== hoverHandle) {
+  const isSelected = selectedHandles.has(h);
+
+  if (h !== dragHandle && h !== hoverHandle && !isSelected) {
     return;
   }
 
@@ -352,4 +365,11 @@ function renderHandle(h: Handle) {
   ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS, 0, TAU);
   ctx.closePath();
   ctx.fill();
+
+  if (isSelected) {
+    ctx.beginPath();
+    ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS + 3, 0, TAU);
+    ctx.closePath();
+    ctx.stroke();
+  }
 }
