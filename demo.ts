@@ -4,6 +4,9 @@ import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
 import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
 
+const FINGER_OF_GOD = true;
+const fingerConstraint = FINGER_OF_GOD ? constraints.pin : constraints.finger;
+
 const pinImage = new Image();
 pinImage.src = 'pin.png';
 let pinImageLoaded = false;
@@ -42,7 +45,7 @@ canvas.addEventListener('pointerdown', (e) => {
   dragHandle = Handle.getNearestHandle(pointer);
   if (dragHandle) {
     canvas.setPointerCapture(e.pointerId);
-    constraints.finger(dragHandle);
+    fingerConstraint(dragHandle);
   }
 });
 
@@ -50,7 +53,7 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
   if (dragHandle) {
-    const finger = constraints.finger(dragHandle);
+    const finger = fingerConstraint(dragHandle);
     finger.position = { x: pointer.x, y: pointer.y };
   } else {
     hoverHandle = Handle.getNearestHandle(pointer);
@@ -61,7 +64,7 @@ canvas.addEventListener('pointerup', (e) => {
   pointer.down = false;
   if (dragHandle) {
     canvas.releasePointerCapture(e.pointerId);
-    constraints.finger(dragHandle).remove();
+    fingerConstraint(dragHandle).remove();
     dragHandle = null;
   }
 });
