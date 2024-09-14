@@ -4,8 +4,6 @@ import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
 import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
 
-const FINGER_OF_GOD = true;
-
 const pinImage = new Image();
 pinImage.src = 'pin.png';
 let pinImageLoaded = false;
@@ -13,6 +11,33 @@ pinImage.onload = () => {
   console.log('pin image loaded!');
   pinImageLoaded = true;
 };
+
+const fingerOfGod = document.createElement('input') as any;
+fingerOfGod.setAttribute('type', 'checkbox');
+fingerOfGod.defaultChecked = true;
+fingerOfGod.style.position = 'absolute';
+fingerOfGod.style.top = '60px';
+fingerOfGod.style.right = '30px';
+document.body.appendChild(fingerOfGod);
+
+const toggleDemoButton = document.createElement('button');
+toggleDemoButton.textContent = 'toggle demo';
+toggleDemoButton.style.position = 'absolute';
+toggleDemoButton.style.top = '30px';
+toggleDemoButton.style.right = '30px';
+toggleDemoButton.onclick = toggleDemo;
+document.body.appendChild(toggleDemoButton);
+
+// typecast weightSlider to `any` to get the typechecker to shut up!
+const weightSlider = document.createElement('input') as any;
+weightSlider.setAttribute('type', 'range');
+weightSlider.min = 0;
+weightSlider.max = 5;
+weightSlider.step = 0.01;
+weightSlider.style.position = 'absolute';
+weightSlider.style.top = '2px';
+weightSlider.style.right = '30px';
+document.body.appendChild(weightSlider);
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -64,7 +89,7 @@ canvas.addEventListener('pointerdown', (e) => {
   dragHandle = handle;
   if (dragHandle) {
     canvas.setPointerCapture(e.pointerId);
-    constraints.finger(FINGER_OF_GOD, dragHandle);
+    constraints.finger(fingerOfGod.checked, dragHandle);
   }
 });
 
@@ -72,7 +97,7 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
   if (dragHandle) {
-    const finger = constraints.finger(FINGER_OF_GOD, dragHandle);
+    const finger = constraints.finger(fingerOfGod.checked, dragHandle);
     finger.position = { x: pointer.x, y: pointer.y };
   } else {
     hoverHandle = Handle.getNearestHandle(pointer);
@@ -83,29 +108,10 @@ canvas.addEventListener('pointerup', (e) => {
   pointer.down = false;
   if (dragHandle) {
     canvas.releasePointerCapture(e.pointerId);
-    constraints.finger(FINGER_OF_GOD, dragHandle).remove();
+    constraints.finger(fingerOfGod.checked, dragHandle).remove();
     dragHandle = null;
   }
 });
-
-const toggleDemoButton = document.createElement('button');
-toggleDemoButton.textContent = 'toggle demo';
-toggleDemoButton.style.position = 'absolute';
-toggleDemoButton.style.top = '30px';
-toggleDemoButton.style.right = '30px';
-toggleDemoButton.onclick = toggleDemo;
-document.body.appendChild(toggleDemoButton);
-
-// typecast weightSlider to `any` to get the typechecker to shut up!
-const weightSlider = document.createElement('input') as any;
-weightSlider.setAttribute('type', 'range');
-weightSlider.min = 0;
-weightSlider.max = 5;
-weightSlider.step = 0.01;
-weightSlider.style.position = 'absolute';
-weightSlider.style.top = '2px';
-weightSlider.style.right = '30px';
-document.body.appendChild(weightSlider);
 
 interface Demo {
   init(): void;
