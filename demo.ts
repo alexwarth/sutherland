@@ -60,11 +60,36 @@ function initCanvas() {
   }
 }
 
-const pointer = { x: -1, y: -1, down: false };
+interface Position {
+  x: number;
+  y: number;
+}
+
+const pointer: Position & { downPos: Position | null } = {
+  x: -1,
+  y: -1,
+  downPos: null,
+};
+
 const keysDown = {};
+
 let hoverHandle: Handle | null = null;
-let dragHandle: Handle | null = null;
-const selectedHandles = new Set<Handle>();
+
+const selectedHandles = new Map<Handle, Position>();
+
+function clearSelection() {
+  for (const h of selectedHandles.keys()) {
+    selectedHandles.delete(h);
+  }
+}
+
+function toggleSelected(h: Handle) {
+  if (selectedHandles.has(h)) {
+    selectedHandles.delete(h);
+  } else {
+    selectedHandles.set(h, { x: h.position.x, y: h.position.y });
+  }
+}
 
 window.addEventListener('keydown', (e) => {
   keysDown[e.key] = true;
@@ -75,41 +100,50 @@ window.addEventListener('keyup', (e) => {
 });
 
 canvas.addEventListener('pointerdown', (e) => {
-  pointer.down = true;
-  const handle = Handle.getNearestHandle(pointer);
+  canvas.setPointerCapture(e.pointerId);
+  pointer.downPos = { x: pointer.x, y: pointer.y };
 
-  if (handle && 'Shift' in keysDown) {
-    if (selectedHandles.has(handle)) {
-      selectedHandles.delete(handle);
-    } else {
-      selectedHandles.add(handle);
+  const h = Handle.getNearestHandle(pointer);
+  if ('Shift' in keysDown) {
+    if (h) {
+      toggleSelected(h);
     }
-  }
-
-  dragHandle = handle;
-  if (dragHandle) {
-    canvas.setPointerCapture(e.pointerId);
-    constraints.finger(fingerOfGod.checked, dragHandle);
+  } else {
+    if (h) {
+      if (!selectedHandles.has(h)) {
+        clearSelection();
+        toggleSelected(h);
+      }
+    } else {
+      clearSelection();
+    }
   }
 });
 
 canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
-  if (dragHandle) {
-    const finger = constraints.finger(fingerOfGod.checked, dragHandle);
-    finger.position = { x: pointer.x, y: pointer.y };
-  } else {
-    hoverHandle = Handle.getNearestHandle(pointer);
+
+  if (pointer.downPos && selectedHandles.size > 0) {
+    const dx = pointer.x - pointer.downPos.x;
+    const dy = pointer.y - pointer.downPos.y;
+    for (const [h, origPos] of selectedHandles.entries()) {
+      const finger = constraints.finger(fingerOfGod.checked, h);
+      finger.position = { x: origPos.x + dx, y: origPos.y + dy };
+    }
   }
+
+  hoverHandle = Handle.getNearestHandle(pointer);
 });
 
 canvas.addEventListener('pointerup', (e) => {
-  pointer.down = false;
-  if (dragHandle) {
-    canvas.releasePointerCapture(e.pointerId);
-    constraints.finger(fingerOfGod.checked, dragHandle).remove();
-    dragHandle = null;
+  canvas.releasePointerCapture(e.pointerId);
+  pointer.downPos = null;
+
+  if (selectedHandles.size > 0) {
+    for (const h of selectedHandles.keys()) {
+      constraints.finger(fingerOfGod.checked, h).remove();
+    }
   }
 });
 
@@ -361,7 +395,7 @@ function renderConstraint(c: Constraint) {
 function renderHandle(h: Handle) {
   const isSelected = selectedHandles.has(h);
 
-  if (h !== dragHandle && h !== hoverHandle && !isSelected) {
+  if (h !== hoverHandle && !isSelected) {
     return;
   }
 
