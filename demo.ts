@@ -104,7 +104,11 @@ canvas.addEventListener('pointerdown', (e) => {
   pointer.downPos = { x: pointer.x, y: pointer.y };
 
   const h = Handle.getNearestHandle(pointer);
-  if ('Shift' in keysDown) {
+  if ('Meta' in keysDown) {
+    if (h) {
+      h.togglePin();
+    }
+  } else if ('Shift' in keysDown) {
     if (h) {
       toggleSelected(h);
     }
