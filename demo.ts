@@ -1,3 +1,4 @@
+// TODO: refactor rendering / renderable code
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
 // - parallel
@@ -134,10 +135,12 @@ window.addEventListener('keydown', (e) => {
       case 'b':
         if (selectedHandles.size === 1) {
           const [h] = selectedHandles.keys();
-          const [a] = h.absorbedHandles;
-          h.breakOff(a);
-          clearSelection();
-          toggleSelected(a);
+          if (h.absorbedHandles.size > 0) {
+            const [a] = h.absorbedHandles;
+            h.breakOff(a);
+            clearSelection();
+            toggleSelected(a);
+          }
         }
         break;
     }
