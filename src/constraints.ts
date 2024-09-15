@@ -1254,20 +1254,13 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     return messages;
   });
 
-  /*
   if (!result || result.message?.includes('maxit')) {
-    // console.error(
-    //   'solveCluster gave up with result',
-    //   result,
-    //   'while working on',
-    //   cluster
-    // );
+    console.error('solveCluster gave up with result', result, 'while working on', cluster);
     // const lastConstraint = constraints[constraints.length - 1];
     // lastConstraint.paused = true;
     // console.log('paused', lastConstraint, 'to see if it helps');
     return;
   }
-  */
 
   // Now we write the solution from the solver back into our variables.
   const outputs = result.solution;
