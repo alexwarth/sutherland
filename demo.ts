@@ -1,11 +1,8 @@
 // TODO: gestures to merge and break apart handles
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
-// - horizontal
 // - parallel
 // - perpendicular
-// - fixed length
-// - equal lengths
 // - ...
 // TODO: copy and paste
 // TODO: rotation gesture
@@ -105,6 +102,38 @@ function toggleSelected(h: Handle) {
 
 window.addEventListener('keydown', (e) => {
   keysDown[e.key] = true;
+
+  if (!pointer.downPos) {
+    switch (e.key) {
+      case 'x':
+        if (selectedHandles.size === 2) {
+          const [a, b] = selectedHandles.keys();
+          constraints.equals(a.xVariable, b.xVariable);
+        }
+        break;
+      case 'y':
+        if (selectedHandles.size === 2) {
+          const [a, b] = selectedHandles.keys();
+          constraints.equals(a.yVariable, b.yVariable);
+        }
+        break;
+      case 'l':
+        if (selectedHandles.size === 2) {
+          const [a, b] = selectedHandles.keys();
+          constraints.constant(constraints.polarVector(a, b).distance);
+        }
+        break;
+      case 'e':
+        if (selectedHandles.size === 4) {
+          const [a, b, c, d] = selectedHandles.keys();
+          constraints.equals(
+            constraints.polarVector(a, b).distance,
+            constraints.polarVector(c, d).distance,
+          );
+        }
+        break;
+    }
+  }
 });
 
 window.addEventListener('keyup', (e) => {
