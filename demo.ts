@@ -419,7 +419,7 @@ function toggleDemo() {
 toggleDemo();
 
 function render() {
-  constraints.solve(25);
+  constraints.solve();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   demo.render();
