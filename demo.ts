@@ -134,6 +134,15 @@ window.addEventListener('keydown', (e) => {
           );
         }
         break;
+      case 'm':
+        if (selectedHandles.size === 3) {
+          const [a, b, c] = selectedHandles.keys();
+          constraints.equals(
+            constraints.polarVector(a, b).distance,
+            constraints.polarVector(b, c).distance,
+          );
+        }
+        break;
       case 'b':
         if (selectedHandles.size === 1) {
           const [h] = selectedHandles.keys();
