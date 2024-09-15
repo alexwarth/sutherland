@@ -1,4 +1,4 @@
-// TODO: gestures to merge and break apart handles
+// TODO: gesture to break apart handles
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
 // - parallel
@@ -188,6 +188,7 @@ canvas.addEventListener('pointerup', (e) => {
   if (selectedHandles.size > 0) {
     for (const h of selectedHandles.keys()) {
       constraints.finger(fingerOfGod.checked, h).remove();
+      h.getAbsorbedByNearestHandle();
     }
   }
 });
