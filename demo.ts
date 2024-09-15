@@ -100,6 +100,8 @@ function toggleSelected(h: Handle) {
   }
 }
 
+let prevHandle: Handle | null = null;
+
 window.addEventListener('keydown', (e) => {
   keysDown[e.key] = true;
 
@@ -149,6 +151,10 @@ window.addEventListener('keydown', (e) => {
 
 window.addEventListener('keyup', (e) => {
   delete keysDown[e.key];
+
+  if (e.key === 'p') {
+    prevHandle = null;
+  }
 });
 
 canvas.addEventListener('pointerdown', (e) => {
@@ -156,7 +162,13 @@ canvas.addEventListener('pointerdown', (e) => {
   pointer.downPos = { x: pointer.x, y: pointer.y };
 
   const h = Handle.getNearestHandle(pointer);
-  if ('Meta' in keysDown) {
+  if ('p' in keysDown) {
+    const h = Handle.create(pointer);
+    if (prevHandle) {
+      constraints.polarVector(prevHandle, h);
+    }
+    prevHandle = h;
+  } else if ('Meta' in keysDown) {
     if (h) {
       h.togglePin();
     }
@@ -391,9 +403,11 @@ function toggleDemo() {
   for (const constraint of Constraint.all) {
     constraint.remove();
   }
+  clearSelection();
   for (const handle of Handle.all) {
     handle.remove();
   }
+  prevHandle = null;
   while (arcs.length > 0) {
     arcs.pop();
   }
