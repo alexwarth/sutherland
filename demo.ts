@@ -1,4 +1,3 @@
-// TODO: gesture to break apart handles
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
 // - parallel
@@ -130,6 +129,15 @@ window.addEventListener('keydown', (e) => {
             constraints.polarVector(a, b).distance,
             constraints.polarVector(c, d).distance,
           );
+        }
+        break;
+      case 'b':
+        if (selectedHandles.size === 1) {
+          const [h] = selectedHandles.keys();
+          const [a] = h.absorbedHandles;
+          h.breakOff(a);
+          clearSelection();
+          toggleSelected(a);
         }
         break;
     }
