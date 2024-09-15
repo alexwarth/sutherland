@@ -14,7 +14,7 @@ pinImage.onload = () => {
 
 const fingerOfGod = document.createElement('input') as any;
 fingerOfGod.setAttribute('type', 'checkbox');
-fingerOfGod.defaultChecked = true;
+fingerOfGod.defaultChecked = false;
 fingerOfGod.style.position = 'absolute';
 fingerOfGod.style.top = '60px';
 fingerOfGod.style.right = '30px';
