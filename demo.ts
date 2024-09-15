@@ -147,6 +147,28 @@ canvas.addEventListener('pointerup', (e) => {
   }
 });
 
+interface Arc {
+  a: Handle;
+  b: Handle;
+  c: Handle;
+}
+
+const arcs: Arc[] = [];
+
+function addArc(aPos: Position, bPos: Position, cPos: Position): Arc {
+  const arc = {
+    a: Handle.create(aPos),
+    b: Handle.create(bPos),
+    c: Handle.create(cPos),
+  };
+  constraints.equals(
+    constraints.polarVector(arc.a, arc.c).distance,
+    constraints.polarVector(arc.b, arc.c).distance,
+  );
+  arcs.push(arc);
+  return arc;
+}
+
 interface Demo {
   init(): void;
   render(): void;
@@ -220,6 +242,8 @@ const demo1 = {
 
     weightSlider.style.right = '30px';
     document.body.appendChild(weightSlider);
+
+    addArc({ x: 400, y: 400 }, { x: 500, y: 400 }, { x: 450, y: 500 });
   },
 
   render() {
@@ -233,6 +257,10 @@ const demo1 = {
 
     for (const c of Constraint.all) {
       renderConstraint(c);
+    }
+
+    for (const arc of arcs) {
+      renderArc(arc);
     }
 
     for (const h of Handle.all) {
@@ -308,6 +336,9 @@ function toggleDemo() {
   }
   for (const handle of Handle.all) {
     handle.remove();
+  }
+  while (arcs.length > 0) {
+    arcs.pop();
   }
 
   demo = demo === demo1 ? demo2 : demo1;
@@ -411,4 +442,15 @@ function renderHandle(h: Handle) {
     ctx.closePath();
     ctx.stroke();
   }
+}
+
+function renderArc({ a, b, c }: Arc) {
+  ctx.fillStyle = flickeryWhite();
+  ctx.beginPath();
+
+  const theta1 = Math.atan2(a.position.y - c.position.y, a.position.x - c.position.x);
+  const theta2 = Math.atan2(b.position.y - c.position.y, b.position.x - c.position.x);
+  ctx.arc(c.position.x, c.position.y, Vec.dist(c, a), theta1, theta2);
+  ctx.closePath();
+  ctx.stroke();
 }
