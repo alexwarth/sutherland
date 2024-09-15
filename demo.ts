@@ -1,3 +1,15 @@
+// TODO: gestures to merge and break apart handles
+// TODO: add handle (and line) gesture
+// TODO: gestures to add constraints:
+// - horizontal
+// - parallel
+// - perpendicular
+// - fixed length
+// - equal lengths
+// - ...
+// TODO: copy and paste
+// TODO: rotation gesture
+
 import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
 import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
