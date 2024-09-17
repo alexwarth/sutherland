@@ -528,11 +528,11 @@ function renderConstraint(c: Constraint) {
     // ctx.closePath();
     // ctx.fill();
   } else if (c instanceof Pin) {
-    // ctx.fillStyle = flickeryWhite();
-    // ctx.beginPath();
-    // ctx.arc(c.position.x, c.position.y, HANDLE_RADIUS, 0, TAU);
-    // ctx.closePath();
-    // ctx.fill();
+    ctx.fillStyle = flickeryWhite();
+    ctx.beginPath();
+    ctx.arc(c.position.x, c.position.y, HANDLE_RADIUS + 1, 0, TAU);
+    ctx.closePath();
+    ctx.fill();
   }
 }
 
