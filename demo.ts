@@ -6,7 +6,7 @@
 // - ...
 // TODO: copy and paste
 // TODO: rotation gesture
-// TODO: user should be able to move pins, change fixed angles and lengths
+// TODO: user should be able to change fixed angles and lengths
 
 import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
@@ -212,8 +212,8 @@ canvas.addEventListener('pointermove', (e) => {
     const dx = pointer.x - pointer.downPos.x;
     const dy = pointer.y - pointer.downPos.y;
     for (const [h, origPos] of selectedHandles.entries()) {
-      const finger = constraints.finger(fingerOfGod.checked, h);
-      finger.position = { x: origPos.x + dx, y: origPos.y + dy };
+      const c = h.hasPin ? constraints.pin(h) : constraints.finger(fingerOfGod.checked, h);
+      c.position = { x: origPos.x + dx, y: origPos.y + dy };
     }
   }
 
