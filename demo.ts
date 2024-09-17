@@ -6,6 +6,7 @@
 // - ...
 // TODO: copy and paste
 // TODO: rotation gesture
+// TODO: user should be able to move pins, change fixed angles and lengths
 
 import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
@@ -154,6 +155,12 @@ window.addEventListener('keydown', (e) => {
           }
         }
         break;
+      case 'w':
+        if (selectedHandles.size === 1) {
+          const [h] = selectedHandles.keys();
+          constraints.weight(h, 2);
+        }
+        break;
     }
   }
 });
@@ -225,6 +232,12 @@ canvas.addEventListener('pointerup', (e) => {
   }
 });
 
+function addWeight(h: Handle) {
+  const weight = constraints.weight(h, 2).weight;
+  weightSlider.value = weight.value;
+  weightSlider.oninput = () => weight.lock(weightSlider.value);
+}
+
 interface Arc {
   a: Handle;
   b: Handle;
@@ -255,6 +268,26 @@ interface Demo {
 let demo: Demo;
 
 const demo1 = {
+  init() {
+    addArc({ x: 400, y: 400 }, { x: 500, y: 400 }, { x: 450, y: 500 });
+  },
+
+  render() {
+    for (const c of Constraint.all) {
+      renderConstraint(c);
+    }
+
+    for (const arc of arcs) {
+      renderArc(arc);
+    }
+
+    for (const h of Handle.all) {
+      renderHandle(h);
+    }
+  },
+};
+
+const demo2 = {
   init() {
     const handles = [
       { x: 37, y: 44 },
@@ -314,14 +347,7 @@ const demo1 = {
 
     const weightHandle = Handle.create({ x: 343, y: 150 });
     constraints.polarVector(handles[10], weightHandle).distance.lock();
-    const weight = constraints.weight(weightHandle, 2).weight;
-    weightSlider.value = weight.value;
-    weightSlider.oninput = () => weight.lock(weightSlider.value);
-
-    weightSlider.style.right = '30px';
-    document.body.appendChild(weightSlider);
-
-    addArc({ x: 400, y: 400 }, { x: 500, y: 400 }, { x: 450, y: 500 });
+    addWeight(weightHandle);
   },
 
   render() {
@@ -356,7 +382,7 @@ interface Part {
 
 const adjustLabelPosition = new Set<Constraint>();
 
-const demo2 = {
+const demo3 = {
   init() {
     let lastPart: Part | null = null;
     for (let idx = 0; idx < 6; idx++) {
@@ -407,6 +433,8 @@ const demo2 = {
   },
 };
 
+const demos = [demo1, demo2, demo3];
+
 function toggleDemo() {
   adjustLabelPosition.clear();
   for (const constraint of Constraint.all) {
@@ -421,7 +449,8 @@ function toggleDemo() {
     arcs.pop();
   }
 
-  demo = demo === demo1 ? demo2 : demo1;
+  const demoIdx = demos.indexOf(demo);
+  demo = demos[(demoIdx + 1) % demos.length];
   demo.init();
 }
 
