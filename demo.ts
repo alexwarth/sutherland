@@ -109,15 +109,19 @@ window.addEventListener('keydown', (e) => {
   if (!pointer.downPos) {
     switch (e.key) {
       case 'x':
-        if (selectedHandles.size === 2) {
-          const [a, b] = selectedHandles.keys();
-          constraints.equals(a.xVariable, b.xVariable);
+        if (selectedHandles.size >= 2) {
+          const handles = [...selectedHandles.keys()];
+          for (let idx = 1; idx < handles.length; idx++) {
+            constraints.equals(handles[idx - 1].xVariable, handles[idx].xVariable);
+          }
         }
         break;
       case 'y':
-        if (selectedHandles.size === 2) {
-          const [a, b] = selectedHandles.keys();
-          constraints.equals(a.yVariable, b.yVariable);
+        if (selectedHandles.size >= 2) {
+          const handles = [...selectedHandles.keys()];
+          for (let idx = 1; idx < handles.length; idx++) {
+            constraints.equals(handles[idx - 1].yVariable, handles[idx].yVariable);
+          }
         }
         break;
       case 'l':
