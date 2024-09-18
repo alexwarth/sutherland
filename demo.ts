@@ -154,6 +154,7 @@ window.addEventListener('keydown', (e) => {
           break;
         }
         const [a, b, c, d] = handles;
+        // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
         constraints.equals(
           constraints.polarVector(a, b).angle,
           constraints.polarVector(c, d).angle,
@@ -172,7 +173,7 @@ window.addEventListener('keydown', (e) => {
           constraints.polarVector(a, b).angle,
           1,
           constraints.polarVector(c, d).angle,
-          Math.PI / 2,
+          Math.PI / 2, // TODO: pick closest "45"
         );
         break;
       }
