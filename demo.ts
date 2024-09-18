@@ -1,7 +1,6 @@
 // TODO: refactor rendering / renderable code
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
-// - parallel
 // - perpendicular
 // - ...
 // TODO: copy and paste
@@ -145,6 +144,15 @@ window.addEventListener('keydown', (e) => {
           constraints.equals(
             constraints.polarVector(a, b).distance,
             constraints.polarVector(b, c).distance,
+          );
+        }
+        break;
+      case '/':
+        if (selectedHandles.size === 4) {
+          const [a, b, c, d] = selectedHandles.keys();
+          constraints.equals(
+            constraints.polarVector(a, b).angle,
+            constraints.polarVector(c, d).angle,
           );
         }
         break;
@@ -530,9 +538,15 @@ function renderConstraint(c: Constraint) {
   } else if (c instanceof Pin) {
     ctx.fillStyle = flickeryWhite();
     ctx.beginPath();
-    ctx.arc(c.position.x, c.position.y, HANDLE_RADIUS + 1, 0, TAU);
+    ctx.arc(c.position.x, c.position.y, HANDLE_RADIUS / 2, 0, TAU);
     ctx.closePath();
     ctx.fill();
+    const oldLineWidth = ctx.lineWidth;
+    ctx.lineWidth = 2;
+    ctx.moveTo(c.position.x, c.position.y);
+    ctx.lineTo(c.position.x + HANDLE_RADIUS * 2, c.position.y - HANDLE_RADIUS * 3);
+    ctx.stroke();
+    ctx.lineWidth = oldLineWidth;
   }
 }
 
@@ -551,7 +565,7 @@ function renderHandle(h: Handle) {
 
   if (isSelected) {
     ctx.beginPath();
-    ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS + 3, 0, TAU);
+    ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS + 2, 0, TAU);
     ctx.closePath();
     ctx.stroke();
   }
