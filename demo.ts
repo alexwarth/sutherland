@@ -146,16 +146,21 @@ window.addEventListener('keydown', (e) => {
           );
         }
         break;
-      case '/':
-        if (selectedHandles.size === 4) {
-          const [a, b, c, d] = selectedHandles.keys();
-          constraints.equals(
-            constraints.polarVector(a, b).angle,
-            constraints.polarVector(c, d).angle,
-          );
+      case '/': {
+        const handles = [...selectedHandles.keys()];
+        if (handles.length === 3) {
+          handles.splice(1, 0, handles[1]);
+        } else if (handles.length !== 4) {
+          break;
         }
+        const [a, b, c, d] = handles;
+        constraints.equals(
+          constraints.polarVector(a, b).angle,
+          constraints.polarVector(c, d).angle,
+        );
         break;
-      case '.':
+      }
+      case '.': {
         const handles = [...selectedHandles.keys()];
         if (handles.length === 3) {
           handles.splice(1, 0, handles[1]);
@@ -170,6 +175,7 @@ window.addEventListener('keydown', (e) => {
           Math.PI / 2,
         );
         break;
+      }
       case 'b':
         if (selectedHandles.size === 1) {
           const [h] = selectedHandles.keys();
