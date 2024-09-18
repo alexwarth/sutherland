@@ -1,7 +1,6 @@
 // TODO: refactor rendering / renderable code
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
-// - perpendicular
 // - ...
 // TODO: copy and paste
 // TODO: rotation gesture
@@ -155,6 +154,21 @@ window.addEventListener('keydown', (e) => {
             constraints.polarVector(c, d).angle,
           );
         }
+        break;
+      case '.':
+        const handles = [...selectedHandles.keys()];
+        if (handles.length === 3) {
+          handles.splice(1, 0, handles[1]);
+        } else if (handles.length !== 4) {
+          break;
+        }
+        const [a, b, c, d] = handles;
+        constraints.linearRelationship(
+          constraints.polarVector(a, b).angle,
+          1,
+          constraints.polarVector(c, d).angle,
+          Math.PI / 2,
+        );
         break;
       case 'b':
         if (selectedHandles.size === 1) {
