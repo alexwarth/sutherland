@@ -26,7 +26,7 @@ fingerOfGod.defaultChecked = false;
 fingerOfGod.style.position = 'absolute';
 fingerOfGod.style.top = '60px';
 fingerOfGod.style.right = '30px';
-document.body.appendChild(fingerOfGod);
+// document.body.appendChild(fingerOfGod);
 
 const toggleDemoButton = document.createElement('button');
 toggleDemoButton.textContent = 'toggle demo';
@@ -101,6 +101,8 @@ function toggleSelected(h: Handle) {
 
 let prevHandle: Handle | null = null;
 
+let drawingArc: { a: Handle; b: Handle; c: Handle; moving: Handle | null } | null = null;
+
 window.addEventListener('keydown', (e) => {
   keysDown[e.key] = true;
 
@@ -123,29 +125,25 @@ window.addEventListener('keydown', (e) => {
         }
         break;
       case 'l':
-        if (selectedHandles.size === 2) {
-          const [a, b] = selectedHandles.keys();
-          constraints.constant(constraints.polarVector(a, b).distance);
+        const handles = [...selectedHandles.keys()];
+        for (let idx = 1; idx < handles.length; idx++) {
+          constraints.constant(constraints.polarVector(handles[idx - 1], handles[idx]).distance);
         }
         break;
-      case 'e':
-        if (selectedHandles.size === 4) {
-          const [a, b, c, d] = selectedHandles.keys();
-          constraints.equals(
-            constraints.polarVector(a, b).distance,
-            constraints.polarVector(c, d).distance,
-          );
+      case 'e': {
+        const handles = [...selectedHandles.keys()];
+        if (handles.length === 3) {
+          handles.splice(1, 0, handles[1]);
+        } else if (handles.length !== 4) {
+          break;
         }
+        const [a, b, c, d] = handles;
+        constraints.equals(
+          constraints.polarVector(a, b).distance,
+          constraints.polarVector(c, d).distance,
+        );
         break;
-      case 'm':
-        if (selectedHandles.size === 3) {
-          const [a, b, c] = selectedHandles.keys();
-          constraints.equals(
-            constraints.polarVector(a, b).distance,
-            constraints.polarVector(b, c).distance,
-          );
-        }
-        break;
+      }
       case '/': {
         const handles = [...selectedHandles.keys()];
         if (handles.length === 3) {
@@ -194,6 +192,14 @@ window.addEventListener('keydown', (e) => {
           constraints.weight(h, 2);
         }
         break;
+      case 'a': {
+        const a = Handle.create(pointer, false);
+        const b = Handle.create(pointer, false);
+        const c = Handle.create(pointer, false);
+        drawingArc = { a, b, c, moving: a };
+        arcs.push(drawingArc);
+        break;
+      }
     }
   }
 });
@@ -210,11 +216,33 @@ canvas.addEventListener('pointerdown', (e) => {
   canvas.setPointerCapture(e.pointerId);
   pointer.downPos = { x: pointer.x, y: pointer.y };
 
+  if (drawingArc?.moving) {
+    if (drawingArc.moving === drawingArc.a) {
+      drawingArc.moving = drawingArc.b;
+    } else {
+      const r = Vec.dist(drawingArc.c, drawingArc.a);
+      const angle = Vec.angle(Vec.sub(drawingArc.b, drawingArc.c));
+      drawingArc.b.position = {
+        x: drawingArc.c.x + r * Math.cos(angle),
+        y: drawingArc.c.y + r * Math.sin(angle),
+      };
+      drawingArc.moving = null;
+      if (!drawingArc.moving) {
+        constraints.equals(
+          constraints.polarVector(drawingArc.c, drawingArc.a).distance,
+          constraints.polarVector(drawingArc.c, drawingArc.b).distance,
+        );
+        drawingArc = null;
+      }
+    }
+    return;
+  }
+
   const h = Handle.getNearestHandle(pointer);
   if ('p' in keysDown) {
     const h = Handle.create(pointer);
     if (prevHandle) {
-      constraints.polarVector(prevHandle, h);
+      addLine(prevHandle, h);
     }
     prevHandle = h;
   } else if ('Meta' in keysDown) {
@@ -241,11 +269,22 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
 
+  if (drawingArc?.moving) {
+    drawingArc.moving.position = pointer;
+    if (drawingArc.moving === drawingArc.a) {
+      // also move b
+      drawingArc.b.position = pointer;
+    }
+    return;
+  }
+
   if (pointer.downPos && selectedHandles.size > 0) {
     const dx = pointer.x - pointer.downPos.x;
     const dy = pointer.y - pointer.downPos.y;
     for (const [h, origPos] of selectedHandles.entries()) {
-      const c = h.hasPin ? constraints.pin(h) : constraints.finger(fingerOfGod.checked, h);
+      const c = h.hasPin
+        ? constraints.pin(h) // user moves the pin
+        : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
       c.position = { x: origPos.x + dx, y: origPos.y + dy };
     }
   }
@@ -271,26 +310,22 @@ function addWeight(h: Handle) {
   weightSlider.oninput = () => weight.lock(weightSlider.value);
 }
 
+interface Line {
+  a: Handle;
+  b: Handle;
+}
+
 interface Arc {
   a: Handle;
   b: Handle;
   c: Handle;
 }
 
+const lines: Line[] = [];
 const arcs: Arc[] = [];
 
-function addArc(aPos: Position, bPos: Position, cPos: Position): Arc {
-  const arc = {
-    a: Handle.create(aPos),
-    b: Handle.create(bPos),
-    c: Handle.create(cPos),
-  };
-  constraints.equals(
-    constraints.polarVector(arc.a, arc.c).distance,
-    constraints.polarVector(arc.b, arc.c).distance,
-  );
-  arcs.push(arc);
-  return arc;
+function addLine(a: Handle, b: Handle) {
+  lines.push({ a, b });
 }
 
 interface Demo {
@@ -301,13 +336,15 @@ interface Demo {
 let demo: Demo;
 
 const demo1 = {
-  init() {
-    addArc({ x: 400, y: 400 }, { x: 500, y: 400 }, { x: 450, y: 500 });
-  },
+  init() {},
 
   render() {
     for (const c of Constraint.all) {
       renderConstraint(c);
+    }
+
+    for (const line of lines) {
+      renderLine(line);
     }
 
     for (const arc of arcs) {
@@ -368,6 +405,9 @@ const demo2 = {
     ].map((indices) => indices.map((idx) => handles[idx]));
 
     for (const [a, b, c] of triangles) {
+      addLine(a, b);
+      addLine(b, c);
+      addLine(c, a);
       constraints.polarVector(a, b).distance.lock();
       constraints.polarVector(b, c).distance.lock();
       constraints.polarVector(c, a).distance.lock();
@@ -379,6 +419,7 @@ const demo2 = {
     constraints.pin(handles[16]);
 
     const weightHandle = Handle.create({ x: 343, y: 150 });
+    addLine(handles[10], weightHandle);
     constraints.polarVector(handles[10], weightHandle).distance.lock();
     addWeight(weightHandle);
   },
@@ -394,6 +435,10 @@ const demo2 = {
 
     for (const c of Constraint.all) {
       renderConstraint(c);
+    }
+
+    for (const line of lines) {
+      renderLine(line);
     }
 
     for (const arc of arcs) {
@@ -429,12 +474,14 @@ const demo3 = {
       if (idx === 1) {
         const weightHandle = Handle.create({ x: part.d.x, y: part.d.y + 150 });
         constraints.polarVector(part.d, weightHandle).distance.lock();
+        addLine(part.d, weightHandle);
         const weight = constraints.weight(weightHandle, 2).weight;
         weightSlider.value = weight.value;
         weightSlider.oninput = () => weight.lock(weightSlider.value);
       }
       lastPart = part;
     }
+    addLine(lastPart!.c, lastPart!.d);
     constraints.polarVector(lastPart!.c, lastPart!.d).distance.lock();
     constraints.pin(lastPart!.d);
   },
@@ -447,6 +494,11 @@ const demo3 = {
     constraints.polarVector(b, c).distance.lock();
     constraints.polarVector(b, d).distance.lock();
     constraints.polarVector(a, d).distance.lock();
+    addLine(a, b);
+    addLine(a, c);
+    addLine(b, c);
+    addLine(b, d);
+    addLine(a, d);
     adjustLabelPosition.add(constraints.polarVector(a, d));
     adjustLabelPosition.add(constraints.polarVector(b, c));
     return { a, b, c, d };
@@ -458,6 +510,10 @@ const demo3 = {
 
     for (const c of Constraint.all) {
       renderConstraint(c);
+    }
+
+    for (const line of lines) {
+      renderLine(line);
     }
 
     for (const h of Handle.all) {
@@ -478,6 +534,9 @@ function toggleDemo() {
     handle.remove();
   }
   prevHandle = null;
+  while (lines.length > 0) {
+    lines.pop();
+  }
   while (arcs.length > 0) {
     arcs.pop();
   }
@@ -510,8 +569,8 @@ function drawRotated(image: HTMLImageElement, degrees: number, x: number, y: num
 
 requestAnimationFrame(render);
 
-function flickeryWhite() {
-  const alpha = Math.random() * 0.3 + 0.5;
+function flickeryWhite(baseAlpha = 0.5, multiplier = 0.3) {
+  const alpha = Math.random() * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
 }
 
@@ -519,43 +578,47 @@ function renderConstraint(c: Constraint) {
   if (c instanceof PolarVector) {
     const { a, b } = c;
 
-    // line
-    ctx.strokeStyle = flickeryWhite();
-    ctx.beginPath();
-    ctx.lineWidth = 1;
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.closePath();
-    ctx.stroke();
+    // TODO: show label when distance is in equality relation w/ another distance
+    // TODO: show angles
+    // etc.
 
     // label
-    ctx.fillStyle = flickeryWhite();
-    const fontSizeInPixels = 12;
-    ctx.font = `${fontSizeInPixels}px Major Mono Display`;
-    const delta = ((c.distance.value - Vec.dist(a, b)) / c.distance.value) * 10000;
-    let label = delta.toFixed(0);
-    if (label === '-0') {
-      label = '0';
-    }
-    while (label.length < 4) {
-      label = ' ' + label;
-    }
-    const labelWidth = ctx.measureText(label).width;
-    if (adjustLabelPosition.has(c)) {
-      ctx.fillText(
-        label,
-        (a.x + 2 * b.x) / 3 - labelWidth / 2,
-        (a.y + 2 * b.y) / 3 + fontSizeInPixels / 2,
-      );
-    } else {
-      ctx.fillText(label, (a.x + b.x) / 2 - labelWidth / 2, (a.y + b.y) / 2 + fontSizeInPixels / 2);
+    if (c.distance.isLocked) {
+      ctx.fillStyle = flickeryWhite();
+      const fontSizeInPixels = 12;
+      ctx.font = `${fontSizeInPixels}px Major Mono Display`;
+      const value =
+        demo === demo1
+          ? c.distance.value
+          : ((c.distance.value - Vec.dist(a, b)) / c.distance.value) * 10000;
+      let label = value.toFixed(0);
+      if (label === '-0') {
+        label = '0';
+      }
+      while (label.length < 4) {
+        label = ' ' + label;
+      }
+      const labelWidth = ctx.measureText(label).width;
+      if (adjustLabelPosition.has(c)) {
+        ctx.fillText(
+          label,
+          (a.x + 2 * b.x) / 3 - labelWidth / 2,
+          (a.y + 2 * b.y) / 3 + fontSizeInPixels / 2,
+        );
+      } else {
+        ctx.fillText(
+          label,
+          (a.x + b.x) / 2 - labelWidth / 2,
+          (a.y + b.y) / 2 + fontSizeInPixels / 2,
+        );
+      }
     }
   } else if (c instanceof Weight) {
-    // ctx.fillStyle = flickeryWhite();
-    // ctx.beginPath();
-    // ctx.arc(c.handle.x, c.handle.y, HANDLE_RADIUS, 0, TAU);
-    // ctx.closePath();
-    // ctx.fill();
+    ctx.strokeStyle = flickeryWhite();
+    ctx.beginPath();
+    ctx.arc(c.handle.x, c.handle.y, HANDLE_RADIUS * 2, 0, TAU);
+    ctx.closePath();
+    ctx.stroke();
   } else if (c instanceof Pin) {
     ctx.fillStyle = flickeryWhite();
     ctx.beginPath();
@@ -592,13 +655,28 @@ function renderHandle(h: Handle) {
   }
 }
 
+function renderLine({ a, b }: Line) {
+  ctx.strokeStyle = flickeryWhite();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+}
+
 function renderArc({ a, b, c }: Arc) {
   ctx.fillStyle = flickeryWhite();
   ctx.beginPath();
 
+  ctx.strokeStyle = flickeryWhite();
   const theta1 = Math.atan2(a.position.y - c.position.y, a.position.x - c.position.x);
   const theta2 = Math.atan2(b.position.y - c.position.y, b.position.x - c.position.x);
   ctx.arc(c.position.x, c.position.y, Vec.dist(c, a), theta1, theta2);
-  ctx.closePath();
+  ctx.stroke();
+
+  ctx.strokeStyle = flickeryWhite(0.1, 0.3);
+  ctx.moveTo(c.position.x, c.position.y);
+  ctx.lineTo(a.position.x, a.position.y);
+  ctx.moveTo(c.position.x, c.position.y);
+  ctx.lineTo(b.position.x, b.position.y);
   ctx.stroke();
 }
