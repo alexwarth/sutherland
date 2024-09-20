@@ -390,13 +390,12 @@ canvas.addEventListener('pointermove', (e) => {
   }
 
   if (pointer.downPos && selectedHandles.size > 0) {
-    const dx = pointer.x - pointer.downPos.x;
-    const dy = pointer.y - pointer.downPos.y;
+    const d = Vec.sub(pointer, pointer.downPos);
     for (const [h, origPos] of selectedHandles.entries()) {
       const c = h.hasPin
         ? constraints.pin(h) // user moves the pin
         : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
-      c.position = { x: origPos.x + dx, y: origPos.y + dy };
+      c.position = Vec.add(origPos, d);
     }
   }
 
@@ -409,7 +408,9 @@ canvas.addEventListener('pointerup', (e) => {
 
   if (selectedHandles.size > 0) {
     for (const h of selectedHandles.keys()) {
-      constraints.finger(fingerOfGod.checked, h).remove();
+      if (!h.hasPin) {
+        constraints.finger(fingerOfGod.checked, h).remove();
+      }
       h.getAbsorbedByNearestHandle();
     }
   }
