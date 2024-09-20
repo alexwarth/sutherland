@@ -1,5 +1,10 @@
 /*
 
+Bugs:
+
+* Now that we have implicit constraints, sometimes the sketch gets floaty:
+  try making the rivet and you'll seem what I'm talking about.
+
 TODOs:
 
 * Refactor rendering / renderable code
@@ -102,6 +107,30 @@ interface Position {
   y: number;
 }
 
+interface Line {
+  a: Handle;
+  b: Handle;
+}
+
+interface Arc {
+  a: Handle;
+  b: Handle;
+  c: Handle;
+}
+
+const lines: Line[] = [];
+const arcs: Arc[] = [];
+
+function addLine(a: Handle, b: Handle): Line {
+  const line = { a, b };
+  lines.push(line);
+  return line;
+}
+
+function addArc(a: Handle, b: Handle, c: Handle) {
+  arcs.push({ a, b, c });
+}
+
 const pointer: Position & { downPos: Position | null } = {
   x: -1,
   y: -1,
@@ -187,8 +216,6 @@ function paste() {
       addArc(handleMap.get(arc.a)!, handleMap.get(arc.b)!, handleMap.get(arc.c)!);
     }
   }
-
-  // TODO: constraints
 
   clearSelection();
   for (const h of handleMap.values()) {
@@ -301,6 +328,7 @@ window.addEventListener('keydown', (e) => {
         const a = Handle.create(pointer, false);
         const b = Handle.create(pointer, false);
         const c = Handle.create(pointer, false);
+        addImplicitConstraints(c);
         drawingArc = { a, b, c, moving: a };
         addArc(a, b, c);
         break;
@@ -310,6 +338,21 @@ window.addEventListener('keydown', (e) => {
         break;
       case 'v':
         paste();
+        break;
+      case 'h':
+        for (const h1 of selectedHandles.keys()) {
+          for (const h2 of selectedHandles.keys()) {
+            if (h1 === h2) {
+              continue;
+            }
+            if (Math.abs(h1.x - h2.x) < HANDLE_RADIUS * 8) {
+              constraints.equals(h1.xVariable, h2.xVariable);
+            }
+            if (Math.abs(h1.y - h2.y) < HANDLE_RADIUS * 8) {
+              constraints.equals(h1.yVariable, h2.yVariable);
+            }
+          }
+        }
         break;
     }
   }
@@ -352,11 +395,16 @@ canvas.addEventListener('pointerdown', (e) => {
   const h = Handle.getNearestHandle(pointer);
   if ('p' in keysDown) {
     const h = Handle.create(pointer);
+    addImplicitConstraints(h);
     if (prevHandle) {
-      addLine(prevHandle, h);
+      const line = addLine(prevHandle, h);
+      for (const h of Handle.all) {
+        addImplicitPointOnLineConstraint(h, line);
+      }
     }
     prevHandle = h;
   } else if ('Meta' in keysDown) {
+    console.log('meta is down!');
     if (h) {
       h.togglePin();
     }
@@ -375,6 +423,36 @@ canvas.addEventListener('pointerdown', (e) => {
     }
   }
 });
+
+function addImplicitConstraints(h: Handle) {
+  for (const line of lines) {
+    addImplicitPointOnLineConstraint(h, line);
+  }
+
+  for (const arc of arcs) {
+    if (Math.abs(Vec.dist(h, arc.c) - Vec.dist(arc.a, arc.c)) < 4 * HANDLE_RADIUS) {
+      // it's on an arc
+      constraints.equals(
+        constraints.polarVector(arc.c, h).distance,
+        constraints.polarVector(arc.c, arc.a).distance,
+      );
+    }
+  }
+}
+
+function addImplicitPointOnLineConstraint(h: Handle, line: Line) {
+  if (
+    distToPoint(line, h) < 4 * HANDLE_RADIUS &&
+    Vec.dist(h, line.a) > 4 * HANDLE_RADIUS &&
+    Vec.dist(h, line.b) > 4 * HANDLE_RADIUS
+  ) {
+    // h is on the line, but not near the ends
+    constraints.equals(
+      constraints.polarVector(line.a, h).angle,
+      constraints.polarVector(h, line.b).angle,
+    );
+  }
+}
 
 canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
@@ -420,28 +498,6 @@ function addWeight(h: Handle) {
   const weight = constraints.weight(h, 2).weight;
   weightSlider.value = weight.value;
   weightSlider.oninput = () => weight.lock(weightSlider.value);
-}
-
-interface Line {
-  a: Handle;
-  b: Handle;
-}
-
-interface Arc {
-  a: Handle;
-  b: Handle;
-  c: Handle;
-}
-
-const lines: Line[] = [];
-const arcs: Arc[] = [];
-
-function addLine(a: Handle, b: Handle) {
-  lines.push({ a, b });
-}
-
-function addArc(a: Handle, b: Handle, c: Handle) {
-  arcs.push({ a, b, c });
 }
 
 interface Demo {
@@ -795,4 +851,36 @@ function renderArc({ a, b, c }: Arc) {
   ctx.moveTo(c.position.x, c.position.y);
   ctx.lineTo(b.position.x, b.position.y);
   ctx.stroke();
+}
+
+function distToPoint(line: { a: Position; b: Position }, point: Position) {
+  return Vec.dist(point, closestPoint(line, point));
+}
+
+function isZero(n: number) {
+  return Math.abs(n) < Number.EPSILON;
+}
+
+function closestPoint(line: { a: Position; b: Position }, point: Position, strict = true) {
+  const { a, b } = line;
+  const ab = Vec.sub(b, a);
+  const ap = Vec.sub(point, a);
+
+  // Special case for when a === b, w/o which we get NaNs.
+  if (isZero(ab.x) && isZero(ab.y)) {
+    // TODO: revise
+    return a;
+  }
+
+  // Calculate the projection of AP onto AB
+  const projection = Vec.dot(ap, ab) / Vec.dot(ab, ab);
+
+  // Check if the projection is outside the line segment
+  if (strict && projection <= 0) {
+    return a;
+  } else if (strict && projection >= 1) {
+    return b;
+  } else {
+    return Vec.add(a, Vec.mulS(ab, projection));
+  }
 }
