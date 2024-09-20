@@ -822,9 +822,9 @@ export class LinearRelationship extends Constraint {
 
   private constructor(
     readonly y: Variable,
-    private m: number,
+    public m: number,
     readonly x: Variable,
-    private b: number,
+    public b: number,
   ) {
     super();
     this.variables.push(y, x);

@@ -8,16 +8,22 @@
 // - see Handle's togglePin method
 
 // TODO: refactor rendering / renderable code
-// TODO: add handle (and line) gesture
-// TODO: gestures to add constraints:
-// - ...
-// TODO: copy and paste
+// TODO: better gestures to add constraints, lines, arcs, ...
 // TODO: rotation gesture
 // TODO: user should be able to change fixed angles and lengths
 
 import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
-import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
+import {
+  Absorb,
+  Constant,
+  Constraint,
+  LinearRelationship,
+  Pin,
+  PolarVector,
+  Variable,
+  Weight,
+} from './src/constraints';
 import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
 
@@ -98,9 +104,83 @@ let hoverHandle: Handle | null = null;
 
 const selectedHandles = new Map<Handle, Position>();
 
+let copiedHandles: Handle[] | null = null;
+
 function clearSelection() {
-  for (const h of selectedHandles.keys()) {
-    selectedHandles.delete(h);
+  selectedHandles.clear();
+}
+
+function copySelection() {
+  copiedHandles = [...new Set([...selectedHandles.keys()].map((h) => h.canonicalInstance))];
+}
+
+function paste() {
+  if (!copiedHandles) {
+    return;
+  }
+
+  const xs = copiedHandles.map((h) => h.x);
+  const ys = copiedHandles.map((h) => h.y);
+  const center = {
+    x: (Math.max(...xs) + Math.min(...xs)) / 2,
+    y: (Math.max(...ys) + Math.min(...ys)) / 2,
+  };
+  const offset = Vec.sub(pointer, center);
+
+  // console.log(
+  //   'copied handles',
+  //   copiedHandles.map((h) => ({ id: h.id, absorbed: [...h.absorbedHandles].map((h) => h.id) })),
+  // );
+
+  const handleMap = new Map<Handle, Handle>();
+  for (const h of copiedHandles) {
+    const newH = Handle.create(Vec.add(h, offset));
+    handleMap.set(h, newH);
+    for (const a of h.absorbedHandles) {
+      const newA = Handle.create(Vec.add(a, offset), false);
+      handleMap.set(a, newA);
+      // newH.absorb(newA); // TODO: this should just happen when we copy constraints!
+    }
+  }
+
+  const variableMap = new Map<Variable, Variable>();
+  for (const c of Constraint.all) {
+    if (c instanceof PolarVector && handleMap.has(c.a) && handleMap.has(c.b)) {
+      const newC = constraints.polarVector(handleMap.get(c.a)!, handleMap.get(c.b)!);
+      variableMap.set(c.distance, newC.distance);
+      variableMap.set(c.angle, newC.angle);
+    }
+  }
+  for (const c of Constraint.all) {
+    if (c instanceof Absorb && handleMap.has(c.parent) && handleMap.has(c.child)) {
+      constraints.absorb(handleMap.get(c.parent)!, handleMap.get(c.child)!);
+    } else if (c instanceof LinearRelationship && variableMap.has(c.x) && variableMap.has(c.y)) {
+      constraints.linearRelationship(variableMap.get(c.y)!, c.m, variableMap.get(c.x)!, c.b);
+    } else if (c instanceof Constant && variableMap.has(c.variable)) {
+      constraints.constant(variableMap.get(c.variable)!, c.value);
+    } else if (c instanceof Pin && handleMap.has(c.handle)) {
+      constraints.pin(handleMap.get(c.handle)!, Vec.add(c.position, offset));
+    }
+    // TODO: think about other constraint types
+  }
+
+  for (const line of lines) {
+    if (handleMap.has(line.a) && handleMap.has(line.b)) {
+      addLine(handleMap.get(line.a)!, handleMap.get(line.b)!);
+    }
+  }
+
+  for (const arc of arcs) {
+    if (handleMap.has(arc.a) && handleMap.has(arc.b) && handleMap.has(arc.c)) {
+      addArc(handleMap.get(arc.a)!, handleMap.get(arc.b)!, handleMap.get(arc.c)!);
+    }
+  }
+
+  // TODO: constraints
+
+  clearSelection();
+  for (const h of handleMap.values()) {
+    toggleSelected(h);
   }
 }
 
@@ -210,9 +290,15 @@ window.addEventListener('keydown', (e) => {
         const b = Handle.create(pointer, false);
         const c = Handle.create(pointer, false);
         drawingArc = { a, b, c, moving: a };
-        arcs.push(drawingArc);
+        addArc(a, b, c);
         break;
       }
+      case 'c':
+        copySelection();
+        break;
+      case 'v':
+        paste();
+        break;
     }
   }
 });
@@ -339,6 +425,10 @@ const arcs: Arc[] = [];
 
 function addLine(a: Handle, b: Handle) {
   lines.push({ a, b });
+}
+
+function addArc(a: Handle, b: Handle, c: Handle) {
+  arcs.push({ a, b, c });
 }
 
 interface Demo {
