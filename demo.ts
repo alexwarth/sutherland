@@ -27,6 +27,7 @@ import {
   Absorb,
   Constant,
   Constraint,
+  Formula,
   LinearRelationship,
   Pin,
   PolarVector,
@@ -157,6 +158,9 @@ function paste() {
       const newC = constraints.polarVector(handleMap.get(c.a)!, handleMap.get(c.b)!);
       variableMap.set(c.distance, newC.distance);
       variableMap.set(c.angle, newC.angle);
+    } else if (c instanceof Weight && handleMap.has(c.handle)) {
+      const newC = constraints.weight(handleMap.get(c.handle)!, c.weight.value);
+      variableMap.set(c.weight, newC.weight);
     }
   }
   for (const c of Constraint.all) {
@@ -169,7 +173,7 @@ function paste() {
     } else if (c instanceof Pin && handleMap.has(c.handle)) {
       constraints.pin(handleMap.get(c.handle)!, Vec.add(c.position, offset));
     }
-    // TODO: think about other constraint types
+    // TODO: Formula constraint
   }
 
   for (const line of lines) {
