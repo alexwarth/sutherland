@@ -151,16 +151,29 @@ export default class Handle {
   }
 
   togglePin(doPin = !this.hasPin): void {
-    if (!this.isCanonical) {
-      return this.canonicalInstance.togglePin(doPin);
+    // this version doesn't pin all of the absorbed handles -- that
+    // was causing problems while dragging pins b/c their desired
+    // positions would sometimes differ
+    // (the pin associated w/ an absorbed handle wanted the old
+    // position, but we're telling the pin associated w/ the
+    // canonical handle to go somewhere else.)
+    if (doPin) {
+      constraints.pin(this);
+    } else {
+      constraints.pin(this).remove();
     }
 
-    for (const h of [this, ...this.absorbedHandles]) {
-      if (doPin) {
-        constraints.pin(h);
-      } else {
-        constraints.pin(h).remove();
-      }
-    }
+    // TODO: revisit this!
+    // if (!this.isCanonical) {
+    //   return this.canonicalInstance.togglePin(doPin);
+    // }
+
+    // for (const h of [this, ...this.absorbedHandles]) {
+    //   if (doPin) {
+    //     constraints.pin(h);
+    //   } else {
+    //     constraints.pin(h).remove();
+    //   }
+    // }
   }
 }
