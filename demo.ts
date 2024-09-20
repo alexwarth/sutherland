@@ -1,3 +1,12 @@
+// TODO: higher-level architecture for constraints
+// - things add constraints
+// - you don't remove constraints, you remove things!
+// - the set of constraints is rebuilt from scratch
+// - every time you add/remove a thing
+
+// TODO: think about the pins-on-absorbed-handles problem!
+// - see Handle's togglePin method
+
 // TODO: refactor rendering / renderable code
 // TODO: add handle (and line) gesture
 // TODO: gestures to add constraints:
@@ -11,6 +20,10 @@ import * as constraints from './src/constraints';
 import { Constraint, Pin, PolarVector, Weight } from './src/constraints';
 import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
+
+(window as any).constraints = constraints;
+(window as any).Constraint = Constraint;
+(window as any).Handle = Handle;
 
 const pinImage = new Image();
 pinImage.src = 'pin.png';
