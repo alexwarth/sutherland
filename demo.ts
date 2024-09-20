@@ -1,16 +1,25 @@
-// TODO: higher-level architecture for constraints
-// - things add constraints
-// - you don't remove constraints, you remove things!
-// - the set of constraints is rebuilt from scratch
-// - every time you add/remove a thing
+/*
 
-// TODO: think about the pins-on-absorbed-handles problem!
-// - see Handle's togglePin method
+TODOs:
 
-// TODO: refactor rendering / renderable code
-// TODO: better gestures to add constraints, lines, arcs, ...
-// TODO: rotation gesture
-// TODO: user should be able to change fixed angles and lengths
+* Refactor rendering / renderable code
+* Better gestures to add constraints, lines, arcs, ...
+* Rotation gesture
+* User should be able to change fixed angles and lengths
+* Lasso gesture to select handles for move / copy
+* Gizmos + property pickers + plus and times nodes and wires?
+* Some way to see all constraints that involve a handle so we can remove or change it.
+
+* Higher-level architecture for constraints
+  - things add constraints
+  - you don't remove constraints, you remove things!
+  - the set of constraints is rebuilt from scratch
+  - every time you add/remove a thing
+
+* Think about the "pins on absorbed handles" problem!
+  - see Handle's togglePin method
+
+*/
 
 import Handle, { HANDLE_RADIUS } from './src/Handle';
 import * as constraints from './src/constraints';
@@ -139,7 +148,6 @@ function paste() {
     for (const a of h.absorbedHandles) {
       const newA = Handle.create(Vec.add(a, offset), false);
       handleMap.set(a, newA);
-      // newH.absorb(newA); // TODO: this should just happen when we copy constraints!
     }
   }
 
