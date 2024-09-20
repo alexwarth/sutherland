@@ -172,16 +172,21 @@ function paste() {
   // );
 
   const handleMap = new Map<Handle, Handle>();
+  const variableMap = new Map<Variable, Variable>();
+
   for (const h of copiedHandles) {
     const newH = Handle.create(Vec.add(h, offset));
     handleMap.set(h, newH);
+    variableMap.set(h.xVariable, newH.xVariable);
+    variableMap.set(h.yVariable, newH.yVariable);
     for (const a of h.absorbedHandles) {
       const newA = Handle.create(Vec.add(a, offset), false);
       handleMap.set(a, newA);
+      variableMap.set(a.xVariable, newA.xVariable);
+      variableMap.set(a.yVariable, newA.yVariable);
     }
   }
 
-  const variableMap = new Map<Variable, Variable>();
   for (const c of Constraint.all) {
     if (c instanceof PolarVector && handleMap.has(c.a) && handleMap.has(c.b)) {
       const newC = constraints.polarVector(handleMap.get(c.a)!, handleMap.get(c.b)!);
@@ -192,6 +197,7 @@ function paste() {
       variableMap.set(c.weight, newC.weight);
     }
   }
+
   for (const c of Constraint.all) {
     if (c instanceof Absorb && handleMap.has(c.parent) && handleMap.has(c.child)) {
       constraints.absorb(handleMap.get(c.parent)!, handleMap.get(c.child)!);
