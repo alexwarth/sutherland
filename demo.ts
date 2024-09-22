@@ -1,10 +1,5 @@
 /*
 
-Bugs:
-
-* Now that we have implicit constraints, sometimes the sketch gets floaty:
-  try making the rivet and you'll seem what I'm talking about.
-
 TODOs:
 
 * Refactor rendering / renderable code

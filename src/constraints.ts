@@ -1231,7 +1231,7 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
 
   let result: ReturnType<typeof minimize>;
   try {
-    result = minimize(computeTotalError, inputs, maxIterations, 1e-2);
+    result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
   } catch (e) {
     console.log(
       'minimizeError threw',
