@@ -237,6 +237,10 @@ let prevHandle: Handle | null = null;
 let drawingArc: { a: Handle; b: Handle; c: Handle; moving: Handle | null } | null = null;
 
 window.addEventListener('keydown', (e) => {
+  if (keysDown[e.key]) {
+    return;
+  }
+
   keysDown[e.key] = true;
 
   if (!pointer.downPos) {
