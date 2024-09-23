@@ -22,6 +22,8 @@ TODOs:
 
 * Think about the "pins on absorbed handles" problem!
   - see Handle's togglePin method
+  - solution may be to add x and y "owned variables" to Pin constraint
+    (for the desired position)
 
 */
 
