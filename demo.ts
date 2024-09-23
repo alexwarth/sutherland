@@ -232,8 +232,7 @@ function toggleSelected(h: Handle) {
   }
 }
 
-let prevHandle: Handle | null = null;
-
+let drawingLines: Handle[] | null = null;
 let drawingArc: { a: Handle; b: Handle; c: Handle; moving: Handle | null } | null = null;
 
 window.addEventListener('keydown', (e) => {
@@ -329,6 +328,12 @@ window.addEventListener('keydown', (e) => {
           constraints.weight(h, 2);
         }
         break;
+      case 'p': {
+        const h = Handle.create(pointer);
+        addImplicitConstraints(h);
+        drawingLines = [h];
+        break;
+      }
       case 'a': {
         const a = Handle.create(pointer, false);
         const b = Handle.create(pointer, false);
@@ -366,8 +371,20 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
   delete keysDown[e.key];
 
-  if (e.key === 'p') {
-    prevHandle = null;
+  if (e.key === 'p' && drawingLines) {
+    if (drawingLines.length === 1) {
+      drawingLines[0].remove();
+    } else {
+      for (let idx = 1; idx < drawingLines.length; idx++) {
+        const line = addLine(drawingLines[idx - 1], drawingLines[idx]);
+        for (const h of Handle.all) {
+          if (h !== line.a && h !== line.b) {
+            addImplicitPointOnLineConstraint(h, line);
+          }
+        }
+      }
+    }
+    drawingLines = null;
   }
 });
 
@@ -397,19 +414,15 @@ canvas.addEventListener('pointerdown', (e) => {
     return;
   }
 
-  const h = Handle.getNearestHandle(pointer);
-  if ('p' in keysDown) {
+  if (drawingLines) {
     const h = Handle.create(pointer);
     addImplicitConstraints(h);
-    if (prevHandle) {
-      const line = addLine(prevHandle, h);
-      for (const h of Handle.all) {
-        addImplicitPointOnLineConstraint(h, line);
-      }
-    }
-    prevHandle = h;
-  } else if ('Meta' in keysDown) {
-    console.log('meta is down!');
+    drawingLines.push(h);
+    return;
+  }
+
+  const h = Handle.getNearestHandle(pointer);
+  if ('Meta' in keysDown) {
     if (h) {
       h.togglePin();
     }
@@ -520,8 +533,15 @@ const demo1 = {
       renderConstraint(c);
     }
 
+    if (drawingLines) {
+      for (let idx = 1; idx < drawingLines.length; idx++) {
+        renderLine(drawingLines[idx - 1], drawingLines[idx]);
+      }
+      renderLine(drawingLines[drawingLines.length - 1], pointer);
+    }
+
     for (const line of lines) {
-      renderLine(line);
+      renderLine(line.a, line.b);
     }
 
     for (const arc of arcs) {
@@ -615,7 +635,7 @@ const demo2 = {
     }
 
     for (const line of lines) {
-      renderLine(line);
+      renderLine(line.a, line.b);
     }
 
     for (const arc of arcs) {
@@ -690,7 +710,7 @@ const demo3 = {
     }
 
     for (const line of lines) {
-      renderLine(line);
+      renderLine(line.a, line.b);
     }
 
     for (const h of Handle.all) {
@@ -710,7 +730,7 @@ function toggleDemo() {
   for (const handle of Handle.all) {
     handle.remove();
   }
-  prevHandle = null;
+  drawingLines = null;
   while (lines.length > 0) {
     lines.pop();
   }
@@ -832,7 +852,7 @@ function renderHandle(h: Handle) {
   }
 }
 
-function renderLine({ a, b }: Line) {
+function renderLine(a: Position, b: Position) {
   ctx.strokeStyle = flickeryWhite();
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
