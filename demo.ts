@@ -2,7 +2,12 @@
 
 TODOs:
 
+* Get rid of selected handles
+* Make copy/paste work w/ lines
+
 * Render selected lines differently!
+
+* Make parallel and perpendicular pick the correct angle
 
 * Refactor rendering / renderable code
 * Better gestures to add constraints, lines, arcs, ...
@@ -261,74 +266,49 @@ window.addEventListener('keydown', (e) => {
 
   if (!pointer.downPos) {
     switch (e.key) {
-      case 'x':
-        if (selectedHandles.size >= 2) {
-          const handles = [...selectedHandles.keys()];
-          for (let idx = 1; idx < handles.length; idx++) {
-            constraints.equals(handles[idx - 1].xVariable, handles[idx].xVariable);
-          }
-        }
-        break;
-      case 'y':
-        if (selectedHandles.size >= 2) {
-          const handles = [...selectedHandles.keys()];
-          for (let idx = 1; idx < handles.length; idx++) {
-            constraints.equals(handles[idx - 1].yVariable, handles[idx].yVariable);
-          }
-        }
-        break;
       case 'l':
-        const handles = [...selectedHandles.keys()];
-        for (let idx = 1; idx < handles.length; idx++) {
-          constraints.constant(constraints.polarVector(handles[idx - 1], handles[idx]).distance);
+        for (const { a, b } of selectedLines) {
+          constraints.constant(constraints.polarVector(a, b).distance);
         }
+        selectedLines.clear();
         break;
       case 'e': {
-        const handles = [...selectedHandles.keys()];
-        if (handles.length === 3) {
-          handles.splice(1, 0, handles[1]);
-        } else if (handles.length !== 4) {
-          break;
+        const lines = [...selectedLines];
+        for (let idx = 1; idx < lines.length; idx++) {
+          constraints.equals(
+            constraints.polarVector(lines[idx - 1].a, lines[idx - 1].b).distance,
+            constraints.polarVector(lines[idx].a, lines[idx].b).distance,
+          );
         }
-        const [a, b, c, d] = handles;
-        constraints.equals(
-          constraints.polarVector(a, b).distance,
-          constraints.polarVector(c, d).distance,
-        );
+        selectedLines.clear();
         break;
       }
-      case '/': {
-        const handles = [...selectedHandles.keys()];
-        if (handles.length === 3) {
-          handles.splice(1, 0, handles[1]);
-        } else if (handles.length !== 4) {
-          break;
+      case '/':
+        if (selectedLines.size === 2) {
+          const [line1, line2] = selectedLines;
+          // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
+          constraints.equals(
+            constraints.polarVector(line1.a, line1.b).angle,
+            constraints.polarVector(line2.a, line2.b).angle,
+          );
         }
-        const [a, b, c, d] = handles;
-        // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
-        constraints.equals(
-          constraints.polarVector(a, b).angle,
-          constraints.polarVector(c, d).angle,
-        );
+        selectedLines.clear();
         break;
-      }
-      case '.': {
-        const handles = [...selectedHandles.keys()];
-        if (handles.length === 3) {
-          handles.splice(1, 0, handles[1]);
-        } else if (handles.length !== 4) {
-          break;
+      case '.':
+        if (selectedLines.size === 2) {
+          const [line1, line2] = selectedLines;
+          // TODO: pick the nearest square angle
+          constraints.linearRelationship(
+            constraints.polarVector(line1.a, line1.b).angle,
+            1,
+            constraints.polarVector(line2.a, line2.b).angle,
+            Math.PI / 2,
+          );
         }
-        const [a, b, c, d] = handles;
-        constraints.linearRelationship(
-          constraints.polarVector(a, b).angle,
-          1,
-          constraints.polarVector(c, d).angle,
-          Math.PI / 2, // TODO: pick closest "45"
-        );
+        selectedLines.clear();
         break;
-      }
       case 'b':
+        // TODO: if there is a handle under the pointer, break that off
         if (selectedHandles.size === 1) {
           const [h] = selectedHandles.keys();
           if (h.absorbedHandles.size > 0) {
@@ -340,6 +320,7 @@ window.addEventListener('keydown', (e) => {
         }
         break;
       case 'w':
+        // TODO: if there is a handle under the pointer, add weight to it
         if (selectedHandles.size === 1) {
           const [h] = selectedHandles.keys();
           constraints.weight(h, 2);
