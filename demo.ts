@@ -471,17 +471,21 @@ function addImplicitConstraints(h: Handle) {
 }
 
 function addImplicitPointOnLineConstraint(h: Handle, line: Line) {
-  if (
-    distToPoint(line, h) < 4 * HANDLE_RADIUS &&
-    Vec.dist(h, line.a) > 4 * HANDLE_RADIUS &&
-    Vec.dist(h, line.b) > 4 * HANDLE_RADIUS
-  ) {
-    // h is on the line, but not near the ends
+  if (handleIsOnLine(h, line)) {
     constraints.equals(
       constraints.polarVector(line.a, h).angle,
       constraints.polarVector(h, line.b).angle,
     );
   }
+}
+
+function handleIsOnLine(h: Handle, line: Line) {
+  // h is on the line, but not near the ends
+  return (
+    distToPoint(line, h) < 4 * HANDLE_RADIUS &&
+    Vec.dist(h, line.a) > 4 * HANDLE_RADIUS &&
+    Vec.dist(h, line.b) > 4 * HANDLE_RADIUS
+  );
 }
 
 canvas.addEventListener('pointermove', (e) => {
