@@ -2,9 +2,7 @@
 
 TODOs:
 
-* Select lines by clicking on them
-  - then make HORV work on lines
-  - this is crucial to do the rivet demo right
+* Render selected lines differently!
 
 * Refactor rendering / renderable code
 * Better gestures to add constraints, lines, arcs, ...
@@ -143,18 +141,23 @@ const keysDown = {};
 let hoverHandle: Handle | null = null;
 
 const selectedHandles = new Map<Handle, Position>();
+const selectedLines = new Set<Line>();
 
 let copiedHandles: Handle[] | null = null;
 
 function clearSelection() {
   selectedHandles.clear();
+  selectedLines.clear();
 }
 
 function copySelection() {
+  // TODO: lines, too
   copiedHandles = [...new Set([...selectedHandles.keys()].map((h) => h.canonicalInstance))];
 }
 
 function paste() {
+  // TODO: lines, too
+
   if (!copiedHandles) {
     return;
   }
@@ -230,11 +233,19 @@ function paste() {
   }
 }
 
-function toggleSelected(h: Handle) {
-  if (selectedHandles.has(h)) {
-    selectedHandles.delete(h);
+function toggleSelected(thing: Handle | Line) {
+  if (thing instanceof Handle) {
+    if (selectedHandles.has(thing)) {
+      selectedHandles.delete(thing);
+    } else {
+      selectedHandles.set(thing, { x: thing.position.x, y: thing.position.y });
+    }
   } else {
-    selectedHandles.set(h, { x: h.position.x, y: h.position.y });
+    if (selectedLines.has(thing)) {
+      selectedLines.delete(thing);
+    } else {
+      selectedLines.add(thing);
+    }
   }
 }
 
@@ -357,19 +368,17 @@ window.addEventListener('keydown', (e) => {
         paste();
         break;
       case 'h':
-        for (const h1 of selectedHandles.keys()) {
-          for (const h2 of selectedHandles.keys()) {
-            if (h1 === h2) {
-              continue;
-            }
-            if (Math.abs(h1.x - h2.x) < HANDLE_RADIUS * 8) {
-              constraints.equals(h1.xVariable, h2.xVariable);
-            }
-            if (Math.abs(h1.y - h2.y) < HANDLE_RADIUS * 8) {
-              constraints.equals(h1.yVariable, h2.yVariable);
-            }
+        for (const { a, b } of selectedLines) {
+          if (Math.abs(a.x - b.x) < HANDLE_RADIUS * 25) {
+            a.xVariable.value = b.xVariable.value = (a.x + b.x) / 2;
+            constraints.equals(a.xVariable, b.xVariable);
+          }
+          if (Math.abs(a.y - b.y) < HANDLE_RADIUS * 25) {
+            a.yVariable.value = b.yVariable.value = (a.y + b.y) / 2;
+            constraints.equals(a.yVariable, b.yVariable);
           }
         }
+        selectedLines.clear();
         break;
     }
   }
@@ -420,26 +429,22 @@ canvas.addEventListener('pointerdown', (e) => {
         drawingArc = null;
       }
     }
-    return;
-  }
-
-  if (drawingLines) {
+  } else if (drawingLines) {
     const h = Handle.create(pointer);
     addImplicitConstraints(h);
     drawingLines.push(h);
-    return;
-  }
-
-  const h = Handle.getNearestHandle(pointer);
-  if ('Meta' in keysDown) {
+  } else if ('Meta' in keysDown) {
+    const h = Handle.getNearestHandle(pointer);
     if (h) {
       h.togglePin();
     }
   } else if ('Shift' in keysDown) {
-    if (h) {
-      toggleSelected(h);
+    const thing = Handle.getNearestHandle(pointer) ?? getLineNear(pointer);
+    if (thing) {
+      toggleSelected(thing);
     }
   } else {
+    const h = Handle.getNearestHandle(pointer);
     if (h) {
       if (!selectedHandles.has(h)) {
         clearSelection();
@@ -450,6 +455,15 @@ canvas.addEventListener('pointerdown', (e) => {
     }
   }
 });
+
+function getLineNear(p: Position) {
+  for (const line of lines) {
+    if (pointIsOnLine(p, line)) {
+      return line;
+    }
+  }
+  return null;
+}
 
 function addImplicitConstraints(h: Handle) {
   // TOOD: add mergeHandles as an optional arg
@@ -473,7 +487,7 @@ function addImplicitConstraints(h: Handle) {
 }
 
 function addImplicitPointOnLineConstraint(h: Handle, line: Line) {
-  if (handleIsOnLine(h, line)) {
+  if (pointIsOnLine(h, line)) {
     constraints.equals(
       constraints.polarVector(line.a, h).angle,
       constraints.polarVector(h, line.b).angle,
@@ -481,7 +495,7 @@ function addImplicitPointOnLineConstraint(h: Handle, line: Line) {
   }
 }
 
-function handleIsOnLine(h: Handle, line: Line) {
+function pointIsOnLine(h: Position, line: Line) {
   // h is on the line, but not near the ends
   return (
     distToPoint(line, h) < 4 * HANDLE_RADIUS &&
