@@ -2,6 +2,10 @@
 
 TODOs:
 
+* Select lines by clicking on them
+  - then make HORV work on lines
+  - this is crucial to do the rivet demo right
+
 * Refactor rendering / renderable code
 * Better gestures to add constraints, lines, arcs, ...
 * Rotation gesture
@@ -338,6 +342,7 @@ window.addEventListener('keydown', (e) => {
         const a = Handle.create(pointer, false);
         const b = Handle.create(pointer, false);
         const c = Handle.create(pointer, false);
+        // addImplicitConstraints(c, false);
         addImplicitConstraints(c);
         drawingArc = { a, b, c, moving: a };
         addArc(a, b, c);
@@ -394,8 +399,10 @@ canvas.addEventListener('pointerdown', (e) => {
 
   if (drawingArc?.moving) {
     if (drawingArc.moving === drawingArc.a) {
+      // addImplicitConstraints(drawingArc.a);
       drawingArc.moving = drawingArc.b;
     } else {
+      // addImplicitConstraints(drawingArc.b);
       const r = Vec.dist(drawingArc.c, drawingArc.a);
       const angle = Vec.angle(Vec.sub(drawingArc.b, drawingArc.c));
       drawingArc.b.position = {
@@ -443,6 +450,11 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 function addImplicitConstraints(h: Handle) {
+  // TOOD: add mergeHandles as an optional arg
+  // if (mergeHandles) {
+  //   h.getAbsorbedByNearestHandle();
+  // }
+
   for (const line of lines) {
     addImplicitPointOnLineConstraint(h, line);
   }
@@ -529,6 +541,8 @@ const demo1 = {
   init() {},
 
   render() {
+    ctx.lineWidth = 2;
+
     for (const c of Constraint.all) {
       renderConstraint(c);
     }
@@ -766,7 +780,7 @@ function drawRotated(image: HTMLImageElement, degrees: number, x: number, y: num
 
 requestAnimationFrame(render);
 
-function flickeryWhite(baseAlpha = 0.5, multiplier = 0.3) {
+function flickeryWhite(baseAlpha = 0.35, multiplier = 0.3) {
   const alpha = Math.random() * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
 }
@@ -870,7 +884,7 @@ function renderArc({ a, b, c }: Arc) {
   ctx.arc(c.position.x, c.position.y, Vec.dist(c, a), theta1, theta2);
   ctx.stroke();
 
-  ctx.strokeStyle = flickeryWhite(0.1, 0.3);
+  ctx.strokeStyle = flickeryWhite(0.1, 0.05);
   ctx.moveTo(c.position.x, c.position.y);
   ctx.lineTo(a.position.x, a.position.y);
   ctx.moveTo(c.position.x, c.position.y);
