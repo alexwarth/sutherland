@@ -2,11 +2,6 @@
 
 TODOs:
 
-* Get rid of selected handles
-* Make copy/paste work w/ lines
-
-* Render selected lines differently!
-
 * Make parallel and perpendicular pick the correct angle
 
 * Refactor rendering / renderable code
@@ -131,8 +126,10 @@ function addLine(a: Handle, b: Handle): Line {
   return line;
 }
 
-function addArc(a: Handle, b: Handle, c: Handle) {
-  arcs.push({ a, b, c });
+function addArc(a: Handle, b: Handle, c: Handle): Arc {
+  const arc = { a, b, c };
+  arcs.push(arc);
+  return arc;
 }
 
 const pointer: Position & { downPos: Position | null } = {
@@ -145,40 +142,42 @@ const keysDown = {};
 
 let hoverHandle: Handle | null = null;
 
-const selectedHandles = new Map<Handle, Position>();
-const selectedLines = new Set<Line>();
+type Thing = Line | Arc;
+const selection = new Set<Thing>();
+const selectedHandleOrigPos = new Map<Handle, Position>();
 
-let copiedHandles: Handle[] | null = null;
-
-function clearSelection() {
-  selectedHandles.clear();
-  selectedLines.clear();
-}
+let copiedThings: Thing[] | null = null;
 
 function copySelection() {
-  // TODO: lines, too
-  copiedHandles = [...new Set([...selectedHandles.keys()].map((h) => h.canonicalInstance))];
+  copiedThings = [...selection];
+}
+
+function getHandles(things: Iterable<Thing>) {
+  const handles = new Set<Handle>();
+  for (const thing of things) {
+    handles.add(thing.a.canonicalInstance);
+    handles.add(thing.b.canonicalInstance);
+    if ('c' in thing) {
+      handles.add(thing.c.canonicalInstance);
+    }
+  }
+  return handles;
 }
 
 function paste() {
-  // TODO: lines, too
-
-  if (!copiedHandles) {
+  if (!copiedThings) {
     return;
   }
 
-  const xs = copiedHandles.map((h) => h.x);
-  const ys = copiedHandles.map((h) => h.y);
+  const copiedHandles = getHandles(copiedThings);
+
+  const xs = [...copiedHandles].map((h) => h.x);
+  const ys = [...copiedHandles].map((h) => h.y);
   const center = {
     x: (Math.max(...xs) + Math.min(...xs)) / 2,
     y: (Math.max(...ys) + Math.min(...ys)) / 2,
   };
   const offset = Vec.sub(pointer, center);
-
-  // console.log(
-  //   'copied handles',
-  //   copiedHandles.map((h) => ({ id: h.id, absorbed: [...h.absorbedHandles].map((h) => h.id) })),
-  // );
 
   const handleMap = new Map<Handle, Handle>();
   const variableMap = new Map<Variable, Variable>();
@@ -220,42 +219,35 @@ function paste() {
     // TODO: Formula constraint
   }
 
-  for (const line of lines) {
-    if (handleMap.has(line.a) && handleMap.has(line.b)) {
-      addLine(handleMap.get(line.a)!, handleMap.get(line.b)!);
+  const newThings: Thing[] = [];
+  for (const thing of copiedThings) {
+    let newThing: Thing;
+    if (!('c' in thing)) {
+      // line
+      newThing = addLine(handleMap.get(thing.a)!, handleMap.get(thing.b)!);
+    } else {
+      // arc
+      newThing = addArc(handleMap.get(thing.a)!, handleMap.get(thing.b)!, handleMap.get(thing.c)!);
     }
   }
 
-  for (const arc of arcs) {
-    if (handleMap.has(arc.a) && handleMap.has(arc.b) && handleMap.has(arc.c)) {
-      addArc(handleMap.get(arc.a)!, handleMap.get(arc.b)!, handleMap.get(arc.c)!);
-    }
-  }
-
-  clearSelection();
-  for (const h of handleMap.values()) {
-    toggleSelected(h);
+  selection.clear();
+  for (const thing of newThings) {
+    selection.add(thing);
   }
 }
 
-function toggleSelected(thing: Handle | Line) {
-  if (thing instanceof Handle) {
-    if (selectedHandles.has(thing)) {
-      selectedHandles.delete(thing);
-    } else {
-      selectedHandles.set(thing, { x: thing.position.x, y: thing.position.y });
-    }
+function toggleSelected(thing: Thing) {
+  if (selection.has(thing)) {
+    selection.delete(thing);
   } else {
-    if (selectedLines.has(thing)) {
-      selectedLines.delete(thing);
-    } else {
-      selectedLines.add(thing);
-    }
+    selection.add(thing);
   }
 }
 
+let draggingHandle: Handle | null = null;
 let drawingLines: Handle[] | null = null;
-let drawingArc: { a: Handle; b: Handle; c: Handle; moving: Handle | null } | null = null;
+let drawingArc: { c: Handle; a: Handle; b: Handle | null } | null = null;
 
 window.addEventListener('keydown', (e) => {
   if (keysDown[e.key]) {
@@ -264,104 +256,102 @@ window.addEventListener('keydown', (e) => {
 
   keysDown[e.key] = true;
 
-  if (!pointer.downPos) {
-    switch (e.key) {
-      case 'l':
-        for (const { a, b } of selectedLines) {
-          constraints.constant(constraints.polarVector(a, b).distance);
-        }
-        selectedLines.clear();
-        break;
-      case 'e': {
-        const lines = [...selectedLines];
-        for (let idx = 1; idx < lines.length; idx++) {
-          constraints.equals(
-            constraints.polarVector(lines[idx - 1].a, lines[idx - 1].b).distance,
-            constraints.polarVector(lines[idx].a, lines[idx].b).distance,
-          );
-        }
-        selectedLines.clear();
-        break;
+  if (pointer.downPos) {
+    return;
+  }
+
+  switch (e.key) {
+    case 'l':
+      for (const { a, b } of selection) {
+        constraints.constant(constraints.polarVector(a, b).distance);
       }
-      case '/':
-        if (selectedLines.size === 2) {
-          const [line1, line2] = selectedLines;
-          // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
-          constraints.equals(
-            constraints.polarVector(line1.a, line1.b).angle,
-            constraints.polarVector(line2.a, line2.b).angle,
-          );
-        }
-        selectedLines.clear();
-        break;
-      case '.':
-        if (selectedLines.size === 2) {
-          const [line1, line2] = selectedLines;
-          // TODO: pick the nearest square angle
-          constraints.linearRelationship(
-            constraints.polarVector(line1.a, line1.b).angle,
-            1,
-            constraints.polarVector(line2.a, line2.b).angle,
-            Math.PI / 2,
-          );
-        }
-        selectedLines.clear();
-        break;
-      case 'b':
-        // TODO: if there is a handle under the pointer, break that off
-        if (selectedHandles.size === 1) {
-          const [h] = selectedHandles.keys();
-          if (h.absorbedHandles.size > 0) {
-            const [a] = h.absorbedHandles;
-            h.breakOff(a);
-            clearSelection();
-            toggleSelected(a);
-          }
-        }
-        break;
-      case 'w':
-        // TODO: if there is a handle under the pointer, add weight to it
-        if (selectedHandles.size === 1) {
-          const [h] = selectedHandles.keys();
-          constraints.weight(h, 2);
-        }
-        break;
-      case 'p': {
-        const h = Handle.create(pointer);
-        addImplicitConstraints(h);
-        drawingLines = [h];
-        break;
+      selection.clear();
+      break;
+    case 'e': {
+      const lines = [...selection]; // TODO: filter so that it's only lines?
+      for (let idx = 1; idx < lines.length; idx++) {
+        constraints.equals(
+          constraints.polarVector(lines[idx - 1].a, lines[idx - 1].b).distance,
+          constraints.polarVector(lines[idx].a, lines[idx].b).distance,
+        );
       }
-      case 'a': {
-        const a = Handle.create(pointer, false);
-        const b = Handle.create(pointer, false);
-        const c = Handle.create(pointer, false);
-        // addImplicitConstraints(c, false);
-        addImplicitConstraints(c);
-        drawingArc = { a, b, c, moving: a };
-        addArc(a, b, c);
-        break;
-      }
-      case 'c':
-        copySelection();
-        break;
-      case 'v':
-        paste();
-        break;
-      case 'h':
-        for (const { a, b } of selectedLines) {
-          if (Math.abs(a.x - b.x) < HANDLE_RADIUS * 25) {
-            a.xVariable.value = b.xVariable.value = (a.x + b.x) / 2;
-            constraints.equals(a.xVariable, b.xVariable);
-          }
-          if (Math.abs(a.y - b.y) < HANDLE_RADIUS * 25) {
-            a.yVariable.value = b.yVariable.value = (a.y + b.y) / 2;
-            constraints.equals(a.yVariable, b.yVariable);
-          }
-        }
-        selectedLines.clear();
-        break;
+      selection.clear();
+      break;
     }
+    case '/':
+      if (selection.size === 2) {
+        // TODO: only ok if it's two lines!
+        const [line1, line2] = selection;
+        // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
+        constraints.equals(
+          constraints.polarVector(line1.a, line1.b).angle,
+          constraints.polarVector(line2.a, line2.b).angle,
+        );
+      }
+      selection.clear();
+      break;
+    case '.':
+      if (selection.size === 2) {
+        // TODO: only ok if it's two lines!
+        const [line1, line2] = selection;
+        // TODO: pick the nearest square angle
+        constraints.linearRelationship(
+          constraints.polarVector(line1.a, line1.b).angle,
+          1,
+          constraints.polarVector(line2.a, line2.b).angle,
+          Math.PI / 2,
+        );
+      }
+      selection.clear();
+      break;
+    case 'b': {
+      const h = Handle.getNearestHandle(pointer);
+      if (h) {
+        if (h.absorbedHandles.size > 0) {
+          const [a] = h.absorbedHandles;
+          h.breakOff(a);
+        }
+      }
+      break;
+    }
+    case 'w':
+      const h = Handle.getNearestHandle(pointer);
+      if (h) {
+        constraints.weight(h, 2);
+      }
+      break;
+    case 'p': {
+      const h = Handle.create(pointer);
+      addImplicitConstraints(h);
+      drawingLines = [h];
+      break;
+    }
+    case 'a': {
+      const c = Handle.create(pointer);
+      addImplicitConstraints(c);
+      const a = Handle.create(pointer, false);
+      drawingArc = { c, a, b: null };
+      break;
+    }
+    case 'c':
+      copySelection();
+      break;
+    case 'v':
+      paste();
+      break;
+    case 'h':
+      for (const { a, b } of selection) {
+        if (Math.abs(a.x - b.x) < HANDLE_RADIUS * 25) {
+          a.xVariable.value = b.xVariable.value = (a.x + b.x) / 2;
+          constraints.equals(a.xVariable, b.xVariable);
+        }
+        if (Math.abs(a.y - b.y) < HANDLE_RADIUS * 25) {
+          a.yVariable.value = b.yVariable.value = (a.y + b.y) / 2;
+          constraints.equals(a.yVariable, b.yVariable);
+        }
+      }
+      selection.clear();
+      break;
   }
 });
 
@@ -389,25 +379,28 @@ canvas.addEventListener('pointerdown', (e) => {
   canvas.setPointerCapture(e.pointerId);
   pointer.downPos = { x: pointer.x, y: pointer.y };
 
-  if (drawingArc?.moving) {
-    if (drawingArc.moving === drawingArc.a) {
-      // addImplicitConstraints(drawingArc.a);
-      drawingArc.moving = drawingArc.b;
+  if (drawingArc) {
+    if (!drawingArc.b) {
+      addImplicitConstraints(drawingArc.a);
+      drawingArc.b = Handle.create(pointer, false);
     } else {
-      // addImplicitConstraints(drawingArc.b);
-      const r = Vec.dist(drawingArc.c, drawingArc.a);
-      const angle = Vec.angle(Vec.sub(drawingArc.b, drawingArc.c));
-      drawingArc.b.position = {
-        x: drawingArc.c.x + r * Math.cos(angle),
-        y: drawingArc.c.y + r * Math.sin(angle),
+      addImplicitConstraints(drawingArc.b);
+      const arc = addArc(drawingArc.a, drawingArc.b, drawingArc.c);
+      drawingArc = null;
+      const r = Vec.dist(arc.c, arc.a);
+      const angle = Vec.angle(Vec.sub(arc.b, arc.c));
+      arc.b.position = {
+        x: arc.c.x + r * Math.cos(angle),
+        y: arc.c.y + r * Math.sin(angle),
       };
-      drawingArc.moving = null;
-      if (!drawingArc.moving) {
-        constraints.equals(
-          constraints.polarVector(drawingArc.c, drawingArc.a).distance,
-          constraints.polarVector(drawingArc.c, drawingArc.b).distance,
-        );
-        drawingArc = null;
+      constraints.equals(
+        constraints.polarVector(arc.c, arc.a).distance,
+        constraints.polarVector(arc.c, arc.b).distance,
+      );
+      for (const h of Handle.all) {
+        if (h !== arc.a && h !== arc.b && h !== arc.c) {
+          addImplicitPointOnArcConstraint(h, arc);
+        }
       }
     }
   } else if (drawingLines) {
@@ -420,50 +413,50 @@ canvas.addEventListener('pointerdown', (e) => {
       h.togglePin();
     }
   } else if ('Shift' in keysDown) {
-    const thing = Handle.getNearestHandle(pointer) ?? getLineNear(pointer);
+    const thing = getThingNear(pointer);
     if (thing) {
       toggleSelected(thing);
     }
   } else {
-    const h = Handle.getNearestHandle(pointer);
-    if (h) {
-      if (!selectedHandles.has(h)) {
-        clearSelection();
-        toggleSelected(h);
+    selection.clear();
+    draggingHandle = Handle.getNearestHandle(pointer);
+    if (!draggingHandle) {
+      const thing = getThingNear(pointer);
+      if (thing) {
+        toggleSelected(thing);
       }
-    } else {
-      clearSelection();
     }
+  }
+
+  selectedHandleOrigPos.clear();
+  for (const h of getHandles(selection)) {
+    selectedHandleOrigPos.set(h, { x: h.x, y: h.y });
   }
 });
 
-function getLineNear(p: Position) {
+function getThingNear(p: Position) {
   for (const line of lines) {
     if (pointIsOnLine(p, line)) {
       return line;
+    }
+  }
+  for (const arc of arcs) {
+    if (pointIsOnArc(p, arc)) {
+      return arc;
     }
   }
   return null;
 }
 
 function addImplicitConstraints(h: Handle) {
-  // TOOD: add mergeHandles as an optional arg
-  // if (mergeHandles) {
-  //   h.getAbsorbedByNearestHandle();
-  // }
+  h.getAbsorbedByNearestHandle();
 
   for (const line of lines) {
     addImplicitPointOnLineConstraint(h, line);
   }
 
   for (const arc of arcs) {
-    if (Math.abs(Vec.dist(h, arc.c) - Vec.dist(arc.a, arc.c)) < 4 * HANDLE_RADIUS) {
-      // it's on an arc
-      constraints.equals(
-        constraints.polarVector(arc.c, h).distance,
-        constraints.polarVector(arc.c, arc.a).distance,
-      );
-    }
+    addImplicitPointOnArcConstraint(h, arc);
   }
 }
 
@@ -476,12 +469,24 @@ function addImplicitPointOnLineConstraint(h: Handle, line: Line) {
   }
 }
 
-function pointIsOnLine(h: Position, line: Line) {
-  // h is on the line, but not near the ends
+function addImplicitPointOnArcConstraint(h: Handle, arc: Arc) {
+  if (pointIsOnArc(h, arc)) {
+    constraints.equals(
+      constraints.polarVector(arc.c, h).distance,
+      constraints.polarVector(arc.c, arc.a).distance,
+    );
+  }
+}
+
+function pointIsOnArc(p: Position, arc: Arc) {
+  return Math.abs(Vec.dist(p, arc.c) - Vec.dist(arc.a, arc.c)) < 4 * HANDLE_RADIUS;
+}
+
+function pointIsOnLine(p: Position, line: Line) {
   return (
-    distToPoint(line, h) < 4 * HANDLE_RADIUS &&
-    Vec.dist(h, line.a) > 4 * HANDLE_RADIUS &&
-    Vec.dist(h, line.b) > 4 * HANDLE_RADIUS
+    distToPoint(line, p) < 4 * HANDLE_RADIUS && // point is on the line...
+    Vec.dist(p, line.a) > 4 * HANDLE_RADIUS && // ... but not near
+    Vec.dist(p, line.b) > 4 * HANDLE_RADIUS // ... the ends
   );
 }
 
@@ -489,22 +494,19 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
 
-  if (drawingArc?.moving) {
-    drawingArc.moving.position = pointer;
-    if (drawingArc.moving === drawingArc.a) {
-      // also move b
-      drawingArc.b.position = pointer;
-    }
-    return;
-  }
-
-  if (pointer.downPos && selectedHandles.size > 0) {
-    const d = Vec.sub(pointer, pointer.downPos);
-    for (const [h, origPos] of selectedHandles.entries()) {
-      const c = h.hasPin
-        ? constraints.pin(h) // user moves the pin
-        : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
-      c.position = Vec.add(origPos, d);
+  if (drawingArc) {
+    (drawingArc.b ?? drawingArc.a).position = pointer;
+  } else if (pointer.downPos) {
+    if (draggingHandle) {
+      draggingHandle.position = pointer;
+    } else if (selection.size > 0) {
+      const delta = Vec.sub(pointer, pointer.downPos);
+      for (const h of getHandles(selection)) {
+        const c = h.hasPin
+          ? constraints.pin(h) // user moves the pin
+          : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
+        c.position = Vec.add(selectedHandleOrigPos.get(h)!, delta);
+      }
     }
   }
 
@@ -514,13 +516,19 @@ canvas.addEventListener('pointermove', (e) => {
 canvas.addEventListener('pointerup', (e) => {
   canvas.releasePointerCapture(e.pointerId);
   pointer.downPos = null;
+  selectedHandleOrigPos.clear();
 
-  if (selectedHandles.size > 0) {
-    for (const h of selectedHandles.keys()) {
+  if (draggingHandle) {
+    addImplicitConstraints(draggingHandle);
+    draggingHandle = null;
+  }
+
+  if (selection.size > 0) {
+    for (const h of getHandles(selection)) {
       if (!h.hasPin) {
         constraints.finger(fingerOfGod.checked, h).remove();
       }
-      h.getAbsorbedByNearestHandle();
+      addImplicitConstraints(h);
     }
   }
 });
@@ -550,13 +558,17 @@ const demo1 = {
 
     if (drawingLines) {
       for (let idx = 1; idx < drawingLines.length; idx++) {
-        renderLine(drawingLines[idx - 1], drawingLines[idx]);
+        drawLine(drawingLines[idx - 1], drawingLines[idx]);
       }
-      renderLine(drawingLines[drawingLines.length - 1], pointer);
+      drawLine(drawingLines[drawingLines.length - 1], pointer);
     }
 
     for (const line of lines) {
-      renderLine(line.a, line.b);
+      renderLine(line);
+    }
+
+    if (drawingArc) {
+      drawArc(drawingArc.a, drawingArc.b, drawingArc.c);
     }
 
     for (const arc of arcs) {
@@ -650,7 +662,7 @@ const demo2 = {
     }
 
     for (const line of lines) {
-      renderLine(line.a, line.b);
+      renderLine(line);
     }
 
     for (const arc of arcs) {
@@ -725,7 +737,7 @@ const demo3 = {
     }
 
     for (const line of lines) {
-      renderLine(line.a, line.b);
+      renderLine(line);
     }
 
     for (const h of Handle.all) {
@@ -741,10 +753,11 @@ function toggleDemo() {
   for (const constraint of Constraint.all) {
     constraint.remove();
   }
-  clearSelection();
+  selection.clear();
   for (const handle of Handle.all) {
     handle.remove();
   }
+  draggingHandle = null;
   drawingLines = null;
   while (lines.length > 0) {
     lines.pop();
@@ -847,9 +860,7 @@ function renderConstraint(c: Constraint) {
 }
 
 function renderHandle(h: Handle) {
-  const isSelected = selectedHandles.has(h);
-
-  if (h !== hoverHandle && !isSelected) {
+  if (h !== hoverHandle) {
     return;
   }
 
@@ -859,7 +870,7 @@ function renderHandle(h: Handle) {
   ctx.closePath();
   ctx.fill();
 
-  if (isSelected) {
+  if (h === draggingHandle) {
     ctx.beginPath();
     ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS + 2, 0, TAU);
     ctx.closePath();
@@ -867,29 +878,40 @@ function renderHandle(h: Handle) {
   }
 }
 
-function renderLine(a: Position, b: Position) {
-  ctx.strokeStyle = flickeryWhite();
+function renderLine(line: Line) {
+  drawLine(line.a, line.b, selection.has(line) ? flickeryWhite(0.9, 0.1) : flickeryWhite());
+}
+
+function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
+  ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
   ctx.stroke();
 }
 
-function renderArc({ a, b, c }: Arc) {
-  ctx.fillStyle = flickeryWhite();
+function renderArc(arc: Arc) {
+  drawArc(arc.a, arc.b, arc.c, selection.has(arc) ? flickeryWhite(0.9, 0.1) : flickeryWhite());
+}
+
+function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = flickeryWhite()) {
   ctx.beginPath();
 
-  ctx.strokeStyle = flickeryWhite();
-  const theta1 = Math.atan2(a.position.y - c.position.y, a.position.x - c.position.x);
-  const theta2 = Math.atan2(b.position.y - c.position.y, b.position.x - c.position.x);
-  ctx.arc(c.position.x, c.position.y, Vec.dist(c, a), theta1, theta2);
-  ctx.stroke();
+  if (b) {
+    ctx.strokeStyle = strokeStyle;
+    const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
+    const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
+    ctx.arc(c.x, c.y, Vec.dist(c, a), theta1, theta2);
+    ctx.stroke();
+  }
 
   ctx.strokeStyle = flickeryWhite(0.1, 0.05);
-  ctx.moveTo(c.position.x, c.position.y);
-  ctx.lineTo(a.position.x, a.position.y);
-  ctx.moveTo(c.position.x, c.position.y);
-  ctx.lineTo(b.position.x, b.position.y);
+  ctx.moveTo(c.x, c.y);
+  ctx.lineTo(a.x, a.y);
+  if (b) {
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(b.x, b.y);
+  }
   ctx.stroke();
 }
 
