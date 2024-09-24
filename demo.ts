@@ -495,6 +495,7 @@ function addImplicitPointOnArcConstraint(h: Handle, arc: Arc) {
 }
 
 function pointIsOnArc(p: Position, arc: Arc) {
+  // TODO: only return `true` if p is between a and b (angle-wise)
   return Math.abs(Vec.dist(p, arc.c) - Vec.dist(arc.a, arc.c)) < 4 * HANDLE_RADIUS;
 }
 
