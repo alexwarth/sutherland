@@ -2,8 +2,8 @@
 
 TODOs:
 
+* Clean up this code!
 * Make parallel and perpendicular pick the correct angle
-
 * Refactor rendering / renderable code
 * Better gestures to add constraints, lines, arcs, ...
 * Rotation gesture
