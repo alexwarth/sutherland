@@ -510,6 +510,8 @@ canvas.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
 
+  hoverHandle = Handle.getNearestHandle(pointer);
+
   if (drawingArc) {
     (drawingArc.b ?? drawingArc.a).position = pointer;
   } else if (pointer.downPos) {
@@ -522,8 +524,6 @@ canvas.addEventListener('pointermove', (e) => {
       }
     }
   }
-
-  hoverHandle = Handle.getNearestHandle(pointer);
 });
 
 canvas.addEventListener('pointerup', (e) => {
