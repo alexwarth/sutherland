@@ -117,6 +117,8 @@ interface Arc {
   c: Handle;
 }
 
+type Thing = Line | Arc;
+
 const lines: Line[] = [];
 const arcs: Arc[] = [];
 
@@ -142,7 +144,6 @@ const keysDown = {};
 
 let hoverHandle: Handle | null = null;
 
-type Thing = Line | Arc;
 const selection = new Set<Thing>();
 const selectedHandleOrigPos = new Map<Handle, Position>();
 
@@ -245,6 +246,15 @@ function toggleSelected(thing: Thing) {
   }
 }
 
+function remove(thing: Thing) {
+  // TODO: also delete handles, constraints, etc.
+  if ('c' in thing) {
+    arcs.splice(arcs.indexOf(thing), 1);
+  } else {
+    lines.splice(lines.indexOf(thing), 1);
+  }
+}
+
 let draggingHandle: Handle | null = null;
 let drawingLines: Handle[] | null = null;
 let drawingArc: { c: Handle; a: Handle; b: Handle | null } | null = null;
@@ -338,6 +348,12 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'v':
       paste();
+      break;
+    case 'd':
+      for (const thing of selection) {
+        remove(thing);
+      }
+      selection.clear();
       break;
     case 'h':
       for (const { a, b } of selection) {
@@ -498,14 +514,11 @@ canvas.addEventListener('pointermove', (e) => {
     (drawingArc.b ?? drawingArc.a).position = pointer;
   } else if (pointer.downPos) {
     if (draggingHandle) {
-      draggingHandle.position = pointer;
+      drag(draggingHandle, { x: pointer.x, y: pointer.y });
     } else if (selection.size > 0) {
       const delta = Vec.sub(pointer, pointer.downPos);
       for (const h of getHandles(selection)) {
-        const c = h.hasPin
-          ? constraints.pin(h) // user moves the pin
-          : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
-        c.position = Vec.add(selectedHandleOrigPos.get(h)!, delta);
+        drag(h, Vec.add(selectedHandleOrigPos.get(h)!, delta));
       }
     }
   }
@@ -519,19 +532,28 @@ canvas.addEventListener('pointerup', (e) => {
   selectedHandleOrigPos.clear();
 
   if (draggingHandle) {
-    addImplicitConstraints(draggingHandle);
+    stopDragging(draggingHandle);
     draggingHandle = null;
   }
 
-  if (selection.size > 0) {
-    for (const h of getHandles(selection)) {
-      if (!h.hasPin) {
-        constraints.finger(fingerOfGod.checked, h).remove();
-      }
-      addImplicitConstraints(h);
-    }
+  for (const h of getHandles(selection)) {
+    stopDragging(h);
   }
 });
+
+function drag(h: Handle, pos: Position) {
+  const c = h.hasPin
+    ? constraints.pin(h) // user moves the pin
+    : constraints.finger(fingerOfGod.checked, h); // add/update finger constraint
+  c.position = pos;
+}
+
+function stopDragging(h: Handle) {
+  if (!h.hasPin) {
+    constraints.finger(fingerOfGod.checked, h).remove();
+  }
+  addImplicitConstraints(h);
+}
 
 function addWeight(h: Handle) {
   const weight = constraints.weight(h, 2).weight;
