@@ -184,13 +184,12 @@ function paste() {
 
   const newThings: Thing[] = [];
   for (const thing of copiedThings) {
-    let newThing: Thing;
     if (!('c' in thing)) {
       // line
-      newThing = addLine(handleMap.get(thing.a)!, handleMap.get(thing.b)!);
+      addLine(handleMap.get(thing.a)!, handleMap.get(thing.b)!);
     } else {
       // arc
-      newThing = addArc(handleMap.get(thing.a)!, handleMap.get(thing.b)!, handleMap.get(thing.c)!);
+      addArc(handleMap.get(thing.a)!, handleMap.get(thing.b)!, handleMap.get(thing.c)!);
     }
   }
 
