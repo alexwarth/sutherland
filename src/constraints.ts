@@ -746,21 +746,21 @@ export const pin = Pin.create;
 export class Finger extends Constraint {
   private static readonly memo = new Map<Handle, Finger>();
 
-  static create(fingerOfGod: boolean, handle: Handle, position: Position = handle) {
+  static create(handle: Handle, position: Position = handle, fingerOfGod = false) {
     let finger = Finger.memo.get(handle);
     if (finger) {
       finger.position = position;
     } else {
-      finger = new Finger(fingerOfGod, handle, position);
+      finger = new Finger(handle, position, fingerOfGod);
       Finger.memo.set(handle, finger);
     }
     return finger;
   }
 
   private constructor(
-    public readonly fingerOfGod: boolean,
     public readonly handle: Handle,
     public position: Position,
+    public readonly fingerOfGod: boolean,
   ) {
     super();
     if (!this.fingerOfGod) {

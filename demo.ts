@@ -510,13 +510,13 @@ canvas.addEventListener('pointerup', (e) => {
 function drag(h: Handle, pos: Position) {
   const c = h.hasPin
     ? constraints.pin(h) // user moves the pin
-    : constraints.finger(false, h); // add/update finger constraint
+    : constraints.finger(h); // add/update finger constraint
   c.position = pos;
 }
 
 function stopDragging(h: Handle) {
   if (!h.hasPin) {
-    constraints.finger(false, h).remove();
+    constraints.finger(h).remove();
   }
   addImplicitConstraints(h);
 }
