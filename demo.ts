@@ -560,7 +560,19 @@ function render() {
 
 requestAnimationFrame(render);
 
-function flickeryWhite(baseAlpha = 0.35, multiplier = 0.3) {
+function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
+  let baseAlpha: number;
+  let multiplier: number;
+  if (weight === 'normal') {
+    baseAlpha = 0.35;
+    multiplier = 0.3;
+  } else if (weight === 'light') {
+    baseAlpha = 0.1;
+    multiplier = 0.05;
+  } else {
+    baseAlpha = 0.9;
+    multiplier = 0.1;
+  }
   const alpha = Math.random() * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
 }
@@ -629,7 +641,7 @@ function renderHandle(h: Handle) {
 }
 
 function renderLine(line: Line) {
-  drawLine(line.a, line.b, selection.has(line) ? flickeryWhite(0.9, 0.1) : flickeryWhite());
+  drawLine(line.a, line.b, flickeryWhite(selection.has(line) ? 'bold' : 'normal'));
 }
 
 function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
@@ -641,7 +653,7 @@ function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
 }
 
 function renderArc(arc: Arc) {
-  drawArc(arc.a, arc.b, arc.c, selection.has(arc) ? flickeryWhite(0.9, 0.1) : flickeryWhite());
+  drawArc(arc.a, arc.b, arc.c, flickeryWhite(selection.has(arc) ? 'bold' : 'normal'));
 }
 
 function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = flickeryWhite()) {
@@ -655,7 +667,7 @@ function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = fli
     ctx.stroke();
   }
 
-  ctx.strokeStyle = flickeryWhite(0.1, 0.05);
+  ctx.strokeStyle = flickeryWhite('light');
   ctx.moveTo(c.x, c.y);
   ctx.lineTo(a.x, a.y);
   if (b) {
