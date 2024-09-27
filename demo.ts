@@ -310,7 +310,7 @@ window.addEventListener('keydown', (e) => {
     case 'v':
       paste();
       break;
-    case 'd':
+    case 'Backspace':
       for (const thing of selection) {
         remove(thing);
       }
