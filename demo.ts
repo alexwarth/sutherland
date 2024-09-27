@@ -31,7 +31,6 @@ import {
   Absorb,
   Constant,
   Constraint,
-  Formula,
   LinearRelationship,
   Pin,
   PolarVector,
@@ -68,15 +67,46 @@ function initCanvas() {
   }
 }
 
-interface Line {
-  a: Handle;
-  b: Handle;
+class Line {
+  constructor(
+    readonly a: Handle,
+    readonly b: Handle,
+  ) {}
+
+  render() {
+    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+  }
+
+  addHandlesTo(handles: Set<Handle>) {
+    handles.add(this.a.canonicalInstance);
+    handles.add(this.b.canonicalInstance);
+  }
+
+  makeCopy(handleMap: Map<Handle, Handle>) {
+    return addLine(handleMap.get(this.a)!, handleMap.get(this.b)!);
+  }
 }
 
-interface Arc {
-  a: Handle;
-  b: Handle;
-  c: Handle;
+class Arc {
+  constructor(
+    readonly a: Handle,
+    readonly b: Handle,
+    readonly c: Handle,
+  ) {}
+
+  render() {
+    drawArc(this.a, this.b, this.c, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+  }
+
+  addHandlesTo(handles: Set<Handle>) {
+    handles.add(this.a.canonicalInstance);
+    handles.add(this.b.canonicalInstance);
+    handles.add(this.c.canonicalInstance);
+  }
+
+  makeCopy(handleMap: Map<Handle, Handle>) {
+    return addArc(handleMap.get(this.a)!, handleMap.get(this.b)!, handleMap.get(this.c)!);
+  }
 }
 
 type Thing = Line | Arc;
@@ -85,13 +115,13 @@ const lines: Line[] = [];
 const arcs: Arc[] = [];
 
 function addLine(a: Handle, b: Handle): Line {
-  const line = { a, b };
+  const line = new Line(a, b);
   lines.push(line);
   return line;
 }
 
 function addArc(a: Handle, b: Handle, c: Handle): Arc {
-  const arc = { a, b, c };
+  const arc = new Arc(a, b, c);
   arcs.push(arc);
   return arc;
 }
@@ -118,11 +148,7 @@ function copySelection() {
 function getHandles(things: Iterable<Thing>) {
   const handles = new Set<Handle>();
   for (const thing of things) {
-    handles.add(thing.a.canonicalInstance);
-    handles.add(thing.b.canonicalInstance);
-    if ('c' in thing) {
-      handles.add(thing.c.canonicalInstance);
-    }
+    thing.addHandlesTo(handles);
   }
   return handles;
 }
@@ -182,16 +208,7 @@ function paste() {
     // TODO: Formula constraint
   }
 
-  const newThings: Thing[] = [];
-  for (const thing of copiedThings) {
-    if (!('c' in thing)) {
-      // line
-      addLine(handleMap.get(thing.a)!, handleMap.get(thing.b)!);
-    } else {
-      // arc
-      addArc(handleMap.get(thing.a)!, handleMap.get(thing.b)!, handleMap.get(thing.c)!);
-    }
-  }
+  const newThings: Thing[] = copiedThings.map((thing) => thing.makeCopy(handleMap));
 
   selection.clear();
   for (const thing of newThings) {
@@ -209,11 +226,8 @@ function toggleSelected(thing: Thing) {
 
 function remove(thing: Thing) {
   // TODO: also delete handles, constraints, etc.
-  if ('c' in thing) {
-    arcs.splice(arcs.indexOf(thing), 1);
-  } else {
-    lines.splice(lines.indexOf(thing), 1);
-  }
+  const things = thing instanceof Line ? lines : arcs;
+  things.splice(things.indexOf(thing), 1);
 }
 
 let draggingHandle: Handle | null = null;
@@ -519,9 +533,15 @@ function stopDragging(h: Handle) {
   addImplicitConstraints(h);
 }
 
-function render() {
+function onFrame() {
   constraints.solve();
+  render();
+  requestAnimationFrame(onFrame);
+}
 
+onFrame();
+
+function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.lineWidth = 2;
@@ -538,7 +558,7 @@ function render() {
   }
 
   for (const line of lines) {
-    renderLine(line);
+    line.render();
   }
 
   if (drawingArc) {
@@ -546,7 +566,7 @@ function render() {
   }
 
   for (const arc of arcs) {
-    renderArc(arc);
+    arc.render();
   }
 
   for (const h of Handle.all) {
@@ -555,8 +575,6 @@ function render() {
 
   requestAnimationFrame(render);
 }
-
-requestAnimationFrame(render);
 
 function renderConstraint(c: Constraint) {
   if (c instanceof PolarVector) {
@@ -621,20 +639,12 @@ function renderHandle(h: Handle) {
   }
 }
 
-function renderLine(line: Line) {
-  drawLine(line.a, line.b, flickeryWhite(selection.has(line) ? 'bold' : 'normal'));
-}
-
 function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
   ctx.stroke();
-}
-
-function renderArc(arc: Arc) {
-  drawArc(arc.a, arc.b, arc.c, flickeryWhite(selection.has(arc) ? 'bold' : 'normal'));
 }
 
 function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = flickeryWhite()) {
