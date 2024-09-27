@@ -264,21 +264,19 @@ window.addEventListener('keydown', (e) => {
       break;
     }
     case '/':
-      if (selection.size === 2) {
-        // TODO: only ok if it's two lines!
-        const [line1, line2] = selection;
+      doIfOnlyTwoLinesAreSelected((line1, line2) => {
+        const a1 = Math.atan2(line1.b.y - line1.a.y, line1.b.x - line1.a.x);
+        const a2 = Math.atan2(line2.b.y - line2.a.y, line2.b.x - line2.a.x);
         // TODO: if they're not pointing the same way, use linear relationship to keep them 180 deg apart
         constraints.equals(
           constraints.polarVector(line1.a, line1.b).angle,
           constraints.polarVector(line2.a, line2.b).angle,
         );
-      }
+      });
       selection.clear();
       break;
     case '.':
-      if (selection.size === 2) {
-        // TODO: only ok if it's two lines!
-        const [line1, line2] = selection;
+      doIfOnlyTwoLinesAreSelected((line1, line2) => {
         // TODO: pick the nearest square angle
         constraints.linearRelationship(
           constraints.polarVector(line1.a, line1.b).angle,
@@ -286,7 +284,7 @@ window.addEventListener('keydown', (e) => {
           constraints.polarVector(line2.a, line2.b).angle,
           Math.PI / 2,
         );
-      }
+      });
       selection.clear();
       break;
     case 'b': {
@@ -347,6 +345,16 @@ window.addEventListener('keydown', (e) => {
       break;
   }
 });
+
+function doIfOnlyTwoLinesAreSelected(cb: (line1: Line, line2: Line) => void) {
+  if (selection.size !== 2) {
+    return;
+  }
+  const [line1, line2] = selection;
+  if (line1 instanceof Line && line2 instanceof Line) {
+    cb(line1, line2);
+  }
+}
 
 window.addEventListener('keyup', (e) => {
   delete keysDown[e.key];
@@ -473,14 +481,14 @@ function addImplicitPointOnArcConstraint(h: Handle, arc: Arc) {
 
 function pointIsOnArc(p: Position, arc: Arc) {
   // TODO: only return `true` if p is between a and b (angle-wise)
-  return Math.abs(Vec.dist(p, arc.c) - Vec.dist(arc.a, arc.c)) < 4 * HANDLE_RADIUS;
+  return Math.abs(Vec.dist(p, arc.c) - Vec.dist(arc.a, arc.c)) < 3 * HANDLE_RADIUS;
 }
 
 function pointIsOnLine(p: Position, line: Line) {
   return (
-    distToPoint(line, p) < 4 * HANDLE_RADIUS && // point is on the line...
-    Vec.dist(p, line.a) > 4 * HANDLE_RADIUS && // ... but not near
-    Vec.dist(p, line.b) > 4 * HANDLE_RADIUS // ... the ends
+    distToPoint(line, p) < 3 * HANDLE_RADIUS && // point is on the line...
+    Vec.dist(p, line.a) > 3 * HANDLE_RADIUS && // ... but not near
+    Vec.dist(p, line.b) > 3 * HANDLE_RADIUS // ... the ends
   );
 }
 
