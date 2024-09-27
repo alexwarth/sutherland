@@ -40,6 +40,8 @@ import {
 } from './src/constraints';
 import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
+import { distToPoint } from './src/lib/geometry';
+import { Position } from './src/types';
 
 (window as any).constraints = constraints;
 (window as any).Constraint = Constraint;
@@ -64,11 +66,6 @@ function initCanvas() {
     canvas.style.height = oldH + 'px';
     ctx.scale(devicePixelRatio, devicePixelRatio);
   }
-}
-
-interface Position {
-  x: number;
-  y: number;
 }
 
 interface Line {
@@ -560,23 +557,6 @@ function render() {
 
 requestAnimationFrame(render);
 
-function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
-  let baseAlpha: number;
-  let multiplier: number;
-  if (weight === 'normal') {
-    baseAlpha = 0.35;
-    multiplier = 0.3;
-  } else if (weight === 'light') {
-    baseAlpha = 0.1;
-    multiplier = 0.05;
-  } else {
-    baseAlpha = 0.9;
-    multiplier = 0.1;
-  }
-  const alpha = Math.random() * multiplier + baseAlpha;
-  return `rgba(255, 255, 255, ${alpha})`;
-}
-
 function renderConstraint(c: Constraint) {
   if (c instanceof PolarVector) {
     const { a, b } = c;
@@ -677,34 +657,19 @@ function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = fli
   ctx.stroke();
 }
 
-function distToPoint(line: { a: Position; b: Position }, point: Position) {
-  return Vec.dist(point, closestPoint(line, point));
-}
-
-function isZero(n: number) {
-  return Math.abs(n) < Number.EPSILON;
-}
-
-function closestPoint(line: { a: Position; b: Position }, point: Position, strict = true) {
-  const { a, b } = line;
-  const ab = Vec.sub(b, a);
-  const ap = Vec.sub(point, a);
-
-  // Special case for when a === b, w/o which we get NaNs.
-  if (isZero(ab.x) && isZero(ab.y)) {
-    // TODO: revise
-    return a;
-  }
-
-  // Calculate the projection of AP onto AB
-  const projection = Vec.dot(ap, ab) / Vec.dot(ab, ab);
-
-  // Check if the projection is outside the line segment
-  if (strict && projection <= 0) {
-    return a;
-  } else if (strict && projection >= 1) {
-    return b;
+function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
+  let baseAlpha: number;
+  let multiplier: number;
+  if (weight === 'normal') {
+    baseAlpha = 0.35;
+    multiplier = 0.3;
+  } else if (weight === 'light') {
+    baseAlpha = 0.1;
+    multiplier = 0.05;
   } else {
-    return Vec.add(a, Vec.mulS(ab, projection));
+    baseAlpha = 0.9;
+    multiplier = 0.1;
   }
+  const alpha = Math.random() * multiplier + baseAlpha;
+  return `rgba(255, 255, 255, ${alpha})`;
 }
