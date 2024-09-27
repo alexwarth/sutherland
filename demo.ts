@@ -318,14 +318,16 @@ window.addEventListener('keydown', (e) => {
       selection.clear();
       break;
     case 'h':
-      for (const { a, b } of selection) {
-        if (Math.abs(a.x - b.x) < HANDLE_RADIUS * 25) {
-          a.xVariable.value = b.xVariable.value = (a.x + b.x) / 2;
-          constraints.equals(a.xVariable, b.xVariable);
-        }
-        if (Math.abs(a.y - b.y) < HANDLE_RADIUS * 25) {
-          a.yVariable.value = b.yVariable.value = (a.y + b.y) / 2;
-          constraints.equals(a.yVariable, b.yVariable);
+      for (const line of lines) {
+        if (selection.has(line)) {
+          const { a, b } = line;
+          const dx = Math.abs(a.x - b.x);
+          const dy = Math.abs(a.y - b.y);
+          if (dx <= dy) {
+            constraints.equals(a.xVariable, b.xVariable);
+          } else {
+            constraints.equals(a.yVariable, b.yVariable);
+          }
         }
       }
       selection.clear();
