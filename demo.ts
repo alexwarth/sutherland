@@ -41,31 +41,13 @@ import { TAU } from './src/helpers';
 import Vec from './src/lib/vec';
 import { distToPoint } from './src/lib/geometry';
 import { Position } from './src/types';
+import * as canvas from './canvas';
 
 (window as any).constraints = constraints;
 (window as any).Constraint = Constraint;
 (window as any).Handle = Handle;
 
-const canvas = document.getElementById('canvas') as HTMLCanvasElement;
-const ctx = canvas.getContext('2d')!;
-initCanvas();
-
-function initCanvas() {
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
-
-  // setup the canvas for device-independent pixels
-  if (devicePixelRatio !== 1) {
-    const oldW = canvas.width;
-    const oldH = canvas.height;
-
-    canvas.width = oldW * devicePixelRatio;
-    canvas.height = oldH * devicePixelRatio;
-    canvas.style.width = oldW + 'px';
-    canvas.style.height = oldH + 'px';
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-  }
-}
+canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 class Line {
   constructor(
@@ -74,7 +56,7 @@ class Line {
   ) {}
 
   render() {
-    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+    canvas.drawLine(this.a, this.b, canvas.flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
   }
 
   addHandlesTo(handles: Set<Handle>) {
@@ -95,7 +77,12 @@ class Arc {
   ) {}
 
   render() {
-    drawArc(this.a, this.b, this.c, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+    canvas.drawArc(
+      this.a,
+      this.b,
+      this.c,
+      canvas.flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
+    );
   }
 
   addHandlesTo(handles: Set<Handle>) {
@@ -376,8 +363,8 @@ window.addEventListener('keyup', (e) => {
   }
 });
 
-canvas.addEventListener('pointerdown', (e) => {
-  canvas.setPointerCapture(e.pointerId);
+canvas.el.addEventListener('pointerdown', (e) => {
+  canvas.el.setPointerCapture(e.pointerId);
   pointer.downPos = { x: pointer.x, y: pointer.y };
 
   if (drawingArc) {
@@ -492,7 +479,7 @@ function pointIsOnLine(p: Position, line: Line) {
   );
 }
 
-canvas.addEventListener('pointermove', (e) => {
+canvas.el.addEventListener('pointermove', (e) => {
   pointer.x = (e as any).layerX;
   pointer.y = (e as any).layerY;
 
@@ -512,8 +499,8 @@ canvas.addEventListener('pointermove', (e) => {
   }
 });
 
-canvas.addEventListener('pointerup', (e) => {
-  canvas.releasePointerCapture(e.pointerId);
+canvas.el.addEventListener('pointerup', (e) => {
+  canvas.el.releasePointerCapture(e.pointerId);
   pointer.downPos = null;
   selectedHandleOrigPos.clear();
 
@@ -550,9 +537,7 @@ function onFrame() {
 onFrame();
 
 function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.lineWidth = 2;
+  canvas.clear();
 
   for (const c of Constraint.all) {
     renderConstraint(c);
@@ -560,9 +545,9 @@ function render() {
 
   if (drawingLines) {
     for (let idx = 1; idx < drawingLines.length; idx++) {
-      drawLine(drawingLines[idx - 1], drawingLines[idx]);
+      canvas.drawLine(drawingLines[idx - 1], drawingLines[idx]);
     }
-    drawLine(drawingLines[drawingLines.length - 1], pointer);
+    canvas.drawLine(drawingLines[drawingLines.length - 1], pointer);
   }
 
   for (const line of lines) {
@@ -570,7 +555,7 @@ function render() {
   }
 
   if (drawingArc) {
-    drawArc(drawingArc.a, drawingArc.b, drawingArc.c);
+    canvas.drawArc(drawingArc.a, drawingArc.b, drawingArc.c);
   }
 
   for (const arc of arcs) {
@@ -594,9 +579,6 @@ function renderConstraint(c: Constraint) {
 
     // label
     if (c.distance.isLocked) {
-      ctx.fillStyle = flickeryWhite();
-      const fontSizeInPixels = 12;
-      ctx.font = `${fontSizeInPixels}px Major Mono Display`;
       let label = c.distance.value.toFixed(0);
       if (label === '-0') {
         label = '0';
@@ -604,27 +586,16 @@ function renderConstraint(c: Constraint) {
       while (label.length < 4) {
         label = ' ' + label;
       }
-      const labelWidth = ctx.measureText(label).width;
-      ctx.fillText(label, (a.x + b.x) / 2 - labelWidth / 2, (a.y + b.y) / 2 + fontSizeInPixels / 2);
+      canvas.drawText(Vec.divS(Vec.add(a, b), 2), label);
     }
   } else if (c instanceof Weight) {
-    ctx.strokeStyle = flickeryWhite();
-    ctx.beginPath();
-    ctx.arc(c.handle.x, c.handle.y, HANDLE_RADIUS * 2, 0, TAU);
-    ctx.closePath();
-    ctx.stroke();
+    canvas.drawCircle(c.handle, HANDLE_RADIUS * 2);
   } else if (c instanceof Pin) {
-    ctx.fillStyle = flickeryWhite();
-    ctx.beginPath();
-    ctx.arc(c.position.x, c.position.y, HANDLE_RADIUS / 2, 0, TAU);
-    ctx.closePath();
-    ctx.fill();
-    const oldLineWidth = ctx.lineWidth;
-    ctx.lineWidth = 2;
-    ctx.moveTo(c.position.x, c.position.y);
-    ctx.lineTo(c.position.x + HANDLE_RADIUS * 2, c.position.y - HANDLE_RADIUS * 3);
-    ctx.stroke();
-    ctx.lineWidth = oldLineWidth;
+    canvas.fillCircle(c.position, HANDLE_RADIUS / 2);
+    canvas.drawLine(c.position, {
+      x: c.position.x + HANDLE_RADIUS * 2,
+      y: c.position.y - HANDLE_RADIUS * 3,
+    });
   }
 }
 
@@ -633,62 +604,8 @@ function renderHandle(h: Handle) {
     return;
   }
 
-  ctx.fillStyle = flickeryWhite();
-  ctx.beginPath();
-  ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS, 0, TAU);
-  ctx.closePath();
-  ctx.fill();
-
+  canvas.fillCircle(h.position, HANDLE_RADIUS);
   if (h === draggingHandle) {
-    ctx.beginPath();
-    ctx.arc(h.position.x, h.position.y, HANDLE_RADIUS + 2, 0, TAU);
-    ctx.closePath();
-    ctx.stroke();
+    canvas.drawCircle(h.position, HANDLE_RADIUS + 2);
   }
-}
-
-function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
-  ctx.strokeStyle = strokeStyle;
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.lineTo(b.x, b.y);
-  ctx.stroke();
-}
-
-function drawArc(a: Position, b: Position | null, c: Position, strokeStyle = flickeryWhite()) {
-  ctx.beginPath();
-
-  if (b) {
-    ctx.strokeStyle = strokeStyle;
-    const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
-    const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
-    ctx.arc(c.x, c.y, Vec.dist(c, a), theta1, theta2);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = flickeryWhite('light');
-  ctx.moveTo(c.x, c.y);
-  ctx.lineTo(a.x, a.y);
-  if (b) {
-    ctx.moveTo(c.x, c.y);
-    ctx.lineTo(b.x, b.y);
-  }
-  ctx.stroke();
-}
-
-function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
-  let baseAlpha: number;
-  let multiplier: number;
-  if (weight === 'normal') {
-    baseAlpha = 0.35;
-    multiplier = 0.3;
-  } else if (weight === 'light') {
-    baseAlpha = 0.1;
-    multiplier = 0.05;
-  } else {
-    baseAlpha = 0.9;
-    multiplier = 0.1;
-  }
-  const alpha = Math.random() * multiplier + baseAlpha;
-  return `rgba(255, 255, 255, ${alpha})`;
 }
