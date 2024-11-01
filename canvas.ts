@@ -27,6 +27,18 @@ export function init(_el: HTMLCanvasElement) {
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
   ctx.lineWidth = 2;
+
+  if (status.length > 0) {
+    const fontSizeInPixels = 40;
+    ctx.font = `${fontSizeInPixels}px Monaco`;
+    const width = ctx.measureText(status).width;
+    ctx.fillText(status, window.innerWidth - width - fontSizeInPixels, fontSizeInPixels);
+
+    // const size = 40;
+    // ctx.font = size + 'px Monaco';
+    // const bb = ctx.measureText(status);
+    // drawText({ x: window.innerWidth - bb.width - size, y: size }, status);
+  }
 }
 
 export function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
@@ -108,4 +120,17 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
   }
   const alpha = Math.random() * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
+}
+
+let status = '';
+let statusId = 0;
+
+export function setStatus(newStatus: string) {
+  status = newStatus;
+  const id = ++statusId;
+  setTimeout(() => {
+    if (statusId === id) {
+      status = '';
+    }
+  }, 2000);
 }

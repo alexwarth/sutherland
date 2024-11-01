@@ -888,13 +888,11 @@ export class Equals extends Constraint {
   private static readonly memo: Map<Variable, Map<Variable, Equals>> = new Map();
 
   static create(x: Variable, y: Variable) {
-    console.log('create eq', x, y);
     let eq = Equals.memo.get(x)?.get(y) ?? Equals.memo.get(y)?.get(x);
     if (eq) {
       return eq;
     }
 
-    console.log('actually create eq', x, y);
     eq = new Equals(x, y);
     let xDict = Equals.memo.get(x);
     if (!xDict) {
@@ -912,7 +910,6 @@ export class Equals extends Constraint {
   ) {
     super();
     this.lowLevelConstraints.push(new LLEquals(x, y));
-    console.log('llcs', this.lowLevelConstraints);
     this.variables.push(x, y);
   }
 

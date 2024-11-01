@@ -23,11 +23,12 @@ function onFrame() {
   if (irses?.length > 0) {
     // don't solve anything
   } else if (keysDown[' ']) {
+    canvas.setStatus('solving...');
     irses = constraints.solve({ recordIntermediateResults: true }) as (() => void)[][];
-    console.log(
-      'irses',
-      irses.map((irs) => irs.length),
-    );
+    // console.log(
+    //   'irses',
+    //   irses.map((irs) => irs.length),
+    // );
   } else {
     constraints.solve({ onlyPropagateKnowns: true });
     irses = [];
@@ -44,6 +45,9 @@ function onFrame() {
     //   'irses now',
     //   irses.map((irs) => irs.length),
     // );
+    if (irses.length === 0) {
+      canvas.setStatus('done solving');
+    }
     lastAnimationTime = now;
   }
 
@@ -86,6 +90,7 @@ window.addEventListener('keydown', (e) => {
 
   switch (e.key) {
     case 'Backspace':
+      canvas.setStatus('delete');
       selection.forEach((thing) => thing.remove());
       break;
     case 'b':
@@ -98,6 +103,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case 'l':
+      canvas.setStatus('length');
       for (const thing of selection) {
         if (thing instanceof Line) {
           constraints.constant(constraints.polarVector(thing.a, thing.b).distance);
@@ -105,12 +111,15 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case 'c':
+      canvas.setStatus('copy');
       copy();
       break;
     case 'v':
+      canvas.setStatus('paste');
       paste();
       break;
     case 'h':
+      canvas.setStatus('HorV');
       for (const line of Line.all) {
         if (selection.has(line)) {
           const { a, b } = line;
@@ -118,10 +127,10 @@ window.addEventListener('keydown', (e) => {
           const dy = Math.abs(a.y - b.y);
           if (dx <= dy) {
             constraints.relaxEquals(a.canonicalInstance.xVariable, b.canonicalInstance.xVariable);
-            console.log('vertical');
+            // console.log('vertical');
           } else {
             constraints.relaxEquals(a.canonicalInstance.yVariable, b.canonicalInstance.yVariable);
-            console.log('horizontal');
+            // console.log('horizontal');
           }
         }
       }
@@ -203,11 +212,11 @@ canvas.el.addEventListener('pointerup', (e) => {
     Handles.dragHandle = null;
   }
 
-  if (selection.size > 0) {
-    const handles = new Set<Handle>();
-    selection.forEach((thing) => thing.addCanonicalHandlesTo(handles));
-    handles.forEach(Handles.mergeWithNearestAndAddImplicitConstraints);
-  }
+  // if (selection.size > 0) {
+  //   const handles = new Set<Handle>();
+  //   selection.forEach((thing) => thing.addCanonicalHandlesTo(handles));
+  //   handles.forEach(Handles.mergeWithNearestAndAddImplicitConstraints);
+  // }
 });
 
 // helpers

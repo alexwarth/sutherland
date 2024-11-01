@@ -66,6 +66,16 @@ export class Line implements Thing {
     this.a = Handle.create(aPos);
     this.b = Handle.create(bPos);
     Line.all.add(this);
+
+    for (const h of Handle.all) {
+      if (this.containsPos(h)) {
+        // add point-on-line constraint
+        constraints.equals(
+          constraints.polarVector(this.a, h).angle,
+          constraints.polarVector(h, this.b).angle,
+        );
+      }
+    }
   }
 
   remove() {
