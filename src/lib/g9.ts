@@ -19,12 +19,12 @@ function identity(n) {
 }
 
 function neg(x) {
-  return x.map(a => -a);
+  return x.map((a) => -a);
 }
 
 function dot(a, b) {
   if (typeof a[0] !== 'number') {
-    return a.map(x => dot(x, b));
+    return a.map((x) => dot(x, b));
   }
   return a.reduce((x, y, i) => x + y * b[i], 0);
 }
@@ -44,14 +44,14 @@ function add(a, b) {
 }
 
 function div(a, b) {
-  return a.map(c => c.map(d => d / b));
+  return a.map((c) => c.map((d) => d / b));
 }
 
 function mul(a, b) {
   if (typeof a[0] !== 'number') {
-    return a.map(c => mul(c, b));
+    return a.map((c) => mul(c, b));
   }
-  return a.map(c => c * b);
+  return a.map((c) => c * b);
 }
 
 function ten(a, b) {
@@ -102,9 +102,7 @@ export function gradient(f: (x: number[]) => number, x: number[]): number[] {
     let delta = max(1e-6 * f1, 1e-8);
     for (let k = 0; ; k++) {
       if (k == 20) {
-        throw new Error(
-          'Gradient failed at index ' + i + ' of [' + x.join(' ') + ']'
-        );
+        throw new Error('Gradient failed at index ' + i + ' of [' + x.join(' ') + ']');
       }
       tempX[i] = x[i] + delta;
       const f0 = f(tempX);
@@ -118,10 +116,7 @@ export function gradient(f: (x: number[]) => number, x: number[]): number[] {
         const t2 = x[i] + delta;
         const d1 = (f0 - f1) / delta;
         const d2 = (f1 - f2) / delta;
-        const err = min(
-          max(abs(d1 - grad[i]), abs(d2 - grad[i]), abs(d1 - d2)),
-          delta
-        );
+        const err = min(max(abs(d1 - grad[i]), abs(d2 - grad[i]), abs(d1 - d2)), delta);
         const normalize = max(
           abs(grad[i]),
           abs(f0),
@@ -130,7 +125,7 @@ export function gradient(f: (x: number[]) => number, x: number[]): number[] {
           abs(t0),
           abs(t1),
           abs(t2),
-          1e-8
+          1e-8,
         );
         if (err / normalize < 1e-3) {
           break;
@@ -147,7 +142,8 @@ export function minimize(
   x0: number[],
   maxit = 1000,
   tol = 1e-8,
-  end_on_line_search = false
+  end_on_line_search = false,
+  intermediateStateCallback: (state: number[]) => void = () => {},
 ): {
   solution: number[];
   f: number;
@@ -169,6 +165,8 @@ export function minimize(
   let H1 = identity(n);
 
   for (var it = 0; it < maxit; it++) {
+    intermediateStateCallback(x0);
+
     if (!g0.every(isFinite)) {
       var msg = 'Gradient has Infinity or NaN';
       break;
@@ -211,12 +209,14 @@ export function minimize(
     const Hy = dot(H1, y);
     H1 = sub(
       add(H1, mul(ten(s, s), (ys + dot(y, Hy)) / (ys * ys))),
-      div(add(ten(Hy, s), ten(s, Hy)), ys)
+      div(add(ten(Hy, s), ten(s, Hy)), ys),
     );
     x0 = x1;
     f0 = f1;
     g0 = g1;
   }
+
+  intermediateStateCallback(x0);
 
   return {
     solution: x0,

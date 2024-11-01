@@ -305,6 +305,31 @@ class LLFinger extends LowLevelConstraint {
   }
 }
 
+class LLEquals extends LowLevelConstraint {
+  constructor(
+    private readonly x: Variable,
+    private readonly y: Variable,
+  ) {
+    super();
+    this.variables.push(x, y);
+  }
+
+  addTo(constraints: LowLevelConstraint[]) {
+    for (const that of constraints) {
+      if (that instanceof LLEquals && this.x.equals(that.y) && this.y.equals(that.x)) {
+        return;
+      }
+    }
+
+    constraints.push(this);
+  }
+
+  getError([x, y]: number[], knowns: Set<Variable>, freeVariables: Set<Variable>): number {
+    // console.log('error is', x - y);
+    return x - y;
+  }
+}
+
 class LLDistance extends LowLevelConstraint {
   constructor(
     constraint: Constraint,
@@ -859,6 +884,50 @@ export const linearRelationship = LinearRelationship.create;
 
 export const equals = (x: Variable, y: Variable) => linearRelationship(y, 1, x, 0);
 
+export class Equals extends Constraint {
+  private static readonly memo: Map<Variable, Map<Variable, Equals>> = new Map();
+
+  static create(x: Variable, y: Variable) {
+    console.log('create eq', x, y);
+    let eq = Equals.memo.get(x)?.get(y) ?? Equals.memo.get(y)?.get(x);
+    if (eq) {
+      return eq;
+    }
+
+    console.log('actually create eq', x, y);
+    eq = new Equals(x, y);
+    let xDict = Equals.memo.get(x);
+    if (!xDict) {
+      xDict = new Map();
+      Equals.memo.set(x, xDict);
+    }
+    xDict.set(y, eq);
+
+    return eq;
+  }
+
+  private constructor(
+    readonly x: Variable,
+    readonly y: Variable,
+  ) {
+    super();
+    this.lowLevelConstraints.push(new LLEquals(x, y));
+    console.log('llcs', this.lowLevelConstraints);
+    this.variables.push(x, y);
+  }
+
+  public remove() {
+    const xDict = Equals.memo.get(this.x)!;
+    xDict.delete(this.y);
+    if (xDict.size === 0) {
+      Equals.memo.delete(this.x);
+    }
+    super.remove();
+  }
+}
+
+export const relaxEquals = Equals.create;
+
 export class Absorb extends Constraint {
   // child handle -> Absorb constraint
   private static readonly memo = new Map<Handle, Absorb>();
@@ -1132,20 +1201,42 @@ function forgetClustersForSolver() {
   clustersForSolver = null;
 }
 
-export function solve(maxIterations = 1_000) {
+export function solve(options?: {
+  onlyPropagateKnowns?: boolean;
+  maxIterations?: number;
+  recordIntermediateResults?: boolean;
+}) {
   const clusters = getClustersForSolver();
+  const onlyPropagateKnowns = options?.onlyPropagateKnowns ?? false;
+  const recordIntermediateResults = options?.recordIntermediateResults ?? false;
+  const maxIterations = options?.maxIterations ?? 1_000;
+  const intermediateResults: (() => void)[][] = [];
   for (const cluster of clusters) {
-    solveCluster(cluster, maxIterations);
+    const irs = solveCluster(
+      cluster,
+      onlyPropagateKnowns,
+      maxIterations,
+      recordIntermediateResults,
+    );
+    if (irs) {
+      intermediateResults.push(irs);
+    }
   }
+  return recordIntermediateResults ? intermediateResults : null;
 }
 
-function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
+function solveCluster(
+  cluster: ClusterForSolver,
+  onlyPropagateKnowns: boolean,
+  maxIterations: number,
+  recordIntermediateResults: boolean,
+) {
   const { constraints, lowLevelConstraints } = cluster;
   let { freeVariables, parameters } = cluster;
 
   if (constraints.length === 0) {
     // nothing to solve!
-    return;
+    return null;
   }
 
   // Let the user to modify the locked distance or angle of a polar vector
@@ -1194,6 +1285,10 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     parameters = parameters.filter((v) => !knowns.has(v));
   }
 
+  if (onlyPropagateKnowns) {
+    return null;
+  }
+
   // The state that goes into `inputs` is the stuff that can be modified by the solver.
   // It excludes any value that we've already computed from known values like pin and
   // constant constraints.
@@ -1207,6 +1302,8 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
   }
 
   // This is where we actually run the solver.
+
+  const intermediateResults: number[][] = [];
 
   function computeTotalError(currState: number[]) {
     let error = 0;
@@ -1226,12 +1323,16 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     // No variables to solve for, but we still need to assign the correct values
     // to free variables. We do this by calling computeTotalError() below.
     computeTotalError(inputs);
-    return;
+    return null;
   }
 
   let result: ReturnType<typeof minimize>;
   try {
-    result = minimize(computeTotalError, inputs, maxIterations, 1e-3);
+    result = minimize(computeTotalError, inputs, maxIterations, 1e-3, false, (state) => {
+      if (recordIntermediateResults) {
+        intermediateResults.push(state.slice());
+      }
+    });
   } catch (e) {
     console.log(
       'minimizeError threw',
@@ -1244,7 +1345,6 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     throw e;
   }
 
-  // SVG.showStatus(`${result.iterations} iterations`);
   forDebugging('solverResult', result);
   forDebugging('solverResultMessages', (messages?: Set<string>) => {
     if (!messages) {
@@ -1259,13 +1359,31 @@ function solveCluster(cluster: ClusterForSolver, maxIterations: number) {
     // const lastConstraint = constraints[constraints.length - 1];
     // lastConstraint.paused = true;
     // console.log('paused', lastConstraint, 'to see if it helps');
-    return;
+    return null;
   }
 
+  // console.log(result.iterations, 'iterations');
+  // console.log('solution', result.solution);
+
   // Now we write the solution from the solver back into our variables.
-  const outputs = result.solution;
-  for (const param of parameters) {
-    param.value = outputs.shift()!;
+  writeState(result.solution);
+
+  if (recordIntermediateResults) {
+    intermediateResults.push(result.solution);
+  }
+
+  // console.log(result.message);
+  // console.log('irs', intermediateResults);
+
+  return recordIntermediateResults
+    ? intermediateResults.map((state) => () => writeState(state))
+    : null;
+
+  function writeState(state: number[]) {
+    // console.log('writing state', state);
+    for (let idx = 0; idx < parameters.length; idx++) {
+      parameters[idx].value = state[idx];
+    }
   }
 }
 

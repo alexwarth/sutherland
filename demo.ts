@@ -555,7 +555,7 @@ function render() {
   }
 
   if (drawingArc) {
-    canvas.drawArc(drawingArc.a, drawingArc.b, drawingArc.c);
+    canvas.drawArc(drawingArc.a, drawingArc.b!, drawingArc.c);
   }
 
   for (const arc of arcs) {

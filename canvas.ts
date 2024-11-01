@@ -31,6 +31,7 @@ export function clear() {
 
 export function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
   ctx.strokeStyle = strokeStyle;
+  ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(a.x, a.y);
   ctx.lineTo(b.x, b.y);
@@ -38,15 +39,16 @@ export function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()
 }
 
 export function drawArc(
+  c: Position,
   a: Position,
   b: Position | null,
-  c: Position,
   strokeStyle = flickeryWhite(),
 ) {
   ctx.beginPath();
 
   if (b) {
     ctx.strokeStyle = strokeStyle;
+    ctx.lineCap = 'round';
     const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
     const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
     ctx.arc(c.x, c.y, Vec.dist(c, a), theta1, theta2);
