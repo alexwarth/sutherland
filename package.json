@@ -1,0 +1,26 @@
+{
+  "name": "sutherland",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {
+    "gts": "^5.2.0",
+    "prettier": "^3.2.4",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.11"
+  },
+  "prettier": {
+    "arrowParens": "avoid",
+    "singleQuote": true,
+    "trailingComma": "es5"
+  }
+}
