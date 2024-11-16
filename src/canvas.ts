@@ -1,5 +1,4 @@
 import { pointDist, Position, TAU } from './helpers';
-import Transform from './Transform';
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
@@ -37,38 +36,21 @@ export function clear() {
   }
 }
 
-export function drawLine(
-  a: Position,
-  b: Position,
-  strokeStyle = flickeryWhite(),
-  transform = Transform.identity,
-) {
+export function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  ctx.moveTo(transform.x(a.x), transform.y(a.y));
-  ctx.lineTo(transform.x(b.x), transform.y(b.y));
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
   ctx.stroke();
 }
 
-export function drawArc(
-  c: Position,
-  a: Position,
-  b: Position,
-  strokeStyle = flickeryWhite(),
-  transform = Transform.identity,
-) {
+export function drawArc(c: Position, a: Position, b: Position, strokeStyle = flickeryWhite()) {
   ctx.beginPath();
   ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
   const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
   const fullCircle = Math.abs(theta1 - theta2) < 0.01;
-  ctx.arc(
-    transform.x(c.x),
-    transform.y(c.y),
-    pointDist(c, a) * transform.zoom,
-    fullCircle ? 0 : theta1,
-    fullCircle ? TAU : theta2,
-  );
+  ctx.arc(c.x, c.y, pointDist(c, a), fullCircle ? 0 : theta1, fullCircle ? TAU : theta2);
   ctx.stroke();
 }
 

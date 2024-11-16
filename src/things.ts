@@ -1,12 +1,11 @@
 import { pointDistToLineSegment, generateId, pointDist, Position } from './helpers';
 import Var from './Var';
 import { drawArc, drawLine, flickeryWhite } from './canvas';
-import Transform from './Transform';
 
 export interface Thing {
   get handles(): Set<Handle>;
   contains(pos: Position): boolean;
-  render(selection: Set<Thing>, t: Transform): void;
+  render(selection: Set<Thing>): void;
   remove(): void;
 }
 
@@ -67,7 +66,7 @@ export class Handle implements Thing {
     return pointDist(pos, this) <= CLOSE_ENOUGH;
   }
 
-  render(selection: Set<Thing>, t: Transform) {
+  render(selection: Set<Thing>) {
     // no op
   }
 
@@ -95,8 +94,8 @@ export class Line implements Thing {
     );
   }
 
-  render(selection: Set<Thing>, t: Transform) {
-    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'), t);
+  render(selection: Set<Thing>) {
+    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
   }
 
   remove() {
@@ -129,7 +128,7 @@ export class Arc {
     return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c)) <= CLOSE_ENOUGH;
   }
 
-  render(selection: Set<Thing>, t: Transform) {
-    drawArc(this.c, this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'), t);
+  render(selection: Set<Thing>) {
+    drawArc(this.c, this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
   }
 }
