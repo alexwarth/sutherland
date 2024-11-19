@@ -25,10 +25,10 @@ export function pointDiff(a: Position, b: Position) {
 // from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 
 export function pointDistToLineSegment(p: Position, v: Position, w: Position) {
-  return Math.sqrt(pointDistToSegment2(p, v, w));
+  return Math.sqrt(pointDistToLineSegment2(p, v, w));
 }
 
-function pointDistToSegment2(p: Position, v: Position, w: Position) {
+function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
   const l = pointDist2(v, w);
   if (l == 0) {
     return pointDist2(p, v);

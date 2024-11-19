@@ -22,5 +22,8 @@
     "arrowParens": "avoid",
     "singleQuote": true,
     "trailingComma": "es5"
+  },
+  "dependencies": {
+    "transformation-matrix": "^2.16.1"
   }
 }

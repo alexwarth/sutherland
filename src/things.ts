@@ -1,11 +1,12 @@
-import { pointDistToLineSegment, generateId, pointDist, Position } from './helpers';
+import { generateId, Position, pointDist, pointDistToLineSegment } from './helpers';
 import Var from './Var';
 import { drawArc, drawLine, flickeryWhite } from './canvas';
+import Transform from './Transform';
 
 export interface Thing {
   get handles(): Set<Handle>;
-  contains(pos: Position): boolean;
-  render(selection: Set<Thing>): void;
+  contains(pos: Position, transform: Transform): boolean;
+  render(selection: Set<Thing>, transform: Transform): void;
   remove(): void;
 }
 
@@ -62,11 +63,11 @@ export class Handle implements Thing {
     return this;
   }
 
-  contains(pos: Position) {
-    return pointDist(pos, this) <= CLOSE_ENOUGH;
+  contains(pos: Position, transform: Transform) {
+    return pointDist(transform.applyTo(pos), transform.applyTo(this)) <= CLOSE_ENOUGH;
   }
 
-  render(selection: Set<Thing>) {
+  render(selection: Set<Thing>, transform: Transform) {
     // no op
   }
 
@@ -86,16 +87,20 @@ export class Line implements Thing {
     this.handles = new Set([this.a, this.b]);
   }
 
-  contains(pos: Position) {
+  contains(pos: Position, transform: Transform) {
     return (
-      !this.a.contains(pos) &&
-      !this.b.contains(pos) &&
-      pointDistToLineSegment(pos, this.a, this.b) <= CLOSE_ENOUGH
+      !this.a.contains(pos, transform) &&
+      !this.b.contains(pos, transform) &&
+      pointDistToLineSegment(
+        transform.applyTo(pos),
+        transform.applyTo(this.a),
+        transform.applyTo(this.b),
+      ) <= CLOSE_ENOUGH
     );
   }
 
-  render(selection: Set<Thing>) {
-    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+  render(selection: Set<Thing>, transform: Transform) {
+    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'), transform);
   }
 
   remove() {
@@ -123,12 +128,23 @@ export class Arc {
     this.c.remove();
   }
 
-  contains(pos: Position) {
+  contains(pos: Position, transform: Transform) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c)) <= CLOSE_ENOUGH;
+    return (
+      Math.abs(
+        pointDist(transform.applyTo(pos), transform.applyTo(this.c)) -
+          pointDist(transform.applyTo(this.a), transform.applyTo(this.c)),
+      ) <= CLOSE_ENOUGH
+    );
   }
 
-  render(selection: Set<Thing>) {
-    drawArc(this.c, this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'));
+  render(selection: Set<Thing>, transform: Transform) {
+    drawArc(
+      this.c,
+      this.a,
+      this.b,
+      flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
+      transform,
+    );
   }
 }

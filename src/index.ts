@@ -9,6 +9,7 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Arc, Handle, Line, Thing } from './things';
+import Transform from './Transform';
 import Var from './Var';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
@@ -27,6 +28,9 @@ let drawingInProgress:
 const constraints = new ConstraintSet();
 (window as any).constraints = constraints;
 
+const transform = new Transform();
+(window as any).transform = transform;
+
 function onFrame() {
   if (keysDown[' ']) {
     canvas.setStatus('solve');
@@ -44,29 +48,40 @@ onFrame();
 function render() {
   canvas.clear();
   things.forEach((t) => {
-    t.render(selection);
-    t.handles.forEach((h) => h.render(selection));
+    t.render(selection, transform);
+    t.handles.forEach((h) => h.render(selection, transform));
   });
 
   switch (drawingInProgress?.type) {
     case 'line':
-      canvas.drawLine(drawingInProgress.start, pointer);
+      canvas.drawLine(drawingInProgress.start, pointer, canvas.flickeryWhite(), transform);
       break;
     case 'arc':
       if (drawingInProgress.positions.length > 1) {
-        canvas.drawArc(drawingInProgress.positions[0], drawingInProgress.positions[1], pointer);
+        canvas.drawArc(
+          drawingInProgress.positions[0],
+          drawingInProgress.positions[1],
+          pointer,
+          canvas.flickeryWhite(),
+          transform,
+        );
       }
       break;
   }
 
   const crosshairsSize = 10;
+  const tPointer = transform.applyTo(pointer);
   canvas.drawLine(
-    { x: pointer.x - crosshairsSize, y: pointer.y },
-    { x: pointer.x + crosshairsSize, y: pointer.y },
+    { x: tPointer.x - crosshairsSize, y: tPointer.y },
+    { x: tPointer.x + crosshairsSize, y: tPointer.y },
+    canvas.flickeryWhite(),
+    Transform.identity,
   );
   canvas.drawLine(
-    { x: pointer.x, y: pointer.y - crosshairsSize },
-    { x: pointer.x, y: pointer.y + crosshairsSize },
+    { x: tPointer.x, y: tPointer.y - crosshairsSize },
+    { x: tPointer.x, y: tPointer.y + crosshairsSize },
+    canvas.flickeryWhite(),
+    Transform.identity,
   );
 }
 
@@ -84,7 +99,7 @@ window.addEventListener('keydown', (e) => {
       canvas.setStatus('delete');
       for (const thing of selection) {
         // TODO: remove handles, constraints, etc.
-        // thing.remove(); ...
+        thing.remove();
         things.splice(things.indexOf(thing), 1);
       }
       selection.clear();
@@ -180,9 +195,30 @@ canvas.el.addEventListener('pointerdown', (e) => {
 });
 
 canvas.el.addEventListener('pointermove', (e) => {
+  const rawPos = { x: (e as any).layerX, y: (e as any).layerY };
+  const newPos = transform.applyInverseTo(rawPos);
   const oldPos = { x: pointer.x, y: pointer.y };
-  pointer.x = (e as any).layerX;
-  pointer.y = (e as any).layerY;
+
+  if (keysDown['Control']) {
+    const xf = rawPos.x / window.innerWidth;
+    const yf = rawPos.y / window.innerHeight;
+    // if (keysDown['Shift']) {
+    //   transform.rotateBy((delta * Math.PI) / 10000);
+    // } else {
+    transform.setScale(xf * 2);
+    // }
+  }
+
+  if (pointer.down && !drawingInProgress && !dragHandle && selection.size === 0) {
+    const dx = newPos.x - oldPos.x;
+    const dy = newPos.y - oldPos.y;
+    transform.translateBy(dx, dy);
+    ({ x: pointer.x, y: pointer.y } = transform.applyInverseTo(rawPos));
+    return;
+  }
+
+  pointer.x = newPos.x;
+  pointer.y = newPos.y;
 
   snapPointer();
 
@@ -229,7 +265,7 @@ function toggleSelections() {
 }
 
 function toggleSelected(thing: Thing) {
-  if (!thing.contains(pointer)) {
+  if (!thing.contains(pointer, transform)) {
     // don't do anything
   } else if (selection.has(thing)) {
     selection.delete(thing);
@@ -246,7 +282,7 @@ function handleAtPointer() {
       if (
         (!dragHandle || !handle.equals(dragHandle)) &&
         handle.isCanonical &&
-        handle.contains(pointer)
+        handle.contains(pointer, transform)
       ) {
         const dist = pointDist(pointer, handle);
         if (dist < minDist) {
@@ -261,7 +297,7 @@ function handleAtPointer() {
 
 function thingAtPointer() {
   for (const thing of things) {
-    if (thing.contains(pointer)) {
+    if (thing.contains(pointer, transform)) {
       return thing;
     }
   }
@@ -276,7 +312,7 @@ function moreLines() {
     mergeAndAddImplicitConstraints(line.b);
     for (const thing of things) {
       for (const h of thing.handles) {
-        if (!h.equals(line.a) && !h.equals(line.b) && line.contains(h)) {
+        if (!h.equals(line.a) && !h.equals(line.b) && line.contains(h, transform)) {
           constraints.add(new PointOnLineConstraint(h, line.a, line.b));
         }
       }
@@ -310,7 +346,12 @@ function moreArc() {
     constraints.add(new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c));
     for (const thing of things) {
       for (const h of thing.handles) {
-        if (!h.equals(arc.a) && !h.equals(arc.b) && !h.equals(arc.c) && arc.contains(h)) {
+        if (
+          !h.equals(arc.a) &&
+          !h.equals(arc.b) &&
+          !h.equals(arc.c) &&
+          arc.contains(h, transform)
+        ) {
           constraints.add(new PointOnArcConstraint(h, arc.a, arc.b, arc.c));
         }
       }
@@ -324,7 +365,7 @@ function mergeAndAddImplicitConstraints(h: Handle) {
   const thingsToIgnore = new Set<Thing>();
   for (const thing of things) {
     for (const handle of thing.handles) {
-      if (handle.isCanonical && handle.contains(h)) {
+      if (handle.isCanonical && handle.contains(h, transform)) {
         h.mergeWith(handle);
         thingsToIgnore.add(thing);
       }
@@ -332,7 +373,7 @@ function mergeAndAddImplicitConstraints(h: Handle) {
   }
 
   for (const thing of things) {
-    if (thingsToIgnore.has(thing) || !thing.contains(h)) {
+    if (thingsToIgnore.has(thing) || !thing.contains(h, transform)) {
       // skip
     } else if (thing instanceof Line) {
       constraints.add(new PointOnLineConstraint(h, thing.a, thing.b));
@@ -355,7 +396,7 @@ function snapPointer() {
   const vars = new Set([snappedPointerPos.xVar, snappedPointerPos.yVar]);
 
   for (const thing of things) {
-    if (selection.has(thing) || !thing.contains(pointer)) {
+    if (selection.has(thing) || !thing.contains(pointer, transform)) {
       // ignore
     } else if (thing instanceof Line) {
       constraints.add(new PointOnLineConstraint(snappedPointerPos, thing.a, thing.b));

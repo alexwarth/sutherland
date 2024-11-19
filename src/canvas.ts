@@ -1,4 +1,5 @@
 import { pointDist, Position, TAU } from './helpers';
+import Transform from './Transform';
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
@@ -36,29 +37,52 @@ export function clear() {
   }
 }
 
-export function drawLine(a: Position, b: Position, strokeStyle = flickeryWhite()) {
+export function drawLine(
+  a: Position,
+  b: Position,
+  strokeStyle = flickeryWhite(),
+  transform = Transform.identity,
+) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.lineTo(b.x, b.y);
+  const ta = transform.applyTo(a);
+  const tb = transform.applyTo(b);
+  ctx.moveTo(ta.x, ta.y);
+  ctx.lineTo(tb.x, tb.y);
   ctx.stroke();
 }
 
-export function drawArc(c: Position, a: Position, b: Position, strokeStyle = flickeryWhite()) {
+export function drawArc(
+  c: Position,
+  a: Position,
+  b: Position,
+  strokeStyle = flickeryWhite(),
+  transform = Transform.identity,
+) {
+  const ta = transform.applyTo(a);
+  const tb = transform.applyTo(b);
+  const tc = transform.applyTo(c);
   ctx.beginPath();
   ctx.strokeStyle = strokeStyle;
-  const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
-  const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
-  const fullCircle = Math.abs(theta1 - theta2) < 0.01;
-  ctx.arc(c.x, c.y, pointDist(c, a), fullCircle ? 0 : theta1, fullCircle ? TAU : theta2);
+  const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
+  const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
+  // const fullCircle = Math.abs(theta1 - theta2) < 0.01;
+  // ctx.arc(tc.x, tc.y, pointDist(tc, ta), fullCircle ? 0 : theta1, fullCircle ? TAU : theta2);
+  ctx.arc(tc.x, tc.y, pointDist(tc, ta), theta1, theta2);
   ctx.stroke();
 }
 
-export function drawText({ x, y }: Position, text: string, fillStyle = flickeryWhite()) {
+export function drawText(
+  pos: Position,
+  text: string,
+  fillStyle = flickeryWhite(),
+  transform = Transform.identity,
+) {
   ctx.fillStyle = fillStyle;
   const fontSizeInPixels = 12;
   ctx.font = `${fontSizeInPixels}px Major Mono Display`;
   const labelWidth = ctx.measureText(text).width;
+  const { x, y } = transform.applyTo(pos);
   ctx.fillText(text, x - labelWidth / 2, y + fontSizeInPixels / 2);
 }
 
