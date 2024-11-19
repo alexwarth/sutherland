@@ -58,11 +58,7 @@ export default class Transform {
 
   private matrix() {
     if (!this._matrix) {
-      this._matrix = compose(
-        rotate(this.angle, window.innerWidth / 2, window.innerHeight / 2),
-        scale(this.scale),
-        translate(this.dx, this.dy),
-      );
+      this._matrix = compose(rotate(this.angle), scale(this.scale), translate(this.dx, this.dy));
     }
     return this._matrix;
   }

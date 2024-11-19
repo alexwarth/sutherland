@@ -99,7 +99,7 @@ window.addEventListener('keydown', (e) => {
       canvas.setStatus('delete');
       for (const thing of selection) {
         // TODO: remove handles, constraints, etc.
-        thing.remove();
+        // thing.remove();
         things.splice(things.indexOf(thing), 1);
       }
       selection.clear();
@@ -202,11 +202,7 @@ canvas.el.addEventListener('pointermove', (e) => {
   if (keysDown['Control']) {
     const xf = rawPos.x / window.innerWidth;
     const yf = rawPos.y / window.innerHeight;
-    // if (keysDown['Shift']) {
-    //   transform.rotateBy((delta * Math.PI) / 10000);
-    // } else {
     transform.setScale(xf * 2);
-    // }
   }
 
   if (pointer.down && !drawingInProgress && !dragHandle && selection.size === 0) {
