@@ -1,5 +1,5 @@
 import { Constraint } from './constraints';
-import Var from './Var';
+import { Var } from './things';
 
 export default class ConstraintSet {
   private readonly constraints: Constraint[] = [];
