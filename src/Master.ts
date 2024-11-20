@@ -14,9 +14,7 @@ export class Master {
   readonly things: Thing[] = [];
   readonly constraints = new ConstraintSet();
   readonly transform = new Transform();
-
-  // UI state
-  selection = new Set<Thing>();
+  readonly selection = new Set<Thing>();
 
   relax() {
     this.constraints.relax(this.getVars());
