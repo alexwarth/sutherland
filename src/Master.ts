@@ -32,6 +32,7 @@ export class Master {
     this.mergeAndAddImplicitConstraints(line.b);
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
+        h = h.primary;
         if (h !== line.a.primary && h !== line.b.primary && line.contains(h, this.transform)) {
           this.constraints.add(new PointOnLineConstraint(h, line.a, line.b));
         }
@@ -48,6 +49,7 @@ export class Master {
     this.constraints.add(new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c));
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
+        h = h.primary;
         if (
           h !== arc.a.primary &&
           h !== arc.b.primary &&
@@ -61,24 +63,25 @@ export class Master {
     this.things.push(arc);
   }
 
-  mergeAndAddImplicitConstraints(h: Handle) {
+  mergeAndAddImplicitConstraints(handle: Handle) {
     const thingsToIgnore = new Set<Thing>();
     for (const thing of this.things) {
-      thing.forEachHandle((handle) => {
-        if (handle.contains(h, this.transform)) {
-          h.mergeWith(handle);
+      thing.forEachHandle((h) => {
+        h = h.primary;
+        if (h.contains(handle, this.transform)) {
+          handle.mergeWith(h);
           thingsToIgnore.add(thing);
         }
       });
     }
 
     for (const thing of this.things) {
-      if (thingsToIgnore.has(thing) || !thing.contains(h, this.transform)) {
+      if (thingsToIgnore.has(thing) || !thing.contains(handle, this.transform)) {
         // skip
       } else if (thing instanceof Line) {
-        this.constraints.add(new PointOnLineConstraint(h, thing.a, thing.b));
+        this.constraints.add(new PointOnLineConstraint(handle, thing.a, thing.b));
       } else if (thing instanceof Arc) {
-        this.constraints.add(new PointOnArcConstraint(h, thing.a, thing.b, thing.c));
+        this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
       }
     }
   }
@@ -159,11 +162,12 @@ export class Master {
     let minDist = Infinity;
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {
-      thing.forEachHandle((handle) => {
-        if (handle !== dragHandle && handle.contains(pos, this.transform)) {
-          const dist = pointDist(pos, handle);
+      thing.forEachHandle((h) => {
+        h = h.primary;
+        if (h !== dragHandle && h.contains(pos, this.transform)) {
+          const dist = pointDist(pos, h);
           if (dist < minDist) {
-            nearestHandle = handle;
+            nearestHandle = h;
             minDist = dist;
           }
         }
@@ -205,6 +209,7 @@ export class Master {
     const movedHandles = new Set<Handle>();
     for (const thing of this.selection) {
       thing.forEachHandle((h) => {
+        h = h.primary;
         if (!movedHandles.has(h)) {
           h.x += dx;
           h.y += dy;

@@ -146,7 +146,7 @@ export class Handle implements Thing {
   render(selection: Set<Thing>, transform: Transform): void {}
 
   forEachHandle(fn: (h: Handle) => void) {
-    fn(this.primary);
+    fn(this);
   }
 
   forEachVar(fn: (v: Var) => void) {
@@ -180,8 +180,8 @@ export class Line implements Thing {
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
-    this.a.forEachHandle(fn);
-    this.b.forEachHandle(fn);
+    fn(this.a);
+    fn(this.b);
   }
 
   forEachVar(fn: (v: Var) => void): void {
@@ -221,9 +221,9 @@ export class Arc implements Thing {
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
-    this.a.forEachHandle(fn);
-    this.b.forEachHandle(fn);
-    this.c.forEachHandle(fn);
+    fn(this.a);
+    fn(this.b);
+    fn(this.c);
   }
 
   forEachVar(fn: (v: Var) => void): void {
