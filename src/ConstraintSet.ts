@@ -1,5 +1,5 @@
 import { Constraint } from './constraints';
-import { Var } from './things';
+import { Handle, Var } from './things';
 
 export default class ConstraintSet {
   private readonly constraints: Constraint[] = [];
@@ -40,6 +40,18 @@ export default class ConstraintSet {
     } else {
       v.value = origValue;
       return false;
+    }
+  }
+
+  replaceHandles(handleMap: Map<Handle, Handle | null>) {
+    let idx = 0;
+    while (idx < this.constraints.length) {
+      const constraint = this.constraints[idx];
+      if (constraint.replaceHandles(handleMap)) {
+        idx++;
+      } else {
+        this.constraints.splice(idx, 1);
+      }
     }
   }
 

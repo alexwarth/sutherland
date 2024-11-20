@@ -23,6 +23,7 @@ export class Master {
   render(transform = this.transform) {
     this.things.forEach((t) => {
       t.render(this.selection, transform);
+      t.forEachHandle((h) => h.render(this.selection, transform));
     });
   }
 
@@ -87,11 +88,17 @@ export class Master {
   }
 
   delete() {
+    const handleMap = new Map<Handle, Handle | null>();
     for (const thing of this.selection) {
-      // TODO: remove handles, constraints, etc.
-      // thing.remove();
+      thing.forEachHandle((h) => {
+        if (!handleMap.has(h)) {
+          const replacementHandle = h.breakOff();
+          handleMap.set(h, replacementHandle);
+        }
+      });
       this.things.splice(this.things.indexOf(thing), 1);
     }
+    this.constraints.replaceHandles(handleMap);
     this.selection.clear();
   }
 

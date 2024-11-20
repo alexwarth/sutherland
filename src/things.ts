@@ -1,4 +1,4 @@
-import { drawArc, drawLine, flickeryWhite } from './canvas';
+import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { pointDist, pointDistToLineSegment, Position } from './helpers';
 import Transform from './Transform';
 
@@ -120,22 +120,29 @@ export class Handle implements Thing {
         this.state.children.add(h);
       }
       that.state = new MergedHandleState(this);
+      this.state.children.add(that);
     }
   }
 
-  breakOff() {
-    if (this.state instanceof PrimaryHandleState && this.state.children.size > 0) {
+  breakOff(): Handle | null {
+    if (this.state instanceof MergedHandleState) {
+      (this.state.parent.state as PrimaryHandleState).children.delete(this);
+      const oldParent = this.state.parent;
+      this.state = new PrimaryHandleState(this.x, this.y);
+      return oldParent;
+    } else if (this.state.children.size > 0) {
       const [firstChild] = [...this.state.children];
-      firstChild.breakOff();
+      firstChild.state = new PrimaryHandleState(this.x, this.y);
       for (const child of this.state.children) {
         if (child !== firstChild) {
-          (firstChild.state as PrimaryHandleState).children.add(child);
+          firstChild.state.children.add(child);
+          (child.state as MergedHandleState).parent = firstChild;
         }
       }
       this.state.children.clear();
-    } else if (this.state instanceof MergedHandleState) {
-      (this.state.parent.state as PrimaryHandleState).children.delete(this);
-      this.state = new PrimaryHandleState(this.x, this.y);
+      return firstChild;
+    } else {
+      return null;
     }
   }
 
@@ -143,7 +150,11 @@ export class Handle implements Thing {
     return this.state.contains(pos, transform);
   }
 
-  render(selection: Set<Thing>, transform: Transform): void {}
+  render(selection: Set<Thing>, transform: Transform): void {
+    // if (this.primary === this) {
+    //   drawText(this, this.toString(), 'white', transform);
+    // }
+  }
 
   forEachHandle(fn: (h: Handle) => void) {
     fn(this);
@@ -151,6 +162,12 @@ export class Handle implements Thing {
 
   forEachVar(fn: (v: Var) => void) {
     this.state.forEachVar(fn);
+  }
+
+  toString() {
+    return this.state instanceof PrimaryHandleState
+      ? `primary(id=${this.id}, children [${[...this.state.children].map((h) => h.id).join(', ')}])`
+      : `merged(id=${this.id}, parent=${this.state.parent.id})`;
   }
 }
 
