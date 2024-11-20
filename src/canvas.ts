@@ -25,7 +25,7 @@ export function init(_el: HTMLCanvasElement) {
 
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 5;
   ctx.lineCap = 'round';
 
   if (status.length > 0) {

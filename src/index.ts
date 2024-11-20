@@ -69,18 +69,18 @@ function render() {
       break;
   }
 
-  const crosshairsSize = 10;
+  const crosshairsSize = 15;
   const tPointer = transform.applyTo(pointer);
   canvas.drawLine(
     { x: tPointer.x - crosshairsSize, y: tPointer.y },
     { x: tPointer.x + crosshairsSize, y: tPointer.y },
-    canvas.flickeryWhite(),
+    canvas.flickeryWhite('bold'),
     Transform.identity,
   );
   canvas.drawLine(
     { x: tPointer.x, y: tPointer.y - crosshairsSize },
     { x: tPointer.x, y: tPointer.y + crosshairsSize },
-    canvas.flickeryWhite(),
+    canvas.flickeryWhite('bold'),
     Transform.identity,
   );
 }
