@@ -14,7 +14,17 @@ let drawingInProgress:
   | null = null;
 let dragHandle: Handle | null = null;
 
-let master = new Master();
+const masters: Master[] = [];
+for (let idx = 0; idx < 10; idx++) {
+  masters.push(new Master());
+}
+
+let master = masters[1];
+
+function switchToMaster(m: Master) {
+  ({ x: pointer.x, y: pointer.y } = m.transform.applyInverseTo(master.transform.applyTo(pointer)));
+  master = m;
+}
 
 function onFrame() {
   if (keysDown[' ']) {
@@ -76,6 +86,16 @@ window.addEventListener('keydown', (e) => {
   }
 
   keysDown[e.key] = true;
+
+  if ('Digit0' <= e.code && e.code <= 'Digit9') {
+    const m = masters[parseInt(e.code.slice(5))];
+    if (keysDown['Shift']) {
+      master.addInstance(m);
+    } else {
+      switchToMaster(m);
+    }
+    return;
+  }
 
   switch (e.key) {
     case 'Backspace':

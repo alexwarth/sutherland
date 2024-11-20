@@ -27,6 +27,14 @@ export class Master {
     });
   }
 
+  addInstance(master: Master) {
+    if (master === this) {
+      return;
+    }
+
+    console.log('TODO: add instance of', master);
+  }
+
   addLine(aPos: Position, bPos: Position) {
     const line = new Line(aPos, bPos);
     this.mergeAndAddImplicitConstraints(line.a);
