@@ -44,15 +44,24 @@ export default class ConstraintSet {
   }
 
   replaceHandles(handleMap: Map<Handle, Handle | null>) {
-    let idx = 0;
-    while (idx < this.constraints.length) {
-      const constraint = this.constraints[idx];
-      if (constraint.replaceHandles(handleMap)) {
-        idx++;
-      } else {
-        this.constraints.splice(idx, 1);
+    const constraintsToKeep: Constraint[] = [];
+    const sigs = new Set<string>();
+    while (this.constraints.length > 0) {
+      const constraint = this.constraints.shift()!;
+      if (!constraint.replaceHandles(handleMap)) {
+        continue;
       }
+
+      const sig = constraint.signature;
+      if (sigs.has(sig)) {
+        continue;
+      }
+
+      constraintsToKeep.push(constraint);
+      sigs.add(sig);
     }
+
+    this.constraints.push(...constraintsToKeep);
   }
 
   private computeError() {
