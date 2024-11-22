@@ -7,7 +7,7 @@ import {
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import { pointDist, Position } from './helpers';
-import { Arc, Handle, Line, Thing, Var } from './things';
+import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 import Transform from './Transform';
 
 export class Master {
@@ -28,11 +28,9 @@ export class Master {
   }
 
   addInstance(master: Master) {
-    if (master === this) {
-      return;
+    if (master !== this) {
+      this.things.push(new Instance(master));
     }
-
-    console.log('TODO: add instance of', master);
   }
 
   addLine(aPos: Position, bPos: Position) {
@@ -143,8 +141,8 @@ export class Master {
     this.selection.clear();
   }
 
-  snap(pos: Position, dragHandle: Handle | null) {
-    const handle = this.handleAt(pos, dragHandle);
+  snap(pos: Position, dragThing: (Thing & Position) | null) {
+    const handle = this.handleAt(pos, dragThing);
     if (handle) {
       pos.x = handle.x;
       pos.y = handle.y;
@@ -173,13 +171,13 @@ export class Master {
     pos.y = snappedPos.y;
   }
 
-  handleAt(pos: Position, dragHandle: Handle | null): Handle | null {
+  handleAt(pos: Position, dragThing: (Thing & Position) | null): Handle | null {
     let minDist = Infinity;
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
         h = h.primary;
-        if (h !== dragHandle && h.contains(pos, this.transform)) {
+        if (h !== dragThing && h.contains(pos, this.transform)) {
           const dist = pointDist(pos, h);
           if (dist < minDist) {
             nearestHandle = h;

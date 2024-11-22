@@ -1,5 +1,6 @@
 import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { pointDist, pointDistToLineSegment, Position } from './helpers';
+import { Master } from './Master';
 import Transform from './Transform';
 
 export class Var {
@@ -245,5 +246,50 @@ export class Arc implements Thing {
 
   forEachVar(fn: (v: Var) => void): void {
     this.forEachHandle((h) => h.forEachVar(fn));
+  }
+}
+
+export class Instance implements Thing {
+  readonly transform = new Transform();
+
+  constructor(readonly master: Master) {}
+
+  get x() {
+    return this.transform.dx;
+  }
+
+  set x(newX: number) {
+    this.transform.dx = newX;
+  }
+
+  get y() {
+    return this.transform.dy;
+  }
+
+  set y(newY: number) {
+    this.transform.dy = newY;
+  }
+
+  contains(pos: Position, transform: Transform): boolean {
+    pos = this.transform.applyTo(pos);
+    for (const thing of this.master.things) {
+      if (thing.contains(pos, transform)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  render(selection: Set<Thing>, transform: Transform) {
+    // TODO: fix this
+    this.master.render(transform);
+  }
+
+  forEachHandle(fn: (h: Handle) => void): void {
+    // TODO: write this
+  }
+
+  forEachVar(fn: (v: Var) => void): void {
+    // TODO: write this
   }
 }

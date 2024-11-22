@@ -12,8 +12,8 @@ import { Position } from './helpers';
 export default class Transform {
   static readonly identity = new Transform();
 
-  private dx = 0;
-  private dy = 0;
+  dx = 0;
+  dy = 0;
   private angle = 0;
   private scale = 1;
 

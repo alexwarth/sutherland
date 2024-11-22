@@ -1,7 +1,7 @@
 import * as canvas from './canvas';
 import { pointDiff, Position } from './helpers';
 import { Master } from './Master';
-import { Handle } from './things';
+import { Handle, Instance, Thing } from './things';
 import Transform from './Transform';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
@@ -12,7 +12,7 @@ let drawingInProgress:
   | { type: 'line'; start: Position }
   | { type: 'arc'; positions: Position[] }
   | null = null;
-let dragHandle: Handle | null = null;
+let dragThing: (Thing & Position) | null = null;
 
 const masters: Master[] = [];
 for (let idx = 0; idx < 10; idx++) {
@@ -158,16 +158,20 @@ canvas.el.addEventListener('pointerdown', (e) => {
     return;
   }
 
-  const handle = master.handleAt(pointer, dragHandle);
+  const handle = master.handleAt(pointer, dragThing);
   if (handle) {
-    dragHandle = handle;
+    dragThing = handle;
     return;
   }
 
   master.clearSelection();
   const thing = master.thingAt(pointer);
   if (thing) {
-    master.toggleSelected(thing);
+    if (thing instanceof Instance) {
+      dragThing = thing;
+    } else {
+      master.toggleSelected(thing);
+    }
   }
 });
 
@@ -182,7 +186,7 @@ canvas.el.addEventListener('pointermove', (e) => {
     master.transform.setScale(xf * 2);
   }
 
-  if (pointer.down && !drawingInProgress && !dragHandle && master.selection.size === 0) {
+  if (pointer.down && !drawingInProgress && !dragThing && master.selection.size === 0) {
     const dx = newPos.x - oldPos.x;
     const dy = newPos.y - oldPos.y;
     master.transform.translateBy(dx, dy);
@@ -193,16 +197,16 @@ canvas.el.addEventListener('pointermove', (e) => {
   pointer.x = newPos.x;
   pointer.y = newPos.y;
 
-  master.snap(pointer, dragHandle);
+  master.snap(pointer, dragThing);
 
   if (pointer.down && master.selection.size > 0) {
     const delta = pointDiff(pointer, oldPos);
     master.moveSelection(delta.x, delta.y);
   }
 
-  if (dragHandle) {
-    dragHandle.x = pointer.x;
-    dragHandle.y = pointer.y;
+  if (dragThing) {
+    dragThing.x = pointer.x;
+    dragThing.y = pointer.y;
   }
 });
 
@@ -210,9 +214,9 @@ canvas.el.addEventListener('pointerup', (e) => {
   canvas.el.releasePointerCapture(e.pointerId);
   pointer.down = false;
 
-  if (dragHandle) {
-    master.mergeAndAddImplicitConstraints(dragHandle);
-    dragHandle = null;
+  if (dragThing instanceof Handle) {
+    master.mergeAndAddImplicitConstraints(dragThing);
+    dragThing = null;
   }
 });
 
