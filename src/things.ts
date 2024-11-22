@@ -242,13 +242,15 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
-  x = 250;
-  y = 250;
-  // TODO: angle
-  // TODO: scale
   readonly transform = ({ x, y }: Position) => ({ x: x + this.x, y: y + this.y });
 
-  constructor(readonly master: Master) {}
+  // TODO: angle
+  // TODO: scale
+  constructor(
+    readonly master: Master,
+    public x: number,
+    public y: number,
+  ) {}
 
   contains(pos: Position): boolean {
     const { topLeft, bottomRight } = this.master.boundingBox();

@@ -110,7 +110,7 @@ window.addEventListener('keydown', (e) => {
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
     const m = masters[parseInt(e.code.slice(5))];
     if (keysDown['Shift']) {
-      master.addInstance(m);
+      master.addInstance(m, pointer);
     } else {
       switchToMaster(m);
     }

@@ -25,9 +25,9 @@ export class Master {
     });
   }
 
-  addInstance(master: Master) {
+  addInstance(master: Master, { x, y }: Position) {
     if (master !== this) {
-      this.things.push(new Instance(master));
+      this.things.push(new Instance(master, x, y));
     }
   }
 
