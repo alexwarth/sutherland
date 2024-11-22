@@ -108,10 +108,13 @@ window.addEventListener('keydown', (e) => {
   keysDown[e.key] = true;
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
-    const m = masters[parseInt(e.code.slice(5))];
+    const n = parseInt(e.code.slice(5));
+    const m = masters[n];
     if (keysDown['Shift']) {
+      canvas.setStatus('instantiate #' + n);
       master.addInstance(m, pointer);
     } else {
+      canvas.setStatus('drawing #' + n);
       switchToMaster(m);
     }
     return;
