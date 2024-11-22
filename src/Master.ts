@@ -219,17 +219,41 @@ export class Master {
   }
 
   moveSelection(dx: number, dy: number) {
-    const movedHandles = new Set<Handle>();
-    for (const thing of this.selection) {
-      thing.forEachHandle((h) => {
-        h = h.primary;
-        if (!movedHandles.has(h)) {
-          h.x += dx;
-          h.y += dy;
-          movedHandles.add(h);
-        }
-      });
+    for (const h of this.getHandles()) {
+      h.x += dx;
+      h.y += dy;
     }
+  }
+
+  center() {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const h of this.getHandles()) {
+      minX = Math.min(minX, h.x);
+      maxX = Math.max(maxX, h.x);
+      minY = Math.min(minY, h.y);
+      maxY = Math.max(maxY, h.y);
+    }
+    const dx = -(minX + maxX) / 2;
+    const dy = -(minY + maxY) / 2;
+    for (const h of this.getHandles()) {
+      h.x += dx;
+      h.y += dy;
+      console.log(h.x, h.y);
+    }
+    this.transform.dx = window.innerWidth / 2;
+    this.transform.dy = window.innerHeight / 2;
+    this.transform.forgetMatrices();
+  }
+
+  private getHandles() {
+    const handles = new Set<Handle>();
+    for (const thing of this.things) {
+      thing.forEachHandle((h) => handles.add(h.primary));
+    }
+    return handles;
   }
 
   private getVars() {
