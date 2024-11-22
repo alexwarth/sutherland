@@ -2,7 +2,6 @@ import * as canvas from './canvas';
 import { pointDiff, Position } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
-import Transform from './Transform';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -12,7 +11,24 @@ let drawingInProgress:
   | { type: 'line'; start: Position }
   | { type: 'arc'; positions: Position[] }
   | null = null;
-let dragThing: (Thing & Position) | null = null;
+let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
+
+// scope
+
+const scope = {
+  center: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+  size: 1,
+};
+
+function toScreenPosition({ x, y }: Position) {
+  return { x: (x - scope.center.x) / scope.size, y: (y - scope.center.y) / scope.size };
+}
+
+function fromScreenPosition({ x, y }: Position) {
+  return { x: x * scope.size + scope.center.x, y: y * scope.size + scope.center.y };
+}
+
+// masters
 
 const masters: Master[] = [];
 for (let idx = 0; idx < 10; idx++) {
@@ -21,8 +37,14 @@ for (let idx = 0; idx < 10; idx++) {
 
 let master = masters[1];
 
+function center() {}
+
 function switchToMaster(m: Master) {
-  ({ x: pointer.x, y: pointer.y } = m.transform.applyInverseTo(master.transform.applyTo(pointer)));
+  const pointerScreenPos = toScreenPosition(pointer);
+  master.leave();
+  scope.center.x = -window.innerWidth / 2;
+  scope.center.y = -window.innerHeight / 2;
+  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
   master = m;
 }
 
@@ -43,11 +65,11 @@ onFrame();
 
 function render() {
   canvas.clear();
-  master.render();
+  master.render(toScreenPosition);
 
   switch (drawingInProgress?.type) {
     case 'line':
-      canvas.drawLine(drawingInProgress.start, pointer, canvas.flickeryWhite(), master.transform);
+      canvas.drawLine(drawingInProgress.start, pointer, canvas.flickeryWhite(), toScreenPosition);
       break;
     case 'arc':
       if (drawingInProgress.positions.length > 1) {
@@ -56,25 +78,23 @@ function render() {
           drawingInProgress.positions[1],
           pointer,
           canvas.flickeryWhite(),
-          master.transform,
+          toScreenPosition,
         );
       }
       break;
   }
 
   const crosshairsSize = 15;
-  const tPointer = master.transform.applyTo(pointer);
+  const tPointer = toScreenPosition(pointer);
   canvas.drawLine(
     { x: tPointer.x - crosshairsSize, y: tPointer.y },
     { x: tPointer.x + crosshairsSize, y: tPointer.y },
     canvas.flickeryWhite('bold'),
-    Transform.identity,
   );
   canvas.drawLine(
     { x: tPointer.x, y: tPointer.y - crosshairsSize },
     { x: tPointer.x, y: tPointer.y + crosshairsSize },
     canvas.flickeryWhite('bold'),
-    Transform.identity,
   );
 }
 
@@ -102,9 +122,6 @@ window.addEventListener('keydown', (e) => {
       canvas.setStatus('delete');
       master.delete();
       break;
-    case 'b':
-      // TODO: if dragHandle != null and has merged w/ other handles, unmerge one of them
-      break;
     case 'l':
       canvas.setStatus('fixed distance');
       master.fixedDistance();
@@ -113,15 +130,17 @@ window.addEventListener('keydown', (e) => {
       canvas.setStatus('equal length');
       master.equalDistance();
       break;
-    case 'c':
-      // TODO: copy
-      break;
-    case 'v':
-      // TODO: paste
-      break;
     case 'h':
       canvas.setStatus('H or V');
       master.horizontalOrVertical();
+      break;
+    case '=':
+      scope.size = Math.max(scope.size - 0.2, 0.2);
+      canvas.setStatus('size=' + scope.size.toFixed(1));
+      break;
+    case '-':
+      scope.size = Math.min(scope.size + 0.2, 10);
+      canvas.setStatus('size=' + scope.size.toFixed(1));
       break;
   }
 });
@@ -158,9 +177,11 @@ canvas.el.addEventListener('pointerdown', (e) => {
     return;
   }
 
-  const handle = master.handleAt(pointer, dragThing);
+  drag = null;
+
+  const handle = master.handleAt(pointer);
   if (handle) {
-    dragThing = handle;
+    drag = { thing: handle, offset: { x: 0, y: 0 } };
     return;
   }
 
@@ -168,7 +189,7 @@ canvas.el.addEventListener('pointerdown', (e) => {
   const thing = master.thingAt(pointer);
   if (thing) {
     if (thing instanceof Instance) {
-      dragThing = thing;
+      drag = { thing, offset: pointDiff(pointer, thing) };
     } else {
       master.toggleSelected(thing);
     }
@@ -176,37 +197,32 @@ canvas.el.addEventListener('pointerdown', (e) => {
 });
 
 canvas.el.addEventListener('pointermove', (e) => {
-  const rawPos = { x: (e as any).layerX, y: (e as any).layerY };
-  const newPos = master.transform.applyInverseTo(rawPos);
   const oldPos = { x: pointer.x, y: pointer.y };
+  ({ x: pointer.x, y: pointer.y } = fromScreenPosition({
+    x: (e as any).layerX,
+    y: (e as any).layerY,
+  }));
 
-  if (keysDown['Control']) {
-    const xf = rawPos.x / window.innerWidth;
-    const yf = rawPos.y / window.innerHeight;
-    master.transform.setScale(xf * 2);
-  }
-
-  if (pointer.down && !drawingInProgress && !dragThing && master.selection.size === 0) {
-    const dx = newPos.x - oldPos.x;
-    const dy = newPos.y - oldPos.y;
-    master.transform.translateBy(dx, dy);
-    ({ x: pointer.x, y: pointer.y } = master.transform.applyInverseTo(rawPos));
+  if (pointer.down && !drawingInProgress && !drag && master.selection.size === 0) {
+    const dx = pointer.x - oldPos.x;
+    const dy = pointer.y - oldPos.y;
+    scope.center.x -= dx;
+    scope.center.y -= dy;
+    pointer.x -= dx; // make the same adjustment
+    pointer.y -= dy; // ... to the pointer position
     return;
   }
 
-  pointer.x = newPos.x;
-  pointer.y = newPos.y;
-
-  master.snap(pointer, dragThing);
+  master.snap(pointer, drag ? drag.thing : null);
 
   if (pointer.down && master.selection.size > 0) {
     const delta = pointDiff(pointer, oldPos);
     master.moveSelection(delta.x, delta.y);
   }
 
-  if (dragThing) {
-    dragThing.x = pointer.x;
-    dragThing.y = pointer.y;
+  if (drag) {
+    drag.thing.x = pointer.x - drag.offset.x;
+    drag.thing.y = pointer.y - drag.offset.y;
   }
 });
 
@@ -214,10 +230,11 @@ canvas.el.addEventListener('pointerup', (e) => {
   canvas.el.releasePointerCapture(e.pointerId);
   pointer.down = false;
 
-  if (dragThing instanceof Handle) {
-    master.mergeAndAddImplicitConstraints(dragThing);
-    dragThing = null;
+  if (drag?.thing instanceof Handle) {
+    master.mergeAndAddImplicitConstraints(drag.thing);
   }
+
+  drag = null;
 });
 
 // helpers
@@ -239,10 +256,7 @@ function endLines() {
 
 function moreArc() {
   if (drawingInProgress?.type !== 'arc') {
-    drawingInProgress = {
-      type: 'arc',
-      positions: [],
-    };
+    drawingInProgress = { type: 'arc', positions: [] };
   }
   drawingInProgress.positions.push({ x: pointer.x, y: pointer.y });
   if (drawingInProgress.positions.length === 3) {

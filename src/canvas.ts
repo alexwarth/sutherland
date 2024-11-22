@@ -1,5 +1,4 @@
 import { pointDist, Position, TAU } from './helpers';
-import Transform from './Transform';
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
@@ -37,16 +36,20 @@ export function clear() {
   }
 }
 
+function identity(pos: Position) {
+  return pos;
+}
+
 export function drawLine(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = Transform.identity,
+  transform = identity,
 ) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  const ta = transform.applyTo(a);
-  const tb = transform.applyTo(b);
+  const ta = transform(a);
+  const tb = transform(b);
   ctx.moveTo(ta.x, ta.y);
   ctx.lineTo(tb.x, tb.y);
   ctx.stroke();
@@ -57,11 +60,11 @@ export function drawArc(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = Transform.identity,
+  transform = identity,
 ) {
-  const ta = transform.applyTo(a);
-  const tb = transform.applyTo(b);
-  const tc = transform.applyTo(c);
+  const ta = transform(a);
+  const tb = transform(b);
+  const tc = transform(c);
   ctx.beginPath();
   ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
@@ -76,13 +79,13 @@ export function drawText(
   pos: Position,
   text: string,
   fillStyle = flickeryWhite(),
-  transform = Transform.identity,
+  transform = identity,
 ) {
   ctx.fillStyle = fillStyle;
   const fontSizeInPixels = 12;
   ctx.font = `${fontSizeInPixels}px Major Mono Display`;
   const labelWidth = ctx.measureText(text).width;
-  const { x, y } = transform.applyTo(pos);
+  const { x, y } = transform(pos);
   ctx.fillText(text, x - labelWidth / 2, y + fontSizeInPixels / 2);
 }
 
@@ -114,5 +117,5 @@ export function setStatus(newStatus: string) {
     if (statusId === id) {
       status = '';
     }
-  }, 2000);
+  }, 2_000);
 }

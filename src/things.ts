@@ -1,14 +1,15 @@
 import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { pointDist, pointDistToLineSegment, Position } from './helpers';
 import { Master } from './Master';
-import Transform from './Transform';
 
 export class Var {
   constructor(public value: number) {}
 }
 
+type Transform = (pos: Position) => Position;
+
 export interface Thing {
-  contains(pos: Position, transform: Transform): boolean;
+  contains(pos: Position): boolean;
   render(selection: Set<Thing>, transform: Transform): void;
   forEachHandle(fn: (h: Handle) => void): void;
   forEachVar(fn: (v: Var) => void): void;
@@ -44,8 +45,8 @@ class PrimaryHandleState {
     this.yVar.value = newY;
   }
 
-  contains(pos: Position, transform: Transform) {
-    return pointDist(transform.applyTo(pos), transform.applyTo(this)) <= CLOSE_ENOUGH;
+  contains(pos: Position) {
+    return pointDist(pos, this) <= CLOSE_ENOUGH;
   }
 
   forEachVar(fn: (v: Var) => void) {
@@ -73,7 +74,7 @@ class MergedHandleState {
     this.parent.y = newY;
   }
 
-  contains(pos: Position, transform: Transform) {
+  contains(pos: Position) {
     return false;
   }
 
@@ -147,8 +148,8 @@ export class Handle implements Thing {
     }
   }
 
-  contains(pos: Position, transform: Transform) {
-    return this.state.contains(pos, transform);
+  contains(pos: Position) {
+    return this.state.contains(pos);
   }
 
   render(selection: Set<Thing>, transform: Transform): void {
@@ -181,15 +182,11 @@ export class Line implements Thing {
     this.b = new Handle(bPos);
   }
 
-  contains(pos: Position, transform: Transform) {
+  contains(pos: Position) {
     return (
-      !this.a.contains(pos, transform) &&
-      !this.b.contains(pos, transform) &&
-      pointDistToLineSegment(
-        transform.applyTo(pos),
-        transform.applyTo(this.a),
-        transform.applyTo(this.b),
-      ) <= CLOSE_ENOUGH
+      !this.a.contains(pos) &&
+      !this.b.contains(pos) &&
+      pointDistToLineSegment(pos, this.a, this.b) <= CLOSE_ENOUGH
     );
   }
 
@@ -218,14 +215,9 @@ export class Arc implements Thing {
     this.c = new Handle(cPos);
   }
 
-  contains(pos: Position, transform: Transform) {
+  contains(pos: Position) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return (
-      Math.abs(
-        pointDist(transform.applyTo(pos), transform.applyTo(this.c)) -
-          pointDist(transform.applyTo(this.a), transform.applyTo(this.c)),
-      ) <= CLOSE_ENOUGH
-    );
+    return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c)) <= CLOSE_ENOUGH;
   }
 
   render(selection: Set<Thing>, transform: Transform) {
@@ -250,39 +242,24 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
-  readonly transform = new Transform();
+  x = 250;
+  y = 250;
+  // TODO: angle
+  // TODO: scale
+  readonly transform = ({ x, y }: Position) => ({ x: x + this.x, y: y + this.y });
 
   constructor(readonly master: Master) {}
 
-  get x() {
-    return this.transform.dx;
-  }
-
-  set x(newX: number) {
-    this.transform.dx = newX;
-  }
-
-  get y() {
-    return this.transform.dy;
-  }
-
-  set y(newY: number) {
-    this.transform.dy = newY;
-  }
-
-  contains(pos: Position, transform: Transform): boolean {
-    pos = this.transform.applyTo(pos);
-    for (const thing of this.master.things) {
-      if (thing.contains(pos, transform)) {
-        return true;
-      }
-    }
-    return false;
+  contains(pos: Position): boolean {
+    const { topLeft, bottomRight } = this.master.boundingBox();
+    const min = this.transform(topLeft); // TODO: inverse transform?
+    const max = this.transform(bottomRight);
+    return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
   }
 
   render(selection: Set<Thing>, transform: Transform) {
     // TODO: fix this
-    this.master.render(transform);
+    this.master.render((pos) => this.transform(transform(pos)));
   }
 
   forEachHandle(fn: (h: Handle) => void): void {

@@ -8,19 +8,17 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { pointDist, Position } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
-import Transform from './Transform';
 
 export class Master {
   readonly things: Thing[] = [];
   readonly constraints = new ConstraintSet();
-  readonly transform = new Transform();
   readonly selection = new Set<Thing>();
 
   relax() {
     this.constraints.relax(this.getVars());
   }
 
-  render(transform = this.transform) {
+  render(transform: (pos: Position) => Position) {
     this.things.forEach((t) => {
       t.render(this.selection, transform);
       t.forEachHandle((h) => h.render(this.selection, transform));
@@ -40,7 +38,7 @@ export class Master {
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
         h = h.primary;
-        if (h !== line.a.primary && h !== line.b.primary && line.contains(h, this.transform)) {
+        if (h !== line.a.primary && h !== line.b.primary && line.contains(h)) {
           this.constraints.add(new PointOnLineConstraint(h, line.a, line.b));
         }
       });
@@ -57,12 +55,7 @@ export class Master {
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
         h = h.primary;
-        if (
-          h !== arc.a.primary &&
-          h !== arc.b.primary &&
-          h !== arc.c.primary &&
-          arc.contains(h, this.transform)
-        ) {
+        if (h !== arc.a.primary && h !== arc.b.primary && h !== arc.c.primary && arc.contains(h)) {
           this.constraints.add(new PointOnArcConstraint(h.primary, arc.a, arc.b, arc.c));
         }
       });
@@ -75,7 +68,7 @@ export class Master {
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
         h = h.primary;
-        if (h.contains(handle, this.transform)) {
+        if (h.contains(handle)) {
           handle.mergeWith(h);
           thingsToIgnore.add(thing);
         }
@@ -83,7 +76,7 @@ export class Master {
     }
 
     for (const thing of this.things) {
-      if (thingsToIgnore.has(thing) || !thing.contains(handle, this.transform)) {
+      if (thingsToIgnore.has(thing) || !thing.contains(handle)) {
         // skip
       } else if (thing instanceof Line) {
         this.constraints.add(new PointOnLineConstraint(handle, thing.a, thing.b));
@@ -155,7 +148,7 @@ export class Master {
     snappedPos.forEachVar((v) => vars.add(v));
 
     for (const thing of this.things) {
-      if (this.selection.has(thing) || !thing.contains(pos, this.transform)) {
+      if (this.selection.has(thing) || !thing.contains(pos)) {
         // ignore
       } else if (thing instanceof Line) {
         constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
@@ -171,13 +164,13 @@ export class Master {
     pos.y = snappedPos.y;
   }
 
-  handleAt(pos: Position, dragThing: (Thing & Position) | null): Handle | null {
+  handleAt(pos: Position, dragThing: (Thing & Position) | null = null): Handle | null {
     let minDist = Infinity;
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
         h = h.primary;
-        if (h !== dragThing && h.contains(pos, this.transform)) {
+        if (h !== dragThing && h.contains(pos)) {
           const dist = pointDist(pos, h);
           if (dist < minDist) {
             nearestHandle = h;
@@ -191,7 +184,7 @@ export class Master {
 
   thingAt(pos: Position): Thing | null {
     for (const thing of this.things) {
-      if (thing.contains(pos, this.transform)) {
+      if (thing.contains(pos)) {
         return thing;
       }
     }
@@ -200,7 +193,7 @@ export class Master {
 
   toggleSelections(pointerPos: Position) {
     for (const thing of this.things) {
-      if (thing.contains(pointerPos, this.transform)) {
+      if (thing.contains(pointerPos)) {
         this.toggleSelected(thing);
       }
     }
@@ -219,38 +212,48 @@ export class Master {
   }
 
   moveSelection(dx: number, dy: number) {
-    for (const h of this.getHandles()) {
+    for (const h of this.getHandles(this.selection)) {
       h.x += dx;
       h.y += dy;
     }
   }
 
+  leave() {
+    this.center();
+    this.selection.clear();
+  }
+
   center() {
+    const { topLeft, bottomRight } = this.boundingBox();
+    const dx = -(topLeft.x + bottomRight.x) / 2;
+    const dy = -(topLeft.y + bottomRight.y) / 2;
+    for (const h of this.getHandles(this.things)) {
+      h.x += dx;
+      h.y += dy;
+    }
+  }
+
+  boundingBox(): { topLeft: Position; bottomRight: Position } {
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
-    for (const h of this.getHandles()) {
+    const handles = this.getHandles(this.things);
+    for (const h of handles) {
       minX = Math.min(minX, h.x);
       maxX = Math.max(maxX, h.x);
       minY = Math.min(minY, h.y);
       maxY = Math.max(maxY, h.y);
     }
-    const dx = -(minX + maxX) / 2;
-    const dy = -(minY + maxY) / 2;
-    for (const h of this.getHandles()) {
-      h.x += dx;
-      h.y += dy;
-      console.log(h.x, h.y);
-    }
-    this.transform.dx = window.innerWidth / 2;
-    this.transform.dy = window.innerHeight / 2;
-    this.transform.forgetMatrices();
+    return {
+      topLeft: { x: minX, y: minY },
+      bottomRight: { x: maxX, y: maxY },
+    };
   }
 
-  private getHandles() {
+  private getHandles(things: Iterable<Thing>) {
     const handles = new Set<Handle>();
-    for (const thing of this.things) {
+    for (const thing of things) {
       thing.forEachHandle((h) => handles.add(h.primary));
     }
     return handles;
