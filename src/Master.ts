@@ -6,7 +6,7 @@ import {
   PointOnLineConstraint,
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
-import { pointDist, Position } from './helpers';
+import { boundingBox, pointDist, Position } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 import { drawArc, drawLine, flickeryWhite } from './canvas';
 
@@ -32,7 +32,7 @@ export class Master {
 
   addInstance(master: Master, { x, y }: Position) {
     if (master !== this) {
-      this.things.push(new Instance(master, x, y, 1));
+      this.things.push(new Instance(master, x, y, 1, 0));
     }
   }
 
@@ -52,6 +52,18 @@ export class Master {
       return false;
     } else {
       thing.scale -= 0.1;
+      return true;
+    }
+  }
+
+  rotateInstanceAt(pos: Position, dAngle: number) {
+    const thing = this.thingAt(pos);
+    if (!(thing instanceof Instance)) {
+      return false;
+    } else {
+      console.log('rotating', thing, 'by', (dAngle * 180) / Math.PI);
+      thing.angle += dAngle;
+      console.log('  new angle is', (thing.angle * 180) / Math.PI);
       return true;
     }
   }
@@ -266,21 +278,7 @@ export class Master {
   }
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    const handles = this.getHandles(this.things);
-    for (const h of handles) {
-      minX = Math.min(minX, h.x);
-      maxX = Math.max(maxX, h.x);
-      minY = Math.min(minY, h.y);
-      maxY = Math.max(maxY, h.y);
-    }
-    return {
-      topLeft: { x: minX, y: minY },
-      bottomRight: { x: maxX, y: maxY },
-    };
+    return boundingBox(this.getHandles(this.things));
   }
 
   private getHandles(things: Iterable<Thing>) {

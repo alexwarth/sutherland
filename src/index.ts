@@ -1,5 +1,5 @@
 import * as canvas from './canvas';
-import { pointDiff, Position } from './helpers';
+import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
@@ -20,12 +20,12 @@ const scope = {
   size: 1,
 };
 
-function toScreenPosition({ x, y }: Position) {
-  return { x: (x - scope.center.x) / scope.size, y: (y - scope.center.y) / scope.size };
+function toScreenPosition(p: Position) {
+  return pointDiff(scaleAround(p, origin, 1 / scope.size), scope.center);
 }
 
-function fromScreenPosition({ x, y }: Position) {
-  return { x: x * scope.size + scope.center.x, y: y * scope.size + scope.center.y };
+function fromScreenPosition(pos: Position) {
+  return scaleAround(translate(pos, scope.center), origin, scope.size);
 }
 
 // masters
@@ -176,6 +176,12 @@ window.addEventListener('keydown', (e) => {
         scope.size = Math.min(scope.size + 0.2, 10);
         canvas.setStatus('size=' + scope.size.toFixed(1));
       }
+      break;
+    case 'q':
+      master.rotateInstanceAt(pointer, (-10 * Math.PI) / 180);
+      break;
+    case 'w':
+      master.rotateInstanceAt(pointer, (10 * Math.PI) / 180);
       break;
   }
 });

@@ -1,5 +1,14 @@
 import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
-import { pointDist, pointDistToLineSegment, Position } from './helpers';
+import {
+  pointDist,
+  pointDistToLineSegment,
+  Position,
+  rotateAround,
+  scaleAround,
+  translate,
+  origin,
+  boundingBox,
+} from './helpers';
 import { Master } from './Master';
 
 export class Var {
@@ -242,33 +251,27 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
-  // readonly transform = ({ x, y }: Position) => ({ x: x + this.x, y: y + this.y });
-  readonly transform = ({ x, y }: Position) => {
-    // translate to the origin
-    x -= this.x;
-    y -= this.y;
-    // scale
-    x *= this.scale;
-    y *= this.scale;
-    // translate back
-    x += this.x * 2;
-    y += this.y * 2;
-    return { x, y };
+  readonly transform = (p: Position) => {
+    return translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
   };
 
-  // TODO: angle
-  // TODO: scale
   constructor(
     readonly master: Master,
     public x: number,
     public y: number,
     public scale: number,
+    public angle: number,
   ) {}
 
   contains(pos: Position): boolean {
     const { topLeft, bottomRight } = this.master.boundingBox();
-    const min = this.transform(topLeft);
-    const max = this.transform(bottomRight);
+    const ps = [
+      topLeft,
+      bottomRight,
+      { x: topLeft.x, y: bottomRight.y },
+      { x: bottomRight.x, y: topLeft.y },
+    ].map(this.transform);
+    const { topLeft: min, bottomRight: max } = boundingBox(ps);
     return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
   }
 

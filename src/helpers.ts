@@ -22,20 +22,23 @@ export function pointDiff(a: Position, b: Position) {
   return { x: a.x - b.x, y: a.y - b.y };
 }
 
-// from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+export const origin = Object.freeze({ x: 0, y: 0 });
 
-export function pointDistToLineSegment(p: Position, v: Position, w: Position) {
-  return Math.sqrt(pointDistToLineSegment2(p, v, w));
+export function translate({ x, y }: Position, { x: dx, y: dy }: Position) {
+  return { x: x + dx, y: y + dy };
 }
 
-function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
-  const l = pointDist2(v, w);
-  if (l == 0) {
-    return pointDist2(p, v);
-  }
+export function scaleAround(p: Position, c: Position, scale: number): Position {
+  // Translate point to the origin
+  const tx = p.x - c.x;
+  const ty = p.y - c.y;
 
-  const t = Math.max(0, Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1));
-  return pointDist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
+  // Scale
+  const sx = scale * tx;
+  const sy = scale * ty;
+
+  // Translate point back to its original position
+  return { x: sx + c.x, y: sy + c.y };
 }
 
 export function rotateAround(p: Position, c: Position, angle: number): Position {
@@ -51,4 +54,37 @@ export function rotateAround(p: Position, c: Position, angle: number): Position 
 
   // Translate point back to its original position
   return { x: rx + c.x, y: ry + c.y };
+}
+
+export function boundingBox(ps: Iterable<Position>) {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const p of ps) {
+    minX = Math.min(minX, p.x);
+    maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y);
+    maxY = Math.max(maxY, p.y);
+  }
+  return {
+    topLeft: { x: minX, y: minY },
+    bottomRight: { x: maxX, y: maxY },
+  };
+}
+
+// from https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+
+export function pointDistToLineSegment(p: Position, v: Position, w: Position) {
+  return Math.sqrt(pointDistToLineSegment2(p, v, w));
+}
+
+function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
+  const l = pointDist2(v, w);
+  if (l == 0) {
+    return pointDist2(p, v);
+  }
+
+  const t = Math.max(0, Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1));
+  return pointDist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
 }
