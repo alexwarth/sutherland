@@ -8,11 +8,16 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { pointDist, Position } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
+import { drawArc, drawLine, flickeryWhite } from './canvas';
 
 export class Master {
   readonly things: Thing[] = [];
   readonly constraints = new ConstraintSet();
   readonly selection = new Set<Thing>();
+
+  isEmpty() {
+    return this.things.length === 0;
+  }
 
   relax() {
     this.constraints.relax(this.getVars());
@@ -27,7 +32,27 @@ export class Master {
 
   addInstance(master: Master, { x, y }: Position) {
     if (master !== this) {
-      this.things.push(new Instance(master, x, y));
+      this.things.push(new Instance(master, x, y, 1));
+    }
+  }
+
+  growInstanceAt(pos: Position) {
+    const thing = this.thingAt(pos);
+    if (!(thing instanceof Instance)) {
+      return false;
+    } else {
+      thing.scale += 0.1;
+      return true;
+    }
+  }
+
+  shrinkInstanceAt(pos: Position) {
+    const thing = this.thingAt(pos);
+    if (!(thing instanceof Instance)) {
+      return false;
+    } else {
+      thing.scale -= 0.1;
+      return true;
     }
   }
 

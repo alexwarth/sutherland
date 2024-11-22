@@ -5,7 +5,7 @@ import { Handle, Instance, Thing } from './things';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
-const pointer: Position & { down: boolean } = { x: -1, y: -1, down: false };
+const pointer: Position & { down: boolean } = { x: Infinity, y: Infinity, down: false };
 const keysDown: { [key: string]: boolean } = {};
 let drawingInProgress:
   | { type: 'line'; start: Position }
@@ -16,7 +16,7 @@ let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null =
 // scope
 
 const scope = {
-  center: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+  center: { x: -window.innerWidth / 2, y: -window.innerHeight / 2 },
   size: 1,
 };
 
@@ -36,8 +36,6 @@ for (let idx = 0; idx < 10; idx++) {
 }
 
 let master = masters[1];
-
-function center() {}
 
 function switchToMaster(m: Master) {
   const pointerScreenPos = toScreenPosition(pointer);
@@ -65,7 +63,11 @@ onFrame();
 
 function render() {
   canvas.clear();
-  master.render(toScreenPosition);
+  if (!drawingInProgress && master.isEmpty()) {
+    ink();
+  } else {
+    master.render(toScreenPosition);
+  }
 
   switch (drawingInProgress?.type) {
     case 'line':
@@ -96,6 +98,28 @@ function render() {
     { x: tPointer.x, y: tPointer.y + crosshairsSize },
     canvas.flickeryWhite('bold'),
   );
+}
+
+function ink() {
+  const unit = window.innerWidth / 100;
+
+  // I
+  line(-7 * unit, 4 * unit, -7 * unit, -4 * unit);
+  // N
+  line(-3 * unit, 4 * unit, -3 * unit, -4 * unit);
+  line(-3 * unit, -4 * unit, 2 * unit, 4 * unit);
+  line(2 * unit, 4 * unit, 2 * unit, -4 * unit);
+  // K
+  line(6 * unit, 4 * unit, 6 * unit, -4 * unit);
+  line(6 * unit, -1 * unit, 10 * unit, -4 * unit);
+  line(8 * unit, -2 * unit, 10 * unit, 4 * unit);
+
+  // line(-1000, 0, 1000, 0);
+  // line(0, -1000, 0, 1000);
+
+  function line(x1: number, y1: number, x2: number, y2: number) {
+    canvas.drawLine({ x: x1, y: y1 }, { x: x2, y: y2 }, canvas.flickeryWhite(), toScreenPosition);
+  }
 }
 
 // input handlers
@@ -138,12 +162,20 @@ window.addEventListener('keydown', (e) => {
       master.horizontalOrVertical();
       break;
     case '=':
-      scope.size = Math.max(scope.size - 0.2, 0.2);
-      canvas.setStatus('size=' + scope.size.toFixed(1));
+      if (master.growInstanceAt(pointer)) {
+        canvas.setStatus('grow');
+      } else {
+        scope.size = Math.max(scope.size - 0.2, 0.2);
+        canvas.setStatus('size=' + scope.size.toFixed(1));
+      }
       break;
     case '-':
-      scope.size = Math.min(scope.size + 0.2, 10);
-      canvas.setStatus('size=' + scope.size.toFixed(1));
+      if (master.shrinkInstanceAt(pointer)) {
+        canvas.setStatus('shrink');
+      } else {
+        scope.size = Math.min(scope.size + 0.2, 10);
+        canvas.setStatus('size=' + scope.size.toFixed(1));
+      }
       break;
   }
 });

@@ -242,7 +242,19 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
-  readonly transform = ({ x, y }: Position) => ({ x: x + this.x, y: y + this.y });
+  // readonly transform = ({ x, y }: Position) => ({ x: x + this.x, y: y + this.y });
+  readonly transform = ({ x, y }: Position) => {
+    // translate to the origin
+    x -= this.x;
+    y -= this.y;
+    // scale
+    x *= this.scale;
+    y *= this.scale;
+    // translate back
+    x += this.x * 2;
+    y += this.y * 2;
+    return { x, y };
+  };
 
   // TODO: angle
   // TODO: scale
@@ -250,18 +262,19 @@ export class Instance implements Thing {
     readonly master: Master,
     public x: number,
     public y: number,
+    public scale: number,
   ) {}
 
   contains(pos: Position): boolean {
     const { topLeft, bottomRight } = this.master.boundingBox();
-    const min = this.transform(topLeft); // TODO: inverse transform?
+    const min = this.transform(topLeft);
     const max = this.transform(bottomRight);
     return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
   }
 
   render(selection: Set<Thing>, transform: Transform) {
     // TODO: fix this
-    this.master.render((pos) => this.transform(transform(pos)));
+    this.master.render((pos) => transform(this.transform(pos)));
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
