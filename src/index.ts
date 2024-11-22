@@ -120,7 +120,7 @@ window.addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'Backspace':
       canvas.setStatus('delete');
-      master.delete();
+      master.delete(pointer);
       break;
     case 'l':
       canvas.setStatus('fixed distance');

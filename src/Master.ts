@@ -86,9 +86,16 @@ export class Master {
     }
   }
 
-  delete() {
+  delete(pointerPos: Position) {
+    const thingAtPointer = this.thingAt(pointerPos);
+    const thingsToDelete: Set<Thing> =
+      this.selection.size > 0
+        ? this.selection
+        : thingAtPointer
+          ? new Set([thingAtPointer])
+          : new Set();
     const handleMap = new Map<Handle, Handle | null>();
-    for (const thing of this.selection) {
+    for (const thing of thingsToDelete) {
       thing.forEachHandle((h) => {
         if (!handleMap.has(h)) {
           const replacementHandle = h.breakOff();
