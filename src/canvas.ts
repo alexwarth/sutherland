@@ -22,6 +22,14 @@ export function init(_el: HTMLCanvasElement) {
   }
 }
 
+let status = '';
+let statusTimeMillis = 0;
+
+export function setStatus(newStatus: string) {
+  status = newStatus;
+  statusTimeMillis = Date.now();
+}
+
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
   ctx.lineWidth = 5;
@@ -31,8 +39,13 @@ export function clear() {
     const fontSizeInPixels = 40;
     ctx.font = `${fontSizeInPixels}px Monaco`;
     const width = ctx.measureText(status).width;
-    ctx.fillStyle = flickeryWhite();
-    ctx.fillText(status, window.innerWidth - width - fontSizeInPixels, fontSizeInPixels);
+    const statusAgeMillis = Date.now() - statusTimeMillis;
+    if (statusAgeMillis > 2_000) {
+      status = '';
+    } else {
+      ctx.fillStyle = flickeryWhite(statusAgeMillis < 500 ? 'bold' : 'normal');
+      ctx.fillText(status, window.innerWidth - width - fontSizeInPixels, fontSizeInPixels);
+    }
   }
 }
 
@@ -105,17 +118,4 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
   const alpha = Math.random() * multiplier + baseAlpha;
   // const alpha = 0.75 * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
-}
-
-let status = '';
-let statusId = 0;
-
-export function setStatus(newStatus: string) {
-  status = newStatus;
-  const id = ++statusId;
-  setTimeout(() => {
-    if (statusId === id) {
-      status = '';
-    }
-  }, 2_000);
 }
