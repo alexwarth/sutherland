@@ -3,10 +3,6 @@ import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
-// BUGS:
-// * make rivet, make flange, put rivet in flange. remove crosslines from rivet.
-//   return to flange. rivet has moved, not sure why.
-
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 const pointer: Position & { down: boolean } = { x: Infinity, y: Infinity, down: false };

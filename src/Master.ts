@@ -276,14 +276,14 @@ export class Master {
     const { topLeft, bottomRight } = this.boundingBox();
     const dx = -(topLeft.x + bottomRight.x) / 2;
     const dy = -(topLeft.y + bottomRight.y) / 2;
-    for (const h of this.getHandles(this.things)) {
+    for (const h of this.getPositions()) {
       h.x += dx;
       h.y += dy;
     }
   }
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
-    return boundingBox(this.getHandles(this.things));
+    return boundingBox(this.getPositions());
   }
 
   private thingsForOperation(pointerPos: Position): Set<Thing> {
@@ -301,6 +301,16 @@ export class Master {
       thing.forEachHandle((h) => handles.add(h.primary));
     }
     return handles;
+  }
+
+  private getPositions() {
+    const ps: Set<Position> = this.getHandles(this.things);
+    for (const thing of this.things) {
+      if (thing instanceof Instance) {
+        ps.add(thing);
+      }
+    }
+    return ps;
   }
 
   private getVars() {
