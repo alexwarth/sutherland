@@ -165,7 +165,7 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'h':
       if (master.horizontalOrVertical(pointer)) {
-        canvas.setStatus('H or V');
+        canvas.setStatus('HorV');
       }
       break;
     case '=':
