@@ -124,15 +124,12 @@ export class Master {
   }
 
   delete(pointerPos: Position) {
-    const thingAtPointer = this.thingAt(pointerPos);
-    const thingsToDelete: Set<Thing> =
-      this.selection.size > 0
-        ? this.selection
-        : thingAtPointer
-          ? new Set([thingAtPointer])
-          : new Set();
+    const things = this.thingsForOperation(pointerPos);
+    if (things.size === 0) {
+      return false;
+    }
     const handleMap = new Map<Handle, Handle | null>();
-    for (const thing of thingsToDelete) {
+    for (const thing of things) {
       thing.forEachHandle((h) => {
         if (!handleMap.has(h)) {
           const replacementHandle = h.breakOff();
@@ -143,15 +140,21 @@ export class Master {
     }
     this.constraints.replaceHandles(handleMap);
     this.selection.clear();
+    return true;
   }
 
-  fixedDistance() {
-    for (const thing of this.selection) {
+  fixedDistance(pointerPos: Position) {
+    const things = this.thingsForOperation(pointerPos);
+    if (things.size === 0) {
+      return false;
+    }
+    for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
       }
     }
     this.selection.clear();
+    return true;
   }
 
   equalDistance() {
@@ -169,13 +172,18 @@ export class Master {
     this.selection.clear();
   }
 
-  horizontalOrVertical() {
-    for (const thing of this.selection) {
+  horizontalOrVertical(pointerPos: Position) {
+    const things = this.thingsForOperation(pointerPos);
+    if (things.size === 0) {
+      return false;
+    }
+    for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
       }
     }
     this.selection.clear();
+    return true;
   }
 
   snap(pos: Position, dragThing: (Thing & Position) | null) {
@@ -279,6 +287,15 @@ export class Master {
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
     return boundingBox(this.getHandles(this.things));
+  }
+
+  private thingsForOperation(pointerPos: Position): Set<Thing> {
+    const thingAtPointer = this.thingAt(pointerPos);
+    return this.selection.size > 0
+      ? this.selection
+      : thingAtPointer
+        ? new Set([thingAtPointer])
+        : new Set();
   }
 
   private getHandles(things: Iterable<Thing>) {

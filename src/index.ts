@@ -146,20 +146,23 @@ window.addEventListener('keydown', (e) => {
 
   switch (e.key) {
     case 'Backspace':
-      canvas.setStatus('delete');
-      master.delete(pointer);
+      if (master.delete(pointer)) {
+        canvas.setStatus('delete');
+      }
       break;
     case 'l':
-      canvas.setStatus('fixed distance');
-      master.fixedDistance();
+      if (master.fixedDistance(pointer)) {
+        canvas.setStatus('fixed distance');
+      }
       break;
     case 'e':
       canvas.setStatus('equal length');
       master.equalDistance();
       break;
     case 'h':
-      canvas.setStatus('H or V');
-      master.horizontalOrVertical();
+      if (master.horizontalOrVertical(pointer)) {
+        canvas.setStatus('H or V');
+      }
       break;
     case '=':
       if (master.growInstanceAt(pointer)) {
