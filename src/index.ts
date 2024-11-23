@@ -3,6 +3,10 @@ import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
+// BUGS:
+// * make rivet, make flange, put rivet in flange. remove crosslines from rivet.
+//   return to flange. rivet has moved, not sure why.
+
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 const pointer: Position & { down: boolean } = { x: Infinity, y: Infinity, down: false };
@@ -17,15 +21,20 @@ let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null =
 
 const scope = {
   center: { x: -window.innerWidth / 2, y: -window.innerHeight / 2 },
-  size: 1,
+  scale: 1,
 };
 
 function toScreenPosition(p: Position) {
-  return pointDiff(scaleAround(p, origin, 1 / scope.size), scope.center);
+  return pointDiff(scaleAround(p, origin, scope.scale), scope.center);
 }
 
 function fromScreenPosition(pos: Position) {
-  return scaleAround(translate(pos, scope.center), origin, scope.size);
+  return scaleAround(translate(pos, scope.center), origin, 1 / scope.scale);
+}
+
+function resetScope() {
+  scope.center = { x: -window.innerWidth / 2, y: -window.innerHeight / 2 };
+  scope.scale = 1;
 }
 
 // masters
@@ -38,12 +47,11 @@ for (let idx = 0; idx < 10; idx++) {
 let master = masters[1];
 
 function switchToMaster(m: Master) {
-  const pointerScreenPos = toScreenPosition(pointer);
-  master.leave();
-  scope.center.x = -window.innerWidth / 2;
-  scope.center.y = -window.innerHeight / 2;
-  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
-  master = m;
+  doWithoutMovingPointer(() => {
+    master.leave();
+    resetScope();
+    master = m;
+  });
 }
 
 function onFrame() {
@@ -166,18 +174,22 @@ window.addEventListener('keydown', (e) => {
       break;
     case '=':
       if (master.growInstanceAt(pointer)) {
-        // found an instance, done
+        // found an instance, made it bigger
       } else {
-        scope.size = Math.max(scope.size - 0.1, 0.1);
-        canvas.setStatus('size=' + scope.size.toFixed(1));
+        doWithoutMovingPointer(() => {
+          scope.scale = Math.min(scope.scale + 0.1, 10);
+          canvas.setStatus('scale=' + scope.scale.toFixed(1));
+        });
       }
       break;
     case '-':
       if (master.shrinkInstanceAt(pointer)) {
-        // found an instance, done
+        // found an instance, made it smaller
       } else {
-        scope.size = Math.min(scope.size + 0.1, 10);
-        canvas.setStatus('size=' + scope.size.toFixed(1));
+        doWithoutMovingPointer(() => {
+          scope.scale = Math.max(scope.scale - 0.1, 0.1);
+          canvas.setStatus('scale=' + scope.scale.toFixed(1));
+        });
       }
       break;
     case 'q':
@@ -308,4 +320,10 @@ function moreArc() {
     master.addArc(a, b, c);
     drawingInProgress = null;
   }
+}
+
+function doWithoutMovingPointer(fn: () => void) {
+  const pointerScreenPos = toScreenPosition(pointer);
+  fn();
+  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
 }
