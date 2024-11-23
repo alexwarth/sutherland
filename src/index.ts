@@ -256,12 +256,13 @@ canvas.el.addEventListener('pointermove', (e) => {
   }));
 
   if (pointer.down && !drawingInProgress && !drag && master.selection.size === 0) {
+    // TODO: think about this more, it sometimes misbehaves
     const dx = pointer.x - oldPos.x;
     const dy = pointer.y - oldPos.y;
-    scope.center.x -= dx;
-    scope.center.y -= dy;
-    pointer.x -= dx; // make the same adjustment
-    pointer.y -= dy; // ... to the pointer position
+    doWithoutMovingPointer(() => {
+      scope.center.x -= dx * scope.scale;
+      scope.center.y -= dy * scope.scale;
+    });
     return;
   }
 
