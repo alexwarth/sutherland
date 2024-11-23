@@ -41,7 +41,7 @@ export class Master {
     if (!(thing instanceof Instance)) {
       return false;
     } else {
-      thing.scale += 0.1;
+      thing.scale += 0.05;
       return true;
     }
   }
@@ -51,7 +51,7 @@ export class Master {
     if (!(thing instanceof Instance)) {
       return false;
     } else {
-      thing.scale -= 0.1;
+      thing.scale -= 0.05;
       return true;
     }
   }

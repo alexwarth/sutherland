@@ -166,25 +166,25 @@ window.addEventListener('keydown', (e) => {
       break;
     case '=':
       if (master.growInstanceAt(pointer)) {
-        canvas.setStatus('grow');
+        // found an instance, done
       } else {
-        scope.size = Math.max(scope.size - 0.2, 0.2);
+        scope.size = Math.max(scope.size - 0.1, 0.1);
         canvas.setStatus('size=' + scope.size.toFixed(1));
       }
       break;
     case '-':
       if (master.shrinkInstanceAt(pointer)) {
-        canvas.setStatus('shrink');
+        // found an instance, done
       } else {
-        scope.size = Math.min(scope.size + 0.2, 10);
+        scope.size = Math.min(scope.size + 0.1, 10);
         canvas.setStatus('size=' + scope.size.toFixed(1));
       }
       break;
     case 'q':
-      master.rotateInstanceAt(pointer, (-10 * Math.PI) / 180);
+      master.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
       break;
     case 'w':
-      master.rotateInstanceAt(pointer, (10 * Math.PI) / 180);
+      master.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
       break;
   }
 });
