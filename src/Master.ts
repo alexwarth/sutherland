@@ -8,7 +8,6 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { boundingBox, pointDist, Position } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
-import { drawArc, drawLine, flickeryWhite } from './canvas';
 
 export class Master {
   readonly things: Thing[] = [];
