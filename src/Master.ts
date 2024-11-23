@@ -61,9 +61,7 @@ export class Master {
     if (!(thing instanceof Instance)) {
       return false;
     } else {
-      console.log('rotating', thing, 'by', (dAngle * 180) / Math.PI);
       thing.angle += dAngle;
-      console.log('  new angle is', (thing.angle * 180) / Math.PI);
       return true;
     }
   }
