@@ -129,10 +129,6 @@ function ink() {
 // input handlers
 
 window.addEventListener('keydown', (e) => {
-  if (keysDown[e.key]) {
-    return;
-  }
-
   keysDown[e.key] = true;
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
