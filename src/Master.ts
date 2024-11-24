@@ -31,7 +31,7 @@ export class Master {
 
   addInstance(master: Master, { x, y }: Position) {
     if (master !== this) {
-      this.things.push(new Instance(master, x, y, 1 / 4, 0));
+      this.things.push(new Instance(master, x, y, 1 / 3, 0));
     }
   }
 
