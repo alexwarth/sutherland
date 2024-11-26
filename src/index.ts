@@ -16,9 +16,15 @@ let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null =
 // scope
 
 const scope = {
-  center: { x: -window.innerWidth / 2, y: -window.innerHeight / 2 },
+  center: { x: 0, y: 0 },
   scale: 1,
+  reset() {
+    this.center = { x: -window.innerWidth / 2, y: -window.innerHeight / 2 };
+    this.scale = 1;
+  },
 };
+
+scope.reset();
 
 function toScreenPosition(p: Position) {
   return pointDiff(scaleAround(p, origin, scope.scale), scope.center);
@@ -26,11 +32,6 @@ function toScreenPosition(p: Position) {
 
 function fromScreenPosition(pos: Position) {
   return scaleAround(translate(pos, scope.center), origin, 1 / scope.scale);
-}
-
-function resetScope() {
-  scope.center = { x: -window.innerWidth / 2, y: -window.innerHeight / 2 };
-  scope.scale = 1;
 }
 
 // masters
@@ -45,7 +46,7 @@ let master = masters[1];
 function switchToMaster(m: Master) {
   doWithoutMovingPointer(() => {
     master.leave();
-    resetScope();
+    scope.reset();
     master = m;
   });
 }
