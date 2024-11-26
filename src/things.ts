@@ -251,17 +251,58 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
-  readonly transform = (p: Position) => {
-    return translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
-  };
+  readonly transform = (p: Position) =>
+    translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
+
+  readonly xVar: Var;
+  readonly yVar: Var;
+  readonly scaleVar: Var;
+  readonly angleVar: Var;
 
   constructor(
     readonly master: Master,
-    public x: number,
-    public y: number,
-    public scale: number,
-    public angle: number,
-  ) {}
+    x: number,
+    y: number,
+    scale: number,
+    angle: number,
+  ) {
+    this.xVar = new Var(x);
+    this.yVar = new Var(y);
+    this.scaleVar = new Var(scale);
+    this.angleVar = new Var(angle);
+  }
+
+  get x() {
+    return this.xVar.value;
+  }
+
+  set x(x: number) {
+    this.xVar.value = x;
+  }
+
+  get y() {
+    return this.yVar.value;
+  }
+
+  set y(y: number) {
+    this.yVar.value = y;
+  }
+
+  get scale() {
+    return this.scaleVar.value;
+  }
+
+  set scale(scale: number) {
+    this.scaleVar.value = scale;
+  }
+
+  get angle() {
+    return this.angleVar.value;
+  }
+
+  set angle(angle: number) {
+    this.angleVar.value = angle;
+  }
 
   contains(pos: Position): boolean {
     const { topLeft, bottomRight } = this.master.boundingBox();
@@ -276,15 +317,17 @@ export class Instance implements Thing {
   }
 
   render(selection: Set<Thing>, transform: Transform) {
-    // TODO: fix this
     this.master.render((pos) => transform(this.transform(pos)));
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
-    // TODO: write this
+    // no op
   }
 
   forEachVar(fn: (v: Var) => void): void {
-    // TODO: write this
+    fn(this.xVar);
+    fn(this.yVar);
+    fn(this.scaleVar);
+    fn(this.angleVar);
   }
 }

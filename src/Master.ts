@@ -107,6 +107,10 @@ export class Master {
           thingsToIgnore.add(thing);
         }
       });
+
+      if (thing instanceof Instance) {
+        // TODO: add point-instance constraint(s) here
+      }
     }
 
     for (const thing of this.things) {
