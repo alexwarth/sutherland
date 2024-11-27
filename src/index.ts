@@ -137,7 +137,7 @@ window.addEventListener('keydown', (e) => {
     const m = masters[n];
     if (keysDown['Shift']) {
       canvas.setStatus('instantiate #' + n);
-      master.addInstance(m, pointer);
+      master.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
     } else {
       canvas.setStatus('drawing #' + n);
       switchToMaster(m);

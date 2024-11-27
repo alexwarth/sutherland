@@ -256,20 +256,19 @@ export class Instance implements Thing {
 
   readonly xVar: Var;
   readonly yVar: Var;
-  readonly scaleVar: Var;
-  readonly angleVar: Var;
+  readonly angleAndSizeVecX: Var;
+  readonly angleAndSizeVecY: Var;
 
   constructor(
     readonly master: Master,
     x: number,
     y: number,
-    scale: number,
-    angle: number,
+    size: number,
   ) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
-    this.scaleVar = new Var(scale);
-    this.angleVar = new Var(angle);
+    this.angleAndSizeVecX = new Var(size);
+    this.angleAndSizeVecY = new Var(0);
   }
 
   get x() {
@@ -288,20 +287,34 @@ export class Instance implements Thing {
     this.yVar.value = y;
   }
 
-  get scale() {
-    return this.scaleVar.value;
+  get size() {
+    return Math.sqrt(
+      Math.pow(this.angleAndSizeVecX.value, 2) + Math.pow(this.angleAndSizeVecY.value, 2),
+    );
   }
 
-  set scale(scale: number) {
-    this.scaleVar.value = scale;
+  set size(newSize: number) {
+    const angle = this.angle;
+    this.angleAndSizeVecX.value = newSize * Math.cos(angle);
+    this.angleAndSizeVecY.value = newSize * Math.sin(angle);
   }
 
   get angle() {
-    return this.angleVar.value;
+    return Math.atan2(this.angleAndSizeVecY.value, this.angleAndSizeVecX.value);
   }
 
-  set angle(angle: number) {
-    this.angleVar.value = angle;
+  set angle(newAngle: number) {
+    const size = this.size;
+    this.angleAndSizeVecX.value = size * Math.cos(newAngle);
+    this.angleAndSizeVecY.value = size * Math.sin(newAngle);
+  }
+
+  get scale() {
+    return this.size / this.master.size;
+  }
+
+  set scale(newScale: number) {
+    this.size = newScale * this.master.size;
   }
 
   contains(pos: Position): boolean {
@@ -327,7 +340,7 @@ export class Instance implements Thing {
   forEachVar(fn: (v: Var) => void): void {
     fn(this.xVar);
     fn(this.yVar);
-    fn(this.scaleVar);
-    fn(this.angleVar);
+    fn(this.angleAndSizeVecX);
+    fn(this.angleAndSizeVecY);
   }
 }

@@ -29,9 +29,9 @@ export class Master {
     });
   }
 
-  addInstance(master: Master, { x, y }: Position) {
+  addInstance(master: Master, { x, y }: Position, size: number) {
     if (master !== this) {
-      this.things.push(new Instance(master, x, y, 1 / 3, 0));
+      this.things.push(new Instance(master, x, y, size));
     }
   }
 
@@ -288,6 +288,14 @@ export class Master {
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
     return boundingBox(this.getPositions());
+  }
+
+  get size() {
+    let size2 = 0;
+    for (const { x, y } of this.getPositions()) {
+      size2 = Math.max(size2, Math.pow(x, 2) + Math.pow(y, 2));
+    }
+    return Math.sqrt(size2);
   }
 
   private thingsForOperation(pointerPos: Position): Set<Thing> {
