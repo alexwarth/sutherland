@@ -1,3 +1,4 @@
+import { config } from './config';
 import { pointDist, Position, TAU } from './helpers';
 
 export let el: HTMLCanvasElement;
@@ -115,7 +116,8 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
     baseAlpha = 0.7;
     multiplier = 0.1;
   }
-  const alpha = Math.random() * multiplier + baseAlpha;
-  // const alpha = 0.75 * multiplier + baseAlpha;
+  const alpha = config.flicker
+    ? Math.random() * multiplier + baseAlpha
+    : 0.75 * multiplier + baseAlpha;
   return `rgba(255, 255, 255, ${alpha})`;
 }

@@ -1,4 +1,5 @@
 import * as canvas from './canvas';
+import { config } from './config';
 import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
@@ -190,6 +191,9 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'w':
       master.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
+      break;
+    case 'f':
+      config.flicker = !config.flicker;
       break;
   }
 });
