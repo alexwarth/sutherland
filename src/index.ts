@@ -49,6 +49,7 @@ function switchToMaster(m: Master) {
     master.leave();
     scope.reset();
     master = m;
+    (window as any).master = m;
   });
 }
 
