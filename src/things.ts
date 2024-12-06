@@ -1,4 +1,6 @@
+import { config } from './config';
 import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
+import { PointInstanceConstraint } from './constraints';
 import {
   pointDist,
   pointDistToLineSegment,
@@ -11,6 +13,8 @@ import {
 } from './helpers';
 import { Master } from './Master';
 
+const ATTACHER_COLOR = 'rgba(255,222,33,1.25)';
+
 export class Var {
   constructor(public value: number) {}
 }
@@ -19,6 +23,7 @@ type Transform = (pos: Position) => Position;
 
 export interface Thing {
   contains(pos: Position): boolean;
+  moveBy(dx: number, dy: number): void;
   render(selection: Set<Thing>, transform: Transform): void;
   forEachHandle(fn: (h: Handle) => void): void;
   forEachVar(fn: (v: Var) => void): void;
@@ -161,10 +166,18 @@ export class Handle implements Thing {
     return this.state.contains(pos);
   }
 
-  render(selection: Set<Thing>, transform: Transform): void {
+  moveBy(dx: number, dy: number) {
+    this.primary.x += dx;
+    this.primary.y += dy;
+  }
+
+  render(selection: Set<Thing>, transform: Transform, isAttacher = false): void {
     // if (this.primary === this) {
     //   drawText(this, this.toString(), 'white', transform);
     // }
+    if (isAttacher) {
+      drawLine(this, this, ATTACHER_COLOR, transform);
+    }
   }
 
   forEachHandle(fn: (h: Handle) => void) {
@@ -199,6 +212,10 @@ export class Line implements Thing {
     );
   }
 
+  moveBy(dx: number, dy: number) {
+    this.forEachHandle((h) => h.moveBy(dx, dy));
+  }
+
   render(selection: Set<Thing>, transform: Transform) {
     drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'), transform);
   }
@@ -229,6 +246,10 @@ export class Arc implements Thing {
     return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c)) <= CLOSE_ENOUGH;
   }
 
+  moveBy(dx: number, dy: number) {
+    this.forEachHandle((h) => h.moveBy(dx, dy));
+  }
+
   render(selection: Set<Thing>, transform: Transform) {
     drawArc(
       this.c,
@@ -251,24 +272,40 @@ export class Arc implements Thing {
 }
 
 export class Instance implements Thing {
+  private static nextId = 0;
+
   readonly transform = (p: Position) =>
     translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
 
+  readonly id = Instance.nextId++;
   readonly xVar: Var;
   readonly yVar: Var;
   readonly angleAndSizeVecX: Var;
   readonly angleAndSizeVecY: Var;
+  readonly attachers: Handle[] = [];
 
   constructor(
     readonly master: Master,
     x: number,
     y: number,
     size: number,
+    parent: Master,
   ) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
     this.angleAndSizeVecX = new Var(size);
     this.angleAndSizeVecY = new Var(0);
+    this.addAttachers(master, parent);
+  }
+
+  private addAttachers(master: Master, parent: Master) {
+    for (const h of master.attachers) {
+      if (h === h.primary) {
+        const attacher = new Handle(this.transform(h));
+        this.attachers.push(attacher);
+        parent.constraints.add(new PointInstanceConstraint(attacher, this, h));
+      }
+    }
   }
 
   get x() {
@@ -329,12 +366,27 @@ export class Instance implements Thing {
     return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
   }
 
-  render(selection: Set<Thing>, transform: Transform) {
-    this.master.render((pos) => transform(this.transform(pos)));
+  moveBy(dx: number, dy: number) {
+    this.x += dx;
+    this.y += dy;
+    this.forEachHandle((h) => h.moveBy(dx, dy));
+  }
+
+  render(selection: Set<Thing>, transform: Transform, depth = 0) {
+    this.master.render((pos) => transform(this.transform(pos)), depth + 1);
+    if (depth === 1) {
+      this.attachers.forEach((attacher, idx) => {
+        drawLine(
+          transform(this.transform(this.master.attachers[idx].primary)),
+          transform(attacher.primary),
+          ATTACHER_COLOR,
+        );
+      });
+    }
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
-    // no op
+    this.attachers.forEach(fn);
   }
 
   forEachVar(fn: (v: Var) => void): void {
@@ -342,5 +394,6 @@ export class Instance implements Thing {
     fn(this.yVar);
     fn(this.angleAndSizeVecX);
     fn(this.angleAndSizeVecY);
+    this.forEachHandle((h) => h.forEachVar(fn));
   }
 }

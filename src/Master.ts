@@ -1,16 +1,20 @@
+import { config } from './config';
 import {
   EqualDistanceConstraint,
   FixedDistanceConstraint,
+  FullSizeConstraint,
   HorizontalOrVerticalConstraint,
+  PointInstanceConstraint,
   PointOnArcConstraint,
   PointOnLineConstraint,
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
-import { boundingBox, pointDist, Position } from './helpers';
+import { boundingBox, pointDist, Position, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 
 export class Master {
   readonly things: Thing[] = [];
+  readonly attachers: Handle[] = [];
   readonly constraints = new ConstraintSet();
   readonly selection = new Set<Thing>();
 
@@ -22,47 +26,59 @@ export class Master {
     this.constraints.relax(this.getVars());
   }
 
-  render(transform: (pos: Position) => Position) {
+  render(transform: (pos: Position) => Position, depth = 0) {
     this.things.forEach((t) => {
-      t.render(this.selection, transform);
+      if (t instanceof Instance) {
+        t.render(this.selection, transform, depth + 1);
+      } else {
+        t.render(this.selection, transform);
+      }
       t.forEachHandle((h) => h.render(this.selection, transform));
     });
+    if (depth === 0) {
+      this.attachers.forEach((h) => h.render(this.selection, transform, true));
+    }
   }
 
   addInstance(master: Master, { x, y }: Position, size: number) {
-    if (master !== this) {
-      this.things.push(new Instance(master, x, y, size));
+    if (master === this) {
+      // TODO: detect cycles, too!
+      return;
     }
+
+    this.things.push(new Instance(master, x, y, size, this));
   }
 
-  growInstanceAt(pos: Position) {
+  resizeInstanceAt(pos: Position, scaleMultiplier: number) {
     const thing = this.thingAt(pos);
     if (!(thing instanceof Instance)) {
       return false;
-    } else {
-      thing.scale += 0.05;
-      return true;
     }
-  }
 
-  shrinkInstanceAt(pos: Position) {
-    const thing = this.thingAt(pos);
-    if (!(thing instanceof Instance)) {
-      return false;
-    } else {
-      thing.scale -= 0.05;
-      return true;
+    thing.scale *= scaleMultiplier;
+    for (const attacher of thing.attachers) {
+      const { x, y } = scaleAround(attacher, thing, scaleMultiplier);
+      attacher.x = x;
+      attacher.y = y;
     }
+    this.fixInstances(thing);
+    return true;
   }
 
   rotateInstanceAt(pos: Position, dAngle: number) {
     const thing = this.thingAt(pos);
     if (!(thing instanceof Instance)) {
       return false;
-    } else {
-      thing.angle += dAngle;
-      return true;
     }
+
+    thing.angle += dAngle;
+    for (const attacher of thing.attachers) {
+      const { x, y } = rotateAround(attacher, thing, dAngle);
+      attacher.x = x;
+      attacher.y = y;
+    }
+    this.fixInstances(thing);
+    return true;
   }
 
   addLine(aPos: Position, bPos: Position) {
@@ -107,10 +123,6 @@ export class Master {
           thingsToIgnore.add(thing);
         }
       });
-
-      if (thing instanceof Instance) {
-        // TODO: add point-instance constraint(s) here
-      }
     }
 
     for (const thing of this.things) {
@@ -122,6 +134,30 @@ export class Master {
         this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
       }
     }
+  }
+
+  toggleAttacher(pointerPos: Position) {
+    const h = this.handleAt(pointerPos);
+    if (!h) {
+      return false;
+    }
+
+    let removed = false;
+    let idx = 0;
+    while (idx < this.attachers.length) {
+      const a = this.attachers[idx];
+      if (a.primary === h) {
+        this.attachers.splice(idx, 1);
+        removed = true;
+      } else {
+        idx++;
+      }
+    }
+
+    if (!removed) {
+      this.attachers.push(h);
+    }
+    return true;
   }
 
   delete(pointerPos: Position) {
@@ -185,6 +221,45 @@ export class Master {
     }
     this.selection.clear();
     return true;
+  }
+
+  fullSize(pointerPos: Position) {
+    const things = this.thingsForOperation(pointerPos);
+    for (const thing of things) {
+      if (thing instanceof Instance) {
+        this.constraints.add(new FullSizeConstraint(thing));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  fixInstances(dragThing: Thing & Position) {
+    if (!config.autoFixInstances) {
+      return;
+    }
+
+    // TODO: this is a good place to use clusters (see Inkling solver) for efficiency!
+
+    const constraints = new ConstraintSet();
+    this.constraints.forEach((c) => {
+      if (c instanceof PointInstanceConstraint) {
+        constraints.add(c);
+      }
+    });
+
+    const vars = new Set<Var>();
+    for (const thing of this.things) {
+      if (thing === dragThing && dragThing instanceof Instance) {
+        // don't tweak its variables!
+      } else {
+        thing.forEachVar((v) => vars.add(v));
+      }
+    }
+
+    while (constraints.relax(vars)) {
+      // keep going
+    }
   }
 
   snap(pos: Position, dragThing: (Thing & Position) | null) {
@@ -295,7 +370,7 @@ export class Master {
     for (const { x, y } of this.getPositions()) {
       size2 = Math.max(size2, Math.pow(x, 2) + Math.pow(y, 2));
     }
-    return Math.sqrt(size2);
+    return Math.sqrt(size2) * 2;
   }
 
   private thingsForOperation(pointerPos: Position): Set<Thing> {
@@ -313,6 +388,19 @@ export class Master {
       thing.forEachHandle((h) => handles.add(h.primary));
     }
     return handles;
+  }
+
+  getHandle(handleIdx: number) {
+    let handle: Handle;
+    let idx = 0;
+    for (const thing of this.things) {
+      thing.forEachHandle((h) => {
+        if (h === h.primary && idx++ === handleIdx) {
+          handle = h;
+        }
+      });
+    }
+    return handle!;
   }
 
   private getPositions() {

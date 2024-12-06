@@ -1,3 +1,7 @@
 export const config = {
-  flicker: true,
+  flicker: false,
+  autoFixInstances: false,
+  minWorthwhileErrorImprovement: 0.05,
 };
+
+(window as any).config = config;

@@ -4,6 +4,19 @@ import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
+// TODO:
+// - a simplification: stop worrying about being able to unmerge handles
+// - add special handling for when an attacher is removed from the master:
+//   all of the corresponding points in its instances need to be removed automatically,
+//   as well as constraints on those points
+// - decide whether to continuously keep the attachers in the right place (see Master.fixInstances())
+//   or to only do it on "solve"
+//   * if the former,
+//     - solve in clusters (like in my Inkling solver) to make dragging more lightweight CPU-wise
+//     - make sure that moving, rotating, and scaling instances doesn't break the relationships
+//       between the attachers and the points they correspond to in the master
+//   * if the latter, prob. need to show connection between attacher and the point it is attached to
+
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 const pointer: Position & { down: boolean } = { x: Infinity, y: Infinity, down: false };
@@ -138,8 +151,10 @@ window.addEventListener('keydown', (e) => {
     const n = parseInt(e.code.slice(5));
     const m = masters[n];
     if (keysDown['Shift']) {
-      canvas.setStatus('instantiate #' + n);
-      master.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
+      if (!m.isEmpty()) {
+        canvas.setStatus('instantiate #' + n);
+        master.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
+      }
     } else {
       canvas.setStatus('drawing #' + n);
       switchToMaster(m);
@@ -168,7 +183,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case '=':
-      if (master.growInstanceAt(pointer)) {
+      if (master.resizeInstanceAt(pointer, 1.05)) {
         // found an instance, made it bigger
       } else {
         doWithoutMovingPointer(() => {
@@ -178,7 +193,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case '-':
-      if (master.shrinkInstanceAt(pointer)) {
+      if (master.resizeInstanceAt(pointer, 0.95)) {
         // found an instance, made it smaller
       } else {
         doWithoutMovingPointer(() => {
@@ -195,6 +210,20 @@ window.addEventListener('keydown', (e) => {
       break;
     case 'f':
       config.flicker = !config.flicker;
+      break;
+    case 'R':
+      config.autoFixInstances = !config.autoFixInstances;
+      canvas.setStatus(`relaxation abuse ${config.autoFixInstances ? 'on' : 'off'}`);
+      break;
+    case 's':
+      if (master.fullSize(pointer)) {
+        canvas.setStatus('full size');
+      }
+      break;
+    case 'A':
+      if (master.toggleAttacher(pointer)) {
+        canvas.setStatus('toggle attacher');
+      }
       break;
   }
 });
@@ -276,8 +305,10 @@ canvas.el.addEventListener('pointermove', (e) => {
   }
 
   if (drag) {
-    drag.thing.x = pointer.x - drag.offset.x;
-    drag.thing.y = pointer.y - drag.offset.y;
+    const newX = pointer.x - drag.offset.x;
+    const newY = pointer.y - drag.offset.y;
+    drag.thing.moveBy(newX - drag.thing.x, newY - drag.thing.y);
+    master.fixInstances(drag.thing);
   }
 });
 

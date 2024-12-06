@@ -1,3 +1,4 @@
+import { config } from './config';
 import { Constraint } from './constraints';
 import { Handle, Var } from './things';
 
@@ -13,6 +14,10 @@ export default class ConstraintSet {
     this.constraints.push(constraint);
   }
 
+  forEach(fn: (constraint: Constraint) => void) {
+    this.constraints.forEach(fn);
+  }
+
   relax(vars: Set<Var>) {
     let ans = false;
     for (const v of vars) {
@@ -23,7 +28,7 @@ export default class ConstraintSet {
 
   relaxWithVar(v: Var) {
     const origValue = v.value;
-    const errorToBeat = this.computeError() - 0.5;
+    const errorToBeat = this.computeError() - config.minWorthwhileErrorImprovement;
 
     v.value = origValue + 1;
     const ePlus1 = this.computeError();

@@ -1,5 +1,12 @@
-import { pointDist, pointDistToLineSegment } from './helpers';
-import { Handle } from './things';
+import {
+  origin,
+  pointDist,
+  pointDistToLineSegment,
+  rotateAround,
+  scaleAround,
+  translate,
+} from './helpers';
+import { Handle, Instance } from './things';
 
 export abstract class Constraint {
   constructor(protected readonly handles: Handle[]) {}
@@ -180,5 +187,55 @@ export class PointOnArcConstraint extends Constraint {
 
   computeError() {
     return pointDist(this.p, this.c) - pointDist(this.a, this.c);
+  }
+}
+
+export class PointInstanceConstraint extends Constraint {
+  constructor(
+    instancePoint: Handle,
+    readonly instance: Instance,
+    masterPoint: Handle,
+  ) {
+    super([instancePoint, masterPoint]);
+  }
+
+  private get instancePoint() {
+    return this.handles[0];
+  }
+
+  private get masterPoint() {
+    return this.handles[1];
+  }
+
+  get signature() {
+    return `PI(${this.instance.id},${this.masterPoint.id})`;
+  }
+
+  computeError() {
+    return pointDist(
+      this.instancePoint,
+      translate(
+        scaleAround(
+          rotateAround(this.masterPoint, origin, this.instance.angle),
+          origin,
+          this.instance.scale,
+        ),
+        this.instance,
+      ),
+    );
+  }
+}
+
+export class FullSizeConstraint extends Constraint {
+  constructor(readonly instance: Instance) {
+    super([]);
+  }
+
+  get signature() {
+    return `FS(${this.instance.id})`;
+  }
+
+  computeError() {
+    return this.instance.size - this.instance.master.size;
   }
 }
