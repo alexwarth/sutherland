@@ -87,8 +87,7 @@ export class Master {
     this.mergeAndAddImplicitConstraints(line.b);
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
-        h = h.primary;
-        if (h !== line.a.primary && h !== line.b.primary && line.contains(h)) {
+        if (h !== line.a && h !== line.b && line.contains(h)) {
           this.constraints.add(new PointOnLineConstraint(h, line.a, line.b));
         }
       });
@@ -104,9 +103,8 @@ export class Master {
     this.constraints.add(new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c));
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
-        h = h.primary;
-        if (h !== arc.a.primary && h !== arc.b.primary && h !== arc.c.primary && arc.contains(h)) {
-          this.constraints.add(new PointOnArcConstraint(h.primary, arc.a, arc.b, arc.c));
+        if (h !== arc.a && h !== arc.b && h !== arc.c && arc.contains(h)) {
+          this.constraints.add(new PointOnArcConstraint(h, arc.a, arc.b, arc.c));
         }
       });
     }
@@ -117,9 +115,8 @@ export class Master {
     const thingsToIgnore = new Set<Thing>();
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
-        h = h.primary;
-        if (h.contains(handle)) {
-          handle.mergeWith(h);
+        if (h !== handle && h.contains(handle)) {
+          this.replaceHandle(h, handle);
           thingsToIgnore.add(thing);
         }
       });
@@ -136,6 +133,11 @@ export class Master {
     }
   }
 
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    this.things.forEach((thing) => thing.replaceHandle(oldHandle, newHandle));
+    this.constraints.replaceHandle(oldHandle, newHandle);
+  }
+
   toggleAttacher(pointerPos: Position) {
     const h = this.handleAt(pointerPos);
     if (!h) {
@@ -146,7 +148,7 @@ export class Master {
     let idx = 0;
     while (idx < this.attachers.length) {
       const a = this.attachers[idx];
-      if (a.primary === h) {
+      if (a === h) {
         this.attachers.splice(idx, 1);
         removed = true;
       } else {
@@ -165,17 +167,21 @@ export class Master {
     if (things.size === 0) {
       return false;
     }
-    const handleMap = new Map<Handle, Handle | null>();
-    for (const thing of things) {
-      thing.forEachHandle((h) => {
-        if (!handleMap.has(h)) {
-          const replacementHandle = h.breakOff();
-          handleMap.set(h, replacementHandle);
-        }
-      });
-      this.things.splice(this.things.indexOf(thing), 1);
-    }
-    this.constraints.replaceHandles(handleMap);
+
+    // TODO: write this method
+
+    // const handleMap = new Map<Handle, Handle | null>();
+    // for (const thing of things) {
+    //   thing.forEachHandle((h) => {
+    //     if (!handleMap.has(h)) {
+    //       const replacementHandle = h.breakOff();
+    //       handleMap.set(h, replacementHandle);
+    //     }
+    //   });
+    //   this.things.splice(this.things.indexOf(thing), 1);
+    // }
+    // this.constraints.replaceHandles(handleMap);
+
     this.selection.clear();
     return true;
   }
@@ -297,7 +303,6 @@ export class Master {
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
-        h = h.primary;
         if (h !== dragThing && h.contains(pos)) {
           const dist = pointDist(pos, h);
           if (dist < minDist) {
@@ -385,7 +390,7 @@ export class Master {
   private getHandles(things: Iterable<Thing>) {
     const handles = new Set<Handle>();
     for (const thing of things) {
-      thing.forEachHandle((h) => handles.add(h.primary));
+      thing.forEachHandle((h) => handles.add(h));
     }
     return handles;
   }
@@ -395,7 +400,7 @@ export class Master {
     let idx = 0;
     for (const thing of this.things) {
       thing.forEachHandle((h) => {
-        if (h === h.primary && idx++ === handleIdx) {
+        if (idx++ === handleIdx) {
           handle = h;
         }
       });

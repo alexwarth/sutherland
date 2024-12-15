@@ -1,5 +1,4 @@
-import { config } from './config';
-import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
+import { drawArc, drawLine, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import {
   pointDist,
@@ -26,21 +25,23 @@ export interface Thing {
   moveBy(dx: number, dy: number): void;
   render(selection: Set<Thing>, transform: Transform): void;
   forEachHandle(fn: (h: Handle) => void): void;
+  replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachVar(fn: (v: Var) => void): void;
 }
 
 const HANDLE_RADIUS = 5;
 const CLOSE_ENOUGH = HANDLE_RADIUS;
 
-class PrimaryHandleState {
+export class Handle implements Thing {
+  private static nextId = 0;
+
+  readonly id = Handle.nextId++;
   readonly xVar: Var;
   readonly yVar: Var;
-  readonly children: Set<Handle>;
 
-  constructor(x: number, y: number) {
+  constructor({ x, y }: Position) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
-    this.children = new Set();
   }
 
   get x() {
@@ -63,118 +64,12 @@ class PrimaryHandleState {
     return pointDist(pos, this) <= CLOSE_ENOUGH;
   }
 
-  forEachVar(fn: (v: Var) => void) {
-    fn(this.xVar);
-    fn(this.yVar);
-  }
-}
-
-class MergedHandleState {
-  constructor(public parent: Handle) {}
-
-  get x() {
-    return this.parent.x;
-  }
-
-  set x(newX: number) {
-    this.parent.x = newX;
-  }
-
-  get y() {
-    return this.parent.y;
-  }
-
-  set y(newY: number) {
-    this.parent.y = newY;
-  }
-
-  contains(pos: Position) {
-    return false;
-  }
-
-  forEachVar(fn: (v: Var) => void) {}
-}
-
-export class Handle implements Thing {
-  private static nextId = 0;
-
-  readonly id = Handle.nextId++;
-  state: PrimaryHandleState | MergedHandleState;
-
-  constructor({ x, y }: Position) {
-    this.state = new PrimaryHandleState(x, y);
-  }
-
-  get x() {
-    return this.state.x;
-  }
-
-  set x(newX: number) {
-    this.state.x = newX;
-  }
-
-  get y() {
-    return this.state.y;
-  }
-
-  set y(newY: number) {
-    this.state.y = newY;
-  }
-
-  get primary() {
-    return this.state instanceof PrimaryHandleState ? this : this.state.parent;
-  }
-
-  mergeWith(that: Handle) {
-    if (!(this.state instanceof PrimaryHandleState)) {
-      this.state.parent.mergeWith(that);
-    } else if (!(that.state instanceof PrimaryHandleState)) {
-      this.mergeWith(that.state.parent);
-    } else if (this !== that) {
-      for (const h of that.state.children) {
-        (h.state as MergedHandleState).parent = this;
-        this.state.children.add(h);
-      }
-      that.state = new MergedHandleState(this);
-      this.state.children.add(that);
-    }
-  }
-
-  breakOff(): Handle | null {
-    if (this.state instanceof MergedHandleState) {
-      (this.state.parent.state as PrimaryHandleState).children.delete(this);
-      const oldParent = this.state.parent;
-      this.state = new PrimaryHandleState(this.x, this.y);
-      return oldParent;
-    } else if (this.state.children.size > 0) {
-      const [firstChild] = [...this.state.children];
-      firstChild.state = new PrimaryHandleState(this.x, this.y);
-      for (const child of this.state.children) {
-        if (child !== firstChild) {
-          firstChild.state.children.add(child);
-          (child.state as MergedHandleState).parent = firstChild;
-        }
-      }
-      this.state.children.clear();
-      return firstChild;
-    } else {
-      return null;
-    }
-  }
-
-  contains(pos: Position) {
-    return this.state.contains(pos);
-  }
-
   moveBy(dx: number, dy: number) {
-    this.primary.x += dx;
-    this.primary.y += dy;
+    this.xVar.value += dx;
+    this.yVar.value += dy;
   }
 
   render(selection: Set<Thing>, transform: Transform, isAttacher = false): void {
-    // if (this.primary === this) {
-    //   drawText(this, this.toString(), 'white', transform);
-    // }
     if (isAttacher) {
       drawLine(this, this, ATTACHER_COLOR, transform);
     }
@@ -184,20 +79,23 @@ export class Handle implements Thing {
     fn(this);
   }
 
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    throw new Error('should never call replace() on Handle');
+  }
+
   forEachVar(fn: (v: Var) => void) {
-    this.state.forEachVar(fn);
+    fn(this.xVar);
+    fn(this.yVar);
   }
 
   toString() {
-    return this.state instanceof PrimaryHandleState
-      ? `primary(id=${this.id}, children [${[...this.state.children].map((h) => h.id).join(', ')}])`
-      : `merged(id=${this.id}, parent=${this.state.parent.id})`;
+    return `handle(id=${this.id})`;
   }
 }
 
 export class Line implements Thing {
-  readonly a: Handle;
-  readonly b: Handle;
+  a: Handle;
+  b: Handle;
 
   constructor(aPos: Position, bPos: Position) {
     this.a = new Handle(aPos);
@@ -225,15 +123,24 @@ export class Line implements Thing {
     fn(this.b);
   }
 
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    if (this.a == oldHandle) {
+      this.a = newHandle;
+    }
+    if (this.b == oldHandle) {
+      this.b = newHandle;
+    }
+  }
+
   forEachVar(fn: (v: Var) => void): void {
     this.forEachHandle((h) => h.forEachVar(fn));
   }
 }
 
 export class Arc implements Thing {
-  readonly a: Handle;
-  readonly b: Handle;
-  readonly c: Handle;
+  a: Handle;
+  b: Handle;
+  c: Handle;
 
   constructor(aPos: Position, bPos: Position, cPos: Position) {
     this.a = new Handle(aPos);
@@ -266,6 +173,18 @@ export class Arc implements Thing {
     fn(this.c);
   }
 
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    if (this.a == oldHandle) {
+      this.a = newHandle;
+    }
+    if (this.b == oldHandle) {
+      this.b = newHandle;
+    }
+    if (this.c == oldHandle) {
+      this.c = newHandle;
+    }
+  }
+
   forEachVar(fn: (v: Var) => void): void {
     this.forEachHandle((h) => h.forEachVar(fn));
   }
@@ -282,7 +201,7 @@ export class Instance implements Thing {
   readonly yVar: Var;
   readonly angleAndSizeVecX: Var;
   readonly angleAndSizeVecY: Var;
-  readonly attachers: Handle[] = [];
+  attachers: Handle[] = [];
 
   constructor(
     readonly master: Master,
@@ -300,11 +219,9 @@ export class Instance implements Thing {
 
   private addAttachers(master: Master, parent: Master) {
     for (const h of master.attachers) {
-      if (h === h.primary) {
-        const attacher = new Handle(this.transform(h));
-        this.attachers.push(attacher);
-        parent.constraints.add(new PointInstanceConstraint(attacher, this, h));
-      }
+      const attacher = new Handle(this.transform(h));
+      this.attachers.push(attacher);
+      parent.constraints.add(new PointInstanceConstraint(attacher, this, h));
     }
   }
 
@@ -377,8 +294,8 @@ export class Instance implements Thing {
     if (depth === 1) {
       this.attachers.forEach((attacher, idx) => {
         drawLine(
-          transform(this.transform(this.master.attachers[idx].primary)),
-          transform(attacher.primary),
+          transform(this.transform(this.master.attachers[idx])),
+          transform(attacher),
           ATTACHER_COLOR,
         );
       });
@@ -387,6 +304,10 @@ export class Instance implements Thing {
 
   forEachHandle(fn: (h: Handle) => void): void {
     this.attachers.forEach(fn);
+  }
+
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    this.attachers = this.attachers.map((h) => (h === oldHandle ? newHandle : h));
   }
 
   forEachVar(fn: (v: Var) => void): void {

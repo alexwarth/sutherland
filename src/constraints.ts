@@ -14,20 +14,15 @@ export abstract class Constraint {
   abstract computeError(): number;
   abstract get signature(): string;
 
-  replaceHandles(handleMap: Map<Handle, Handle | null>) {
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
     for (let idx = 0; idx < this.handles.length; idx++) {
       const handle = this.handles[idx];
-      if (!handleMap.has(handle)) {
-        continue;
-      }
-
-      const replacementHandle = handleMap.get(this.handles[idx]);
-      if (replacementHandle == null) {
-        return false;
-      }
-      this.handles[idx] = replacementHandle;
+      this.handles.forEach((h, idx) => {
+        if (h === oldHandle) {
+          this.handles[idx] = newHandle;
+        }
+      });
     }
-    return true;
   }
 }
 

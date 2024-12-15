@@ -3,15 +3,23 @@ import { Constraint } from './constraints';
 import { Handle, Var } from './things';
 
 export default class ConstraintSet {
-  private readonly constraints: Constraint[] = [];
+  private constraints: Constraint[] = [];
 
   add(constraint: Constraint) {
     const sig = constraint.signature;
-    if (this.constraints.find((c) => c.signature === sig)) {
-      // don't add it -- it's a duplicate!
-      return;
+    if (!this.constraints.find((c) => c.signature === sig)) {
+      // only add if it's not a duplicate
+      this.constraints.push(constraint);
     }
-    this.constraints.push(constraint);
+  }
+
+  replaceHandle(oldHandle: Handle, newHandle: Handle) {
+    const constraints = this.constraints;
+    this.constraints = [];
+    constraints.forEach((constraint) => {
+      constraint.replaceHandle(oldHandle, newHandle);
+      this.add(constraint);
+    });
   }
 
   forEach(fn: (constraint: Constraint) => void) {
@@ -26,7 +34,7 @@ export default class ConstraintSet {
     return ans;
   }
 
-  relaxWithVar(v: Var) {
+  private relaxWithVar(v: Var) {
     const origValue = v.value;
     const errorToBeat = this.computeError() - config.minWorthwhileErrorImprovement;
 
@@ -46,27 +54,6 @@ export default class ConstraintSet {
       v.value = origValue;
       return false;
     }
-  }
-
-  replaceHandles(handleMap: Map<Handle, Handle | null>) {
-    const constraintsToKeep: Constraint[] = [];
-    const sigs = new Set<string>();
-    while (this.constraints.length > 0) {
-      const constraint = this.constraints.shift()!;
-      if (!constraint.replaceHandles(handleMap)) {
-        continue;
-      }
-
-      const sig = constraint.signature;
-      if (sigs.has(sig)) {
-        continue;
-      }
-
-      constraintsToKeep.push(constraint);
-      sigs.add(sig);
-    }
-
-    this.constraints.push(...constraintsToKeep);
   }
 
   private computeError() {
