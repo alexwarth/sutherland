@@ -37,28 +37,28 @@ function fromScreenPosition(pos: Position) {
   return scaleAround(translate(pos, scope.center), origin, 1 / scope.scale);
 }
 
-// masters
+// drawings
 
-const masters: Drawing[] = [];
+const drawings: Drawing[] = [];
 for (let idx = 0; idx < 10; idx++) {
-  masters.push(new Drawing());
+  drawings.push(new Drawing());
 }
 
-let master = masters[1];
+let drawing = drawings[1];
 
-function switchToMaster(m: Drawing) {
+function switchToDrawing(d: Drawing) {
   doWithoutMovingPointer(() => {
-    master.leave();
+    drawing.leave();
     scope.reset();
-    master = m;
-    (window as any).master = m;
+    drawing = d;
+    (window as any).drawing = d;
   });
 }
 
 function onFrame() {
   if (keysDown[' ']) {
     canvas.setStatus('solve');
-    master.relax();
+    drawing.relax();
   }
 
   render();
@@ -74,16 +74,16 @@ function render() {
   if (config.autoSolve) {
     const t0 = performance.now();
     let n = 0;
-    while (performance.now() - t0 < 20 && master.relax()) {
+    while (performance.now() - t0 < 20 && drawing.relax()) {
       n++;
     }
   }
 
   canvas.clear();
-  if (!drawingInProgress && master.isEmpty()) {
+  if (!drawingInProgress && drawing.isEmpty()) {
     ink();
   } else {
-    master.render(toScreenPosition);
+    drawing.render(toScreenPosition);
   }
 
   switch (drawingInProgress?.type) {
@@ -146,42 +146,42 @@ window.addEventListener('keydown', (e) => {
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
     const n = parseInt(e.code.slice(5));
-    const m = masters[n];
+    const m = drawings[n];
     if (keysDown['Shift']) {
       if (!m.isEmpty()) {
         canvas.setStatus('instantiate #' + n);
-        master.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
+        drawing.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
       }
     } else {
       canvas.setStatus('drawing #' + n);
-      switchToMaster(m);
+      switchToDrawing(m);
     }
     return;
   }
 
   switch (e.key) {
     case 'Backspace':
-      if (master.delete(pointer)) {
+      if (drawing.delete(pointer)) {
         cleanUp();
         canvas.setStatus('delete');
       }
       break;
     case 'l':
-      if (master.fixedDistance(pointer)) {
+      if (drawing.fixedDistance(pointer)) {
         canvas.setStatus('fixed distance');
       }
       break;
     case 'e':
       canvas.setStatus('equal length');
-      master.equalDistance();
+      drawing.equalDistance();
       break;
     case 'h':
-      if (master.horizontalOrVertical(pointer)) {
+      if (drawing.horizontalOrVertical(pointer)) {
         canvas.setStatus('HorV');
       }
       break;
     case '=':
-      if (master.resizeInstanceAt(pointer, 1.05)) {
+      if (drawing.resizeInstanceAt(pointer, 1.05)) {
         // found an instance, made it bigger
       } else {
         doWithoutMovingPointer(() => {
@@ -191,7 +191,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case '-':
-      if (master.resizeInstanceAt(pointer, 0.95)) {
+      if (drawing.resizeInstanceAt(pointer, 0.95)) {
         // found an instance, made it smaller
       } else {
         doWithoutMovingPointer(() => {
@@ -201,10 +201,10 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case 'q':
-      master.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
+      drawing.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
       break;
     case 'w':
-      master.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
+      drawing.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
       break;
     case 'f':
       config.flicker = !config.flicker;
@@ -214,7 +214,7 @@ window.addEventListener('keydown', (e) => {
       canvas.setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
       break;
     case 's':
-      if (master.fullSize(pointer)) {
+      if (drawing.fullSize(pointer)) {
         canvas.setStatus('full size');
       }
       break;
@@ -248,7 +248,7 @@ canvas.el.addEventListener('pointerdown', (e) => {
   pointer.down = true;
 
   if (keysDown['Shift']) {
-    master.toggleSelections(pointer);
+    drawing.toggleSelections(pointer);
     return;
   } else if (keysDown['Meta']) {
     moreLines();
@@ -260,19 +260,19 @@ canvas.el.addEventListener('pointerdown', (e) => {
 
   drag = null;
 
-  const handle = master.handleAt(pointer);
+  const handle = drawing.handleAt(pointer);
   if (handle) {
     drag = { thing: handle, offset: { x: 0, y: 0 } };
     return;
   }
 
-  master.clearSelection();
-  const thing = master.thingAt(pointer);
+  drawing.clearSelection();
+  const thing = drawing.thingAt(pointer);
   if (thing) {
     if (thing instanceof Instance) {
       drag = { thing, offset: pointDiff(pointer, thing) };
     } else {
-      master.toggleSelected(thing);
+      drawing.toggleSelected(thing);
     }
   }
 });
@@ -284,7 +284,7 @@ canvas.el.addEventListener('pointermove', (e) => {
     y: (e as any).layerY,
   }));
 
-  if (pointer.down && !drawingInProgress && !drag && master.selection.size === 0) {
+  if (pointer.down && !drawingInProgress && !drag && drawing.selection.size === 0) {
     // TODO: think about this more, it sometimes misbehaves
     const dx = pointer.x - oldPos.x;
     const dy = pointer.y - oldPos.y;
@@ -295,11 +295,11 @@ canvas.el.addEventListener('pointermove', (e) => {
     return;
   }
 
-  master.snap(pointer, drag ? drag.thing : null);
+  drawing.snap(pointer, drag ? drag.thing : null);
 
-  if (pointer.down && master.selection.size > 0) {
+  if (pointer.down && drawing.selection.size > 0) {
     const delta = pointDiff(pointer, oldPos);
-    master.moveSelection(delta.x, delta.y);
+    drawing.moveSelection(delta.x, delta.y);
   }
 
   if (drag) {
@@ -314,7 +314,7 @@ canvas.el.addEventListener('pointerup', (e) => {
   pointer.down = false;
 
   if (drag?.thing instanceof Handle) {
-    master.mergeAndAddImplicitConstraints(drag.thing);
+    drawing.mergeAndAddImplicitConstraints(drag.thing);
   }
 
   drag = null;
@@ -325,7 +325,7 @@ canvas.el.addEventListener('pointerup', (e) => {
 function moreLines() {
   const pos = { x: pointer.x, y: pointer.y };
   if (drawingInProgress?.type === 'line') {
-    master.addLine(drawingInProgress.start, pos);
+    drawing.addLine(drawingInProgress.start, pos);
   }
   drawingInProgress = {
     type: 'line',
@@ -344,7 +344,7 @@ function moreArc() {
   drawingInProgress.positions.push({ x: pointer.x, y: pointer.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    master.addArc(a, b, c);
+    drawing.addArc(a, b, c);
     drawingInProgress = null;
   }
 }
@@ -356,21 +356,21 @@ function doWithoutMovingPointer(fn: () => void) {
 }
 
 function toggleAttacher(pointerPos: Position) {
-  const h = master.handleAt(pointerPos);
+  const h = drawing.handleAt(pointerPos);
   if (!h) {
     return false;
   }
 
-  const idx = master.attachers.indexOf(h);
+  const idx = drawing.attachers.indexOf(h);
   if (idx >= 0) {
-    master.attachers.splice(idx, 1);
-    for (const m of masters) {
-      m.onAttacherRemoved(master, h);
+    drawing.attachers.splice(idx, 1);
+    for (const m of drawings) {
+      m.onAttacherRemoved(drawing, h);
     }
   } else {
-    master.attachers.push(h);
-    for (const m of masters) {
-      m.onAttacherAdded(master, h);
+    drawing.attachers.push(h);
+    for (const m of drawings) {
+      m.onAttacherAdded(drawing, h);
     }
   }
   return true;
@@ -379,17 +379,17 @@ function toggleAttacher(pointerPos: Position) {
 function cleanUp() {
   const things = new Set<Thing>();
   const handles = new Set<Handle>();
-  for (const master of masters) {
-    for (const thing of master.things) {
+  for (const drawing of drawings) {
+    for (const thing of drawing.things) {
       things.add(thing);
       thing.forEachHandle((h) => handles.add(h));
     }
   }
 
-  for (const master of masters) {
-    master.constraints.forEach((constraint) => {
+  for (const drawing of drawings) {
+    drawing.constraints.forEach((constraint) => {
       if (!constraint.isStillValid(things, handles)) {
-        master.constraints.remove(constraint);
+        drawing.constraints.remove(constraint);
       }
     });
   }
