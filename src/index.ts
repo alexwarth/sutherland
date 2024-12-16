@@ -1,5 +1,6 @@
 import * as canvas from './canvas';
 import { config } from './config';
+import { PointInstanceConstraint } from './constraints';
 import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
@@ -165,6 +166,7 @@ window.addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'Backspace':
       if (master.delete(pointer)) {
+        cleanUp();
         canvas.setStatus('delete');
       }
       break;
@@ -356,4 +358,29 @@ function doWithoutMovingPointer(fn: () => void) {
   const pointerScreenPos = toScreenPosition(pointer);
   fn();
   ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
+}
+
+function cleanUp() {
+  const things = new Set<Thing>();
+  const handles = new Set<Handle>();
+  for (const master of masters) {
+    for (const thing of master.things) {
+      things.add(thing);
+      thing.forEachHandle((h) => handles.add(h));
+    }
+  }
+  for (const master of masters) {
+    master.constraints.forEach((constraint) => {
+      if (constraint.isStillValid(things, handles)) {
+        return;
+      }
+
+      master.constraints.remove(constraint);
+      if (constraint instanceof PointInstanceConstraint) {
+        // remove attachers in instance that no longer correspond to attachers in its master
+        const instance = constraint.instance;
+        instance.attachers = instance.attachers.filter((handle) => handles.has(handle));
+      }
+    });
+  }
 }

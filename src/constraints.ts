@@ -6,13 +6,20 @@ import {
   scaleAround,
   translate,
 } from './helpers';
-import { Handle, Instance } from './things';
+import { Handle, Instance, Thing, Var } from './things';
 
 export abstract class Constraint {
-  constructor(protected readonly handles: Handle[]) {}
+  constructor(
+    protected readonly things: Thing[],
+    protected readonly handles: Handle[],
+  ) {}
 
   abstract computeError(): number;
   abstract get signature(): string;
+
+  isStillValid(things: Set<Thing>, handles: Set<Handle>) {
+    return this.things.every((t) => things.has(t)) && this.handles.every((h) => handles.has(h));
+  }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
     for (let idx = 0; idx < this.handles.length; idx++) {
@@ -28,7 +35,7 @@ export abstract class Constraint {
 
 export class PointsEqualConstraint extends Constraint {
   constructor(p1: Handle, p2: Handle) {
-    super([p1, p2]);
+    super([], [p1, p2]);
   }
 
   private get p1() {
@@ -50,7 +57,7 @@ export class PointsEqualConstraint extends Constraint {
 
 export class HorizontalOrVerticalConstraint extends Constraint {
   constructor(a: Handle, b: Handle) {
-    super([a, b]);
+    super([], [a, b]);
   }
 
   private get a() {
@@ -76,7 +83,7 @@ export class FixedDistanceConstraint extends Constraint {
   private readonly distance: number;
 
   constructor(a: Handle, b: Handle) {
-    super([a, b]);
+    super([], [a, b]);
     this.distance = pointDist(a, b);
   }
 
@@ -101,7 +108,7 @@ export class FixedDistanceConstraint extends Constraint {
 
 export class EqualDistanceConstraint extends Constraint {
   constructor(a1: Handle, b1: Handle, a2: Handle, b2: Handle) {
-    super([a1, b1, a2, b2]);
+    super([], [a1, b1, a2, b2]);
   }
 
   private get a1() {
@@ -131,7 +138,7 @@ export class EqualDistanceConstraint extends Constraint {
 
 export class PointOnLineConstraint extends Constraint {
   constructor(p: Handle, a: Handle, b: Handle) {
-    super([p, a, b]);
+    super([], [p, a, b]);
   }
 
   private get p() {
@@ -157,7 +164,7 @@ export class PointOnLineConstraint extends Constraint {
 
 export class PointOnArcConstraint extends Constraint {
   constructor(p: Handle, a: Handle, b: Handle, c: Handle) {
-    super([p, a, b, c]);
+    super([], [p, a, b, c]);
   }
 
   private get p() {
@@ -191,7 +198,7 @@ export class PointInstanceConstraint extends Constraint {
     readonly instance: Instance,
     masterPoint: Handle,
   ) {
-    super([instancePoint, masterPoint]);
+    super([instance], [instancePoint, masterPoint]);
   }
 
   private get instancePoint() {
@@ -223,7 +230,7 @@ export class PointInstanceConstraint extends Constraint {
 
 export class FullSizeConstraint extends Constraint {
   constructor(readonly instance: Instance) {
-    super([]);
+    super([instance], []);
   }
 
   get signature() {

@@ -13,7 +13,7 @@ import { boundingBox, pointDist, Position, rotateAround, scaleAround } from './h
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 
 export class Master {
-  readonly things: Thing[] = [];
+  things: Thing[] = [];
   readonly attachers: Handle[] = [];
   readonly constraints = new ConstraintSet();
   readonly selection = new Set<Thing>();
@@ -144,6 +144,9 @@ export class Master {
       return false;
     }
 
+    // TODO: this needs to change instances!
+    // (add/remove new attacher and point-instance constraint)
+
     let removed = false;
     let idx = 0;
     while (idx < this.attachers.length) {
@@ -163,25 +166,12 @@ export class Master {
   }
 
   delete(pointerPos: Position) {
-    const things = this.thingsForOperation(pointerPos);
-    if (things.size === 0) {
+    const deletedThings = this.thingsForOperation(pointerPos);
+    if (deletedThings.size === 0) {
       return false;
     }
 
-    // TODO: write this method
-
-    // const handleMap = new Map<Handle, Handle | null>();
-    // for (const thing of things) {
-    //   thing.forEachHandle((h) => {
-    //     if (!handleMap.has(h)) {
-    //       const replacementHandle = h.breakOff();
-    //       handleMap.set(h, replacementHandle);
-    //     }
-    //   });
-    //   this.things.splice(this.things.indexOf(thing), 1);
-    // }
-    // this.constraints.replaceHandles(handleMap);
-
+    this.things = this.things.filter((thing) => !deletedThings.has(thing));
     this.selection.clear();
     return true;
   }

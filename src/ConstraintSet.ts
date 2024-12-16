@@ -13,6 +13,10 @@ export default class ConstraintSet {
     }
   }
 
+  remove(constraintToRemove: Constraint) {
+    this.constraints = this.constraints.filter((constraint) => constraint !== constraintToRemove);
+  }
+
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
     const constraints = this.constraints;
     this.constraints = [];
