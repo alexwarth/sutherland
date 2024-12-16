@@ -19,12 +19,15 @@ Controls:
   - To **toggle flicker on / off**, press `F`
 - Masters and instances:
   - To **switch drawings**, press one of the digit keys
-  - To **instantiate a drawing**, press one of the digit keys while holding `SHIFT`
+  - To **instantiate a drawing**, press `SHIFT` + one of the digit keys
   - To **rotate an instance**, press `Q` / `W` while pointing at it
   - To **scale an instance**, press `+` / `-` while pointing at it
 - Constraints:
-  - **horizontal or vertical (horv)**: point to a line and press `H`
+  - **horizontal or vertical (HorV)**: point to a line and press `H`
   - **point on line**: drag a point to a line, drop it there
   - (this constraint is also added when you draw a line that terminates on another line)
+  - to **designate/undesignate a point as an attacher**, point at it and press `SHIFT` + `A`
   - ...
   - To **run the solver**, hold down the `SPACE` key
+  - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
+
