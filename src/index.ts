@@ -5,6 +5,7 @@ import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
 // TODO: replace "relaxation abuse" with "auto solve", don't special case point-instance constraints
+// TODO: rename Master to Drawing
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
