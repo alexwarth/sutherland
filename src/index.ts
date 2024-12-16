@@ -183,7 +183,7 @@ window.addEventListener('keydown', (e) => {
     case '=':
       if (drawing.resizeInstanceAt(pointer, 1.05)) {
         // found an instance, made it bigger
-      } else {
+      } else if (!drawing.isEmpty()) {
         doWithoutMovingPointer(() => {
           scope.scale = Math.min(scope.scale + 0.1, 10);
           canvas.setStatus('scale=' + scope.scale.toFixed(1));
@@ -193,7 +193,7 @@ window.addEventListener('keydown', (e) => {
     case '-':
       if (drawing.resizeInstanceAt(pointer, 0.95)) {
         // found an instance, made it smaller
-      } else {
+      } else if (!drawing.isEmpty()) {
         doWithoutMovingPointer(() => {
           scope.scale = Math.max(scope.scale - 0.1, 0.1);
           canvas.setStatus('scale=' + scope.scale.toFixed(1));
@@ -284,7 +284,13 @@ canvas.el.addEventListener('pointermove', (e) => {
     y: (e as any).layerY,
   }));
 
-  if (pointer.down && !drawingInProgress && !drag && drawing.selection.size === 0) {
+  if (
+    pointer.down &&
+    !drawing.isEmpty() &&
+    !drawingInProgress &&
+    !drag &&
+    drawing.selection.size === 0
+  ) {
     // TODO: think about this more, it sometimes misbehaves
     const dx = pointer.x - oldPos.x;
     const dy = pointer.y - oldPos.y;
