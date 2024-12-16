@@ -1,11 +1,10 @@
 import * as canvas from './canvas';
 import { config } from './config';
 import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
-import { Master } from './Master';
+import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 
 // TODO: replace "relaxation abuse" with "auto solve", don't special case point-instance constraints
-// TODO: rename Master to Drawing
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -40,14 +39,14 @@ function fromScreenPosition(pos: Position) {
 
 // masters
 
-const masters: Master[] = [];
+const masters: Drawing[] = [];
 for (let idx = 0; idx < 10; idx++) {
-  masters.push(new Master());
+  masters.push(new Drawing());
 }
 
 let master = masters[1];
 
-function switchToMaster(m: Master) {
+function switchToMaster(m: Drawing) {
   doWithoutMovingPointer(() => {
     master.leave();
     scope.reset();

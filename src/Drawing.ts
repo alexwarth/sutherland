@@ -12,7 +12,7 @@ import ConstraintSet from './ConstraintSet';
 import { boundingBox, pointDist, Position, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 
-export class Master {
+export class Drawing {
   things: Thing[] = [];
   readonly attachers: Handle[] = [];
   readonly constraints = new ConstraintSet();
@@ -40,7 +40,7 @@ export class Master {
     }
   }
 
-  addInstance(master: Master, { x, y }: Position, size: number) {
+  addInstance(master: Drawing, { x, y }: Position, size: number) {
     if (master === this) {
       // TODO: detect cycles, too!
       return;
@@ -389,7 +389,7 @@ export class Master {
     return vars;
   }
 
-  onAttacherAdded(m: Master, a: Handle) {
+  onAttacherAdded(m: Drawing, a: Handle) {
     // add point-instance constraint and instance-side attacher to every instance of m
     for (const thing of this.things) {
       if (thing instanceof Instance && thing.master === m) {
@@ -398,7 +398,7 @@ export class Master {
     }
   }
 
-  onAttacherRemoved(m: Master, a: Handle) {
+  onAttacherRemoved(m: Drawing, a: Handle) {
     // remove point-instance constraint and instance-side attacher from every instance of m
     this.constraints.forEach((constraint) => {
       if (constraint instanceof PointInstanceConstraint && constraint.masterPoint === a) {

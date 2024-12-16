@@ -10,7 +10,7 @@ import {
   origin,
   boundingBox,
 } from './helpers';
-import { Master } from './Master';
+import { Drawing } from './Drawing';
 
 const ATTACHER_COLOR = 'rgba(255,222,33,1.25)';
 
@@ -204,11 +204,11 @@ export class Instance implements Thing {
   attachers: Handle[] = [];
 
   constructor(
-    readonly master: Master,
+    readonly master: Drawing,
     x: number,
     y: number,
     size: number,
-    parent: Master,
+    parent: Drawing,
   ) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
@@ -217,13 +217,13 @@ export class Instance implements Thing {
     this.addAttachers(master, parent);
   }
 
-  private addAttachers(master: Master, parent: Master) {
+  private addAttachers(master: Drawing, parent: Drawing) {
     for (const masterSideAttacher of master.attachers) {
       this.addAttacher(masterSideAttacher, parent);
     }
   }
 
-  addAttacher(masterSideAttacher: Handle, parent: Master) {
+  addAttacher(masterSideAttacher: Handle, parent: Drawing) {
     const attacher = new Handle(this.transform(masterSideAttacher));
     this.attachers.push(attacher);
     parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
