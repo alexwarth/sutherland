@@ -71,6 +71,14 @@ onFrame();
 // rendering
 
 function render() {
+  if (config.autoSolve) {
+    const t0 = performance.now();
+    let n = 0;
+    while (performance.now() - t0 < 20 && master.relax()) {
+      n++;
+    }
+  }
+
   canvas.clear();
   if (!drawingInProgress && master.isEmpty()) {
     ink();
@@ -201,9 +209,9 @@ window.addEventListener('keydown', (e) => {
     case 'f':
       config.flicker = !config.flicker;
       break;
-    case 'R':
-      config.autoFixInstances = !config.autoFixInstances;
-      canvas.setStatus(`relaxation abuse ${config.autoFixInstances ? 'on' : 'off'}`);
+    case 'S':
+      config.autoSolve = !config.autoSolve;
+      canvas.setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
       break;
     case 's':
       if (master.fullSize(pointer)) {
@@ -298,7 +306,6 @@ canvas.el.addEventListener('pointermove', (e) => {
     const newX = pointer.x - drag.offset.x;
     const newY = pointer.y - drag.offset.y;
     drag.thing.moveBy(newX - drag.thing.x, newY - drag.thing.y);
-    master.fixInstances(drag.thing);
   }
 });
 

@@ -1,6 +1,6 @@
 export const config = {
   flicker: false,
-  autoFixInstances: false,
+  autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
 };
 

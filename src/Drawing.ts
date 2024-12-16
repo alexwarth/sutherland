@@ -23,7 +23,7 @@ export class Drawing {
   }
 
   relax() {
-    this.constraints.relax(this.getVars());
+    return this.constraints.relax(this.getVars());
   }
 
   render(transform: (pos: Position) => Position, depth = 0) {
@@ -61,7 +61,6 @@ export class Drawing {
       attacher.x = x;
       attacher.y = y;
     }
-    this.fixInstances(thing);
     return true;
   }
 
@@ -77,7 +76,6 @@ export class Drawing {
       attacher.x = x;
       attacher.y = y;
     }
-    this.fixInstances(thing);
     return true;
   }
 
@@ -201,34 +199,6 @@ export class Drawing {
       }
     }
     return false;
-  }
-
-  fixInstances(dragThing: Thing & Position) {
-    if (!config.autoFixInstances) {
-      return;
-    }
-
-    // TODO: this is a good place to use clusters (see Inkling solver) for efficiency!
-
-    const constraints = new ConstraintSet();
-    this.constraints.forEach((c) => {
-      if (c instanceof PointInstanceConstraint) {
-        constraints.add(c);
-      }
-    });
-
-    const vars = new Set<Var>();
-    for (const thing of this.things) {
-      if (thing === dragThing && dragThing instanceof Instance) {
-        // don't tweak its variables!
-      } else {
-        thing.forEachVar((v) => vars.add(v));
-      }
-    }
-
-    while (constraints.relax(vars)) {
-      // keep going
-    }
   }
 
   snap(pos: Position, dragThing: (Thing & Position) | null) {
