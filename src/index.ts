@@ -4,7 +4,14 @@ import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: replace "relaxation abuse" with "auto solve", don't special case point-instance constraints
+// TODO: render master-side attachers in blue, takes precedence over instance-side attachers
+// (if you happen to have both on the same point)
+
+// TODO: when instantiating a drawing w/ attachers, enter a mode where you have to drag each
+// attacher to the place where you want them. (will give us the ability to merge those points,
+// add point-on-line constraints, etc.) should show "placing attacher 1/4"...
+
+// TODO: add a 'c' that centers the scope on the current position of the pointer
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
