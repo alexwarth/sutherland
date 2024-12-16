@@ -201,11 +201,11 @@ export class PointInstanceConstraint extends Constraint {
     super([instance], [instancePoint, masterPoint]);
   }
 
-  private get instancePoint() {
+  get instancePoint() {
     return this.handles[0];
   }
 
-  private get masterPoint() {
+  get masterPoint() {
     return this.handles[1];
   }
 

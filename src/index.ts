@@ -1,22 +1,10 @@
 import * as canvas from './canvas';
 import { config } from './config';
-import { PointInstanceConstraint } from './constraints';
 import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Master } from './Master';
 import { Handle, Instance, Thing } from './things';
 
-// TODO:
-// - a simplification: stop worrying about being able to unmerge handles
-// - add special handling for when an attacher is removed from the master:
-//   all of the corresponding points in its instances need to be removed automatically,
-//   as well as constraints on those points
-// - decide whether to continuously keep the attachers in the right place (see Master.fixInstances())
-//   or to only do it on "solve"
-//   * if the former,
-//     - solve in clusters (like in my Inkling solver) to make dragging more lightweight CPU-wise
-//     - make sure that moving, rotating, and scaling instances doesn't break the relationships
-//       between the attachers and the points they correspond to in the master
-//   * if the latter, prob. need to show connection between attacher and the point it is attached to
+// TODO: replace "relaxation abuse" with "auto solve", don't special case point-instance constraints
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -223,7 +211,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case 'A':
-      if (master.toggleAttacher(pointer)) {
+      if (toggleAttacher(pointer)) {
         canvas.setStatus('toggle attacher');
       }
       break;
@@ -360,6 +348,27 @@ function doWithoutMovingPointer(fn: () => void) {
   ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
 }
 
+function toggleAttacher(pointerPos: Position) {
+  const h = master.handleAt(pointerPos);
+  if (!h) {
+    return false;
+  }
+
+  const idx = master.attachers.indexOf(h);
+  if (idx >= 0) {
+    master.attachers.splice(idx, 1);
+    for (const m of masters) {
+      m.onAttacherRemoved(master, h);
+    }
+  } else {
+    master.attachers.push(h);
+    for (const m of masters) {
+      m.onAttacherAdded(master, h);
+    }
+  }
+  return true;
+}
+
 function cleanUp() {
   const things = new Set<Thing>();
   const handles = new Set<Handle>();
@@ -369,17 +378,11 @@ function cleanUp() {
       thing.forEachHandle((h) => handles.add(h));
     }
   }
+
   for (const master of masters) {
     master.constraints.forEach((constraint) => {
-      if (constraint.isStillValid(things, handles)) {
-        return;
-      }
-
-      master.constraints.remove(constraint);
-      if (constraint instanceof PointInstanceConstraint) {
-        // remove attachers in instance that no longer correspond to attachers in its master
-        const instance = constraint.instance;
-        instance.attachers = instance.attachers.filter((handle) => handles.has(handle));
+      if (!constraint.isStillValid(things, handles)) {
+        master.constraints.remove(constraint);
       }
     });
   }

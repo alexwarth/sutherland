@@ -138,33 +138,6 @@ export class Master {
     this.constraints.replaceHandle(oldHandle, newHandle);
   }
 
-  toggleAttacher(pointerPos: Position) {
-    const h = this.handleAt(pointerPos);
-    if (!h) {
-      return false;
-    }
-
-    // TODO: this needs to change instances!
-    // (add/remove new attacher and point-instance constraint)
-
-    let removed = false;
-    let idx = 0;
-    while (idx < this.attachers.length) {
-      const a = this.attachers[idx];
-      if (a === h) {
-        this.attachers.splice(idx, 1);
-        removed = true;
-      } else {
-        idx++;
-      }
-    }
-
-    if (!removed) {
-      this.attachers.push(h);
-    }
-    return true;
-  }
-
   delete(pointerPos: Position) {
     const deletedThings = this.thingsForOperation(pointerPos);
     if (deletedThings.size === 0) {
@@ -414,5 +387,25 @@ export class Master {
       thing.forEachVar((v) => vars.add(v));
     }
     return vars;
+  }
+
+  onAttacherAdded(m: Master, a: Handle) {
+    // add point-instance constraint and instance-side attacher to every instance of m
+    for (const thing of this.things) {
+      if (thing instanceof Instance && thing.master === m) {
+        thing.addAttacher(a, this);
+      }
+    }
+  }
+
+  onAttacherRemoved(m: Master, a: Handle) {
+    // remove point-instance constraint and instance-side attacher from every instance of m
+    this.constraints.forEach((constraint) => {
+      if (constraint instanceof PointInstanceConstraint && constraint.masterPoint === a) {
+        const { instance, instancePoint } = constraint;
+        instance.attachers = instance.attachers.filter((h) => h !== instancePoint);
+        this.constraints.remove(constraint);
+      }
+    });
   }
 }

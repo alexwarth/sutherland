@@ -218,11 +218,15 @@ export class Instance implements Thing {
   }
 
   private addAttachers(master: Master, parent: Master) {
-    for (const h of master.attachers) {
-      const attacher = new Handle(this.transform(h));
-      this.attachers.push(attacher);
-      parent.constraints.add(new PointInstanceConstraint(attacher, this, h));
+    for (const masterSideAttacher of master.attachers) {
+      this.addAttacher(masterSideAttacher, parent);
     }
+  }
+
+  addAttacher(masterSideAttacher: Handle, parent: Master) {
+    const attacher = new Handle(this.transform(masterSideAttacher));
+    this.attachers.push(attacher);
+    parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
   }
 
   get x() {
