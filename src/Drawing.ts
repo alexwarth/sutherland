@@ -249,12 +249,18 @@ export class Drawing {
   }
 
   thingAt(pos: Position): Thing | null {
+    let minDist = Infinity;
+    let ans: Thing | null = null;
     for (const thing of this.things) {
       if (thing.contains(pos)) {
-        return thing;
+        const dist = thing.distanceTo(pos);
+        if (dist < minDist) {
+          ans = thing;
+          minDist = dist;
+        }
       }
     }
-    return null;
+    return ans;
   }
 
   toggleSelections(pointerPos: Position) {

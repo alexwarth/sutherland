@@ -22,6 +22,7 @@ type Transform = (pos: Position) => Position;
 
 export interface Thing {
   contains(pos: Position): boolean;
+  distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
   render(selection: Set<Thing>, transform: Transform): void;
   forEachHandle(fn: (h: Handle) => void): void;
@@ -64,6 +65,10 @@ export class Handle implements Thing {
     return pointDist(pos, this) <= CLOSE_ENOUGH;
   }
 
+  distanceTo(pos: Position) {
+    return pointDist(this, pos);
+  }
+
   moveBy(dx: number, dy: number) {
     this.xVar.value += dx;
     this.yVar.value += dy;
@@ -103,11 +108,11 @@ export class Line implements Thing {
   }
 
   contains(pos: Position) {
-    return (
-      !this.a.contains(pos) &&
-      !this.b.contains(pos) &&
-      pointDistToLineSegment(pos, this.a, this.b) <= CLOSE_ENOUGH
-    );
+    return !this.a.contains(pos) && !this.b.contains(pos) && this.distanceTo(pos) <= CLOSE_ENOUGH;
+  }
+
+  distanceTo(pos: Position) {
+    return pointDistToLineSegment(pos, this.a, this.b);
   }
 
   moveBy(dx: number, dy: number) {
@@ -150,7 +155,11 @@ export class Arc implements Thing {
 
   contains(pos: Position) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c)) <= CLOSE_ENOUGH;
+    return this.distanceTo(pos) <= CLOSE_ENOUGH;
+  }
+
+  distanceTo(pos: Position) {
+    return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c));
   }
 
   moveBy(dx: number, dy: number) {
@@ -285,6 +294,10 @@ export class Instance implements Thing {
     ].map(this.transform);
     const { topLeft: min, bottomRight: max } = boundingBox(ps);
     return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
+  }
+
+  distanceTo(pos: Position) {
+    return pointDist(pos, this);
   }
 
   moveBy(dx: number, dy: number) {
