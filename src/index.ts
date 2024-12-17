@@ -400,30 +400,38 @@ function toggleAttacher(pointerPos: Position) {
   }
 
   if (drawing.attachers.includes(h)) {
-    removeAttacher(h);
-    canvas.setStatus('attacher removed');
+    removeAttacher(drawing, h);
+    canvas.setStatus('remove attacher');
   } else {
-    addAttacher(h);
-    canvas.setStatus('attacher added');
+    addAttacher(drawing, h);
+    canvas.setStatus('add attacher');
   }
 }
 
-function removeAttacher(a: Handle) {
-  const idx = drawing.attachers.indexOf(a);
+function removeAttacher(m: Drawing, a: Handle) {
+  const idx = m.attachers.indexOf(a);
   drawing.attachers.splice(idx, 1);
-  for (const m of drawings) {
-    m.onAttacherRemoved(drawing, a);
+  for (const d of drawings) {
+    d.onAttacherRemoved(m, a);
   }
 }
 
-function addAttacher(a: Handle) {
-  drawing.attachers.push(a);
-  for (const m of drawings) {
-    m.onAttacherAdded(drawing, a);
+function addAttacher(m: Drawing, a: Handle) {
+  m.attachers.push(a);
+  for (const d of drawings) {
+    d.onAttacherAdded(m, a);
   }
 }
+
+// TODO: simplify attacher clean-up logic
 
 function cleanUp() {
+  while (_cleanUp()) {
+    // keep going
+  }
+}
+
+function _cleanUp() {
   const things = new Set<Thing>();
   const handles = new Set<Handle>();
   for (const drawing of drawings) {
@@ -434,10 +442,25 @@ function cleanUp() {
   }
 
   for (const drawing of drawings) {
+    let needMoreCleanUp = false;
+    for (const attacher of drawing.attachers) {
+      if (!handles.has(attacher)) {
+        removeAttacher(drawing, attacher);
+        needMoreCleanUp = true;
+      }
+    }
+    if (needMoreCleanUp) {
+      return true;
+    }
+  }
+
+  for (const drawing of drawings) {
     drawing.constraints.forEach((constraint) => {
       if (!constraint.isStillValid(things, handles)) {
         drawing.constraints.remove(constraint);
       }
     });
   }
+
+  return false;
 }
