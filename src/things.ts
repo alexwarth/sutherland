@@ -1,4 +1,4 @@
-import { drawArc, drawLine, flickeryWhite } from './canvas';
+import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import {
   pointDist,
@@ -12,7 +12,8 @@ import {
 } from './helpers';
 import { Drawing } from './Drawing';
 
-const ATTACHER_COLOR = 'rgba(255,222,33,1.25)';
+const INSTANCE_SIDE_ATTACHER_COLOR = 'rgb(255,222,33)';
+export const MASTER_SIDE_ATTACHER_COLOR = 'rgb(1,101,252)';
 
 export class Var {
   constructor(public value: number) {}
@@ -74,10 +75,12 @@ export class Handle implements Thing {
     this.yVar.value += dy;
   }
 
-  render(selection: Set<Thing>, transform: Transform, isAttacher = false): void {
-    if (isAttacher) {
-      drawLine(this, this, ATTACHER_COLOR, transform);
-    }
+  render(
+    selection: Set<Thing>,
+    transform: Transform,
+    color: string = INSTANCE_SIDE_ATTACHER_COLOR,
+  ): void {
+    drawLine(this, this, color, transform);
   }
 
   forEachHandle(fn: (h: Handle) => void) {
@@ -313,7 +316,7 @@ export class Instance implements Thing {
         drawLine(
           transform(this.transform(this.master.attachers[idx])),
           transform(attacher),
-          ATTACHER_COLOR,
+          INSTANCE_SIDE_ATTACHER_COLOR,
         );
       });
     }

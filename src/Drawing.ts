@@ -10,7 +10,7 @@ import {
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import { boundingBox, pointDist, Position, rotateAround, scaleAround } from './helpers';
-import { Arc, Handle, Instance, Line, Thing, Var } from './things';
+import { Arc, Handle, Instance, Line, MASTER_SIDE_ATTACHER_COLOR, Thing, Var } from './things';
 
 export class Drawing {
   things: Thing[] = [];
@@ -33,10 +33,11 @@ export class Drawing {
       } else {
         t.render(this.selection, transform);
       }
-      t.forEachHandle((h) => h.render(this.selection, transform));
     });
     if (depth === 0) {
-      this.attachers.forEach((h) => h.render(this.selection, transform, true));
+      this.attachers.forEach((h) =>
+        h.render(this.selection, transform, MASTER_SIDE_ATTACHER_COLOR),
+      );
     }
   }
 
