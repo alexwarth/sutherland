@@ -4,14 +4,11 @@ import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: render master-side attachers in blue, takes precedence over instance-side attachers
-// (if you happen to have both on the same point)
-
 // TODO: when instantiating a drawing w/ attachers, enter a mode where you have to drag each
 // attacher to the place where you want them. (will give us the ability to merge those points,
 // add point-on-line constraints, etc.) should show "placing attacher 1/4"...
 
-// TODO: add a 'c' that centers the scope on the current position of the pointer
+// TODO: fix "center"  -- it doesn't work when scale != 1
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -29,8 +26,15 @@ const scope = {
   center: { x: 0, y: 0 },
   scale: 1,
   reset() {
-    this.center = { x: -window.innerWidth / 2, y: -window.innerHeight / 2 };
     this.scale = 1;
+    this.centerAt({ x: 0, y: 0 });
+  },
+  centerAt({ x, y }: Position) {
+    this.center.x = x - (0.5 * innerWidth) / this.scale;
+    this.center.y = y - (0.5 * innerHeight) / this.scale;
+  },
+  setScale(newScale: number) {
+    this.scale = newScale;
   },
 };
 
@@ -87,6 +91,7 @@ function render() {
   }
 
   canvas.clear();
+
   if (!drawingInProgress && drawing.isEmpty()) {
     ink();
   } else {
@@ -122,10 +127,22 @@ function render() {
     { x: tPointer.x, y: tPointer.y + crosshairsSize },
     canvas.flickeryWhite('bold'),
   );
+
+  if (config.debug) {
+    // canvas.drawLine({ x: -innerWidth, y: innerHeight / 2 }, { x: innerWidth, y: innerHeight / 2 });
+    // canvas.drawLine({ x: innerWidth / 2, y: -innerHeight }, { x: innerWidth / 2, y: innerHeight });
+    // canvas.drawText(toScreenPosition(pointer), `(${pointer.x}, ${pointer.y})`);
+    // const zz = toScreenPosition({ x: 0, y: 0 });
+    // canvas.drawLine(zz, zz);
+    // canvas.drawLine(zz, zz);
+    // canvas.drawLine(zz, zz);
+    // canvas.drawLine(zz, zz);
+    // canvas.drawLine(zz, zz);
+  }
 }
 
 function ink() {
-  const unit = window.innerWidth / 100;
+  const unit = innerWidth / 100;
 
   // I
   line(-7 * unit, 4 * unit, -7 * unit, -4 * unit);
@@ -157,7 +174,7 @@ window.addEventListener('keydown', (e) => {
     if (keysDown['Shift']) {
       if (!m.isEmpty()) {
         canvas.setStatus('instantiate #' + n);
-        drawing.addInstance(m, pointer, window.innerHeight / 5 / scope.scale);
+        drawing.addInstance(m, pointer, innerHeight / 5 / scope.scale);
       }
     } else {
       canvas.setStatus('drawing #' + n);
@@ -229,6 +246,16 @@ window.addEventListener('keydown', (e) => {
       if (toggleAttacher(pointer)) {
         canvas.setStatus('toggle attacher');
       }
+      break;
+    case 'c':
+      canvas.setStatus('re-center');
+      doWithoutMovingPointer(() => {
+        scope.centerAt(pointer);
+      });
+      break;
+    case 'd':
+      config.debug = !config.debug;
+      canvas.setStatus(`debug ${config.debug ? 'on' : 'off'}`);
       break;
   }
 });

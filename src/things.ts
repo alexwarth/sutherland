@@ -11,6 +11,7 @@ import {
   boundingBox,
 } from './helpers';
 import { Drawing } from './Drawing';
+import { config } from './config';
 
 const INSTANCE_SIDE_ATTACHER_COLOR = 'rgb(255,222,33)';
 export const MASTER_SIDE_ATTACHER_COLOR = 'rgb(1,101,252)';
@@ -80,6 +81,9 @@ export class Handle implements Thing {
     transform: Transform,
     color: string = INSTANCE_SIDE_ATTACHER_COLOR,
   ): void {
+    if (config.debug) {
+      drawText(transform(this), `(${this.x},${this.y})`);
+    }
     drawLine(this, this, color, transform);
   }
 
