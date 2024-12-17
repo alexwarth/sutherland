@@ -1,5 +1,7 @@
 import { config } from './config';
-import { pointDist, Position, TAU } from './helpers';
+import { easeOutQuint, pointDist, Position, TAU } from './helpers';
+
+const STATUS_TIME_MILLIS = 4_000;
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
@@ -41,10 +43,11 @@ export function clear() {
     ctx.font = `${fontSizeInPixels}px Monaco`;
     const width = ctx.measureText(status).width;
     const statusAgeMillis = Date.now() - statusTimeMillis;
-    if (statusAgeMillis > 2_000) {
+    if (statusAgeMillis > STATUS_TIME_MILLIS) {
       status = '';
     } else {
-      ctx.fillStyle = flickeryWhite(statusAgeMillis < 500 ? 'bold' : 'normal');
+      const alpha = 1 - easeOutQuint(statusAgeMillis / STATUS_TIME_MILLIS);
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
       ctx.fillText(status, window.innerWidth - width - fontSizeInPixels, fontSizeInPixels);
     }
   }
