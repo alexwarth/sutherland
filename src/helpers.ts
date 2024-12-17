@@ -88,3 +88,17 @@ function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
   const t = Math.max(0, Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1));
   return pointDist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
 }
+
+// easing functions
+
+export function easeInCirc(t: number): number {
+  return 1 - Math.sqrt(1 - Math.pow(t, 2));
+}
+
+export function easeOutExpo(t: number): number {
+  return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+}
+
+export function easeOutQuint(t: number): number {
+  return 1 - Math.pow(1 - t, 5);
+}
