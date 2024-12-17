@@ -243,9 +243,7 @@ window.addEventListener('keydown', (e) => {
       }
       break;
     case 'A':
-      if (toggleAttacher(pointer)) {
-        canvas.setStatus('toggle attacher');
-      }
+      toggleAttacher(pointer);
       break;
     case 'c':
       canvas.setStatus('re-center');
@@ -398,7 +396,7 @@ function doWithoutMovingPointer(fn: () => void) {
 function toggleAttacher(pointerPos: Position) {
   const h = drawing.handleAt(pointerPos);
   if (!h) {
-    return false;
+    return;
   }
 
   const idx = drawing.attachers.indexOf(h);
@@ -407,11 +405,13 @@ function toggleAttacher(pointerPos: Position) {
     for (const m of drawings) {
       m.onAttacherRemoved(drawing, h);
     }
+    canvas.setStatus('attacher removed');
   } else {
     drawing.attachers.push(h);
     for (const m of drawings) {
       m.onAttacherAdded(drawing, h);
     }
+    canvas.setStatus('attacher added');
   }
   return true;
 }
