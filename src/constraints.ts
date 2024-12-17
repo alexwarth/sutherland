@@ -17,6 +17,8 @@ export abstract class Constraint {
   abstract computeError(): number;
   abstract get signature(): string;
 
+  // TODO: consider returning false in certain constraint type-specific conditions
+  // e.g., point-on-line(p, a, b) where p == a or p == b
   isStillValid(things: Set<Thing>, handles: Set<Handle>) {
     return this.things.every((t) => things.has(t)) && this.handles.every((h) => handles.has(h));
   }
