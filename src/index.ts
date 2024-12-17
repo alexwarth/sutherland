@@ -399,21 +399,28 @@ function toggleAttacher(pointerPos: Position) {
     return;
   }
 
-  const idx = drawing.attachers.indexOf(h);
-  if (idx >= 0) {
-    drawing.attachers.splice(idx, 1);
-    for (const m of drawings) {
-      m.onAttacherRemoved(drawing, h);
-    }
+  if (drawing.attachers.includes(h)) {
+    removeAttacher(h);
     canvas.setStatus('attacher removed');
   } else {
-    drawing.attachers.push(h);
-    for (const m of drawings) {
-      m.onAttacherAdded(drawing, h);
-    }
+    addAttacher(h);
     canvas.setStatus('attacher added');
   }
-  return true;
+}
+
+function removeAttacher(a: Handle) {
+  const idx = drawing.attachers.indexOf(a);
+  drawing.attachers.splice(idx, 1);
+  for (const m of drawings) {
+    m.onAttacherRemoved(drawing, a);
+  }
+}
+
+function addAttacher(a: Handle) {
+  drawing.attachers.push(a);
+  for (const m of drawings) {
+    m.onAttacherAdded(drawing, a);
+  }
 }
 
 function cleanUp() {
