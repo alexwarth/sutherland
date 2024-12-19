@@ -57,10 +57,12 @@ export class Drawing {
   addInstance(master: Drawing, { x, y }: Position, size: number) {
     if (master === this) {
       // TODO: detect cycles, too!
-      return;
+      return null;
     }
 
-    this.things.push(new Instance(master, x, y, size, this));
+    const instance = new Instance(master, x, y, size, this);
+    this.things.push(instance);
+    return instance;
   }
 
   resizeInstanceAt(pos: Position, scaleMultiplier: number) {
@@ -105,6 +107,7 @@ export class Drawing {
       });
     }
     this.things.push(line);
+    return line;
   }
 
   addArc(aPos: Position, bPos: Position, cPos: Position) {
@@ -125,6 +128,7 @@ export class Drawing {
       });
     }
     this.things.push(arc);
+    return arc;
   }
 
   mergeAndAddImplicitConstraints(handle: Handle) {
