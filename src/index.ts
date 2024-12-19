@@ -8,17 +8,20 @@ import { Handle, Instance, Thing } from './things';
 // attacher to the place where you want them. (will give us the ability to merge those points,
 // add point-on-line constraints, etc.) should show "placing attacher 1/4"...
 
-// TODO: fix "center"  -- it doesn't work when scale != 1
-
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
-const pointer: Position & { down: boolean } = { x: Infinity, y: Infinity, down: false };
+const pointer: Position & { down: boolean } = {
+  x: Infinity,
+  y: Infinity,
+  down: false,
+};
 const keysDown: { [key: string]: boolean } = {};
 let drawingInProgress:
   | { type: 'line'; start: Position }
   | { type: 'arc'; positions: Position[] }
   | null = null;
-let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
+let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null =
+  null;
 
 // scope
 
@@ -30,8 +33,8 @@ const scope = {
     this.centerAt({ x: 0, y: 0 });
   },
   centerAt({ x, y }: Position) {
-    this.center.x = x - (0.5 * innerWidth) / this.scale;
-    this.center.y = y - (0.5 * innerHeight) / this.scale;
+    this.center.x = x;
+    this.center.y = y;
   },
   setScale(newScale: number) {
     this.scale = newScale;
@@ -40,12 +43,18 @@ const scope = {
 
 scope.reset();
 
-function toScreenPosition(p: Position) {
-  return pointDiff(scaleAround(p, origin, scope.scale), scope.center);
+function toScreenPosition({ x, y }: Position) {
+  return {
+    x: (x - scope.center.x) * scope.scale + innerWidth / 2,
+    y: -(y - scope.center.y) * scope.scale + innerHeight / 2,
+  };
 }
 
-function fromScreenPosition(pos: Position) {
-  return scaleAround(translate(pos, scope.center), origin, 1 / scope.scale);
+function fromScreenPosition({ x, y }: Position) {
+  return {
+    x: (x - innerWidth / 2) / scope.scale + scope.center.x,
+    y: scope.center.y - (y - innerHeight / 2) / scope.scale,
+  };
 }
 
 // drawings
@@ -100,7 +109,12 @@ function render() {
 
   switch (drawingInProgress?.type) {
     case 'line':
-      canvas.drawLine(drawingInProgress.start, pointer, canvas.flickeryWhite(), toScreenPosition);
+      canvas.drawLine(
+        drawingInProgress.start,
+        pointer,
+        canvas.flickeryWhite(),
+        toScreenPosition
+      );
       break;
     case 'arc':
       if (drawingInProgress.positions.length > 1) {
@@ -109,7 +123,7 @@ function render() {
           drawingInProgress.positions[1],
           pointer,
           canvas.flickeryWhite(),
-          toScreenPosition,
+          toScreenPosition
         );
       }
       break;
@@ -120,52 +134,49 @@ function render() {
   canvas.drawLine(
     { x: tPointer.x - crosshairsSize, y: tPointer.y },
     { x: tPointer.x + crosshairsSize, y: tPointer.y },
-    canvas.flickeryWhite('bold'),
+    canvas.flickeryWhite('bold')
   );
   canvas.drawLine(
     { x: tPointer.x, y: tPointer.y - crosshairsSize },
     { x: tPointer.x, y: tPointer.y + crosshairsSize },
-    canvas.flickeryWhite('bold'),
+    canvas.flickeryWhite('bold')
   );
 
   if (config.debug) {
-    // canvas.drawLine({ x: -innerWidth, y: innerHeight / 2 }, { x: innerWidth, y: innerHeight / 2 });
-    // canvas.drawLine({ x: innerWidth / 2, y: -innerHeight }, { x: innerWidth / 2, y: innerHeight });
-    // canvas.drawText(toScreenPosition(pointer), `(${pointer.x}, ${pointer.y})`);
-    // const zz = toScreenPosition({ x: 0, y: 0 });
-    // canvas.drawLine(zz, zz);
-    // canvas.drawLine(zz, zz);
-    // canvas.drawLine(zz, zz);
-    // canvas.drawLine(zz, zz);
-    // canvas.drawLine(zz, zz);
+    canvas.drawLine(
+      { x: -innerWidth, y: innerHeight / 2 },
+      { x: innerWidth, y: innerHeight / 2 }
+    );
+    canvas.drawLine(
+      { x: innerWidth / 2, y: -innerHeight },
+      { x: innerWidth / 2, y: innerHeight }
+    );
+    canvas.drawText(toScreenPosition(pointer), `(${pointer.x}, ${pointer.y})`);
+    const zz = toScreenPosition({ x: 0, y: 0 });
+    canvas.drawLine(zz, zz);
   }
 }
 
 function ink() {
   const unit = innerWidth / 100;
+  const line = (p1: Position, p2: Position) =>
+    canvas.drawLine(p1, p2, canvas.flickeryWhite(), toScreenPosition);
 
   // I
-  line(-7 * unit, 4 * unit, -7 * unit, -4 * unit);
+  line({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
   // N
-  line(-3 * unit, 4 * unit, -3 * unit, -4 * unit);
-  line(-3 * unit, -4 * unit, 2 * unit, 4 * unit);
-  line(2 * unit, 4 * unit, 2 * unit, -4 * unit);
+  line({ x: -3 * unit, y: -4 * unit }, { x: -3 * unit, y: 4 * unit });
+  line({ x: -3 * unit, y: 4 * unit }, { x: 2 * unit, y: -4 * unit });
+  line({ x: 2 * unit, y: -4 * unit }, { x: 2 * unit, y: 4 * unit });
   // K
-  line(6 * unit, 4 * unit, 6 * unit, -4 * unit);
-  line(6 * unit, -1 * unit, 10 * unit, -4 * unit);
-  line(8 * unit, -2 * unit, 10 * unit, 4 * unit);
-
-  // line(-1000, 0, 1000, 0);
-  // line(0, -1000, 0, 1000);
-
-  function line(x1: number, y1: number, x2: number, y2: number) {
-    canvas.drawLine({ x: x1, y: y1 }, { x: x2, y: y2 }, canvas.flickeryWhite(), toScreenPosition);
-  }
+  line({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
+  line({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
+  line({ x: 8 * unit, y: 2 * unit }, { x: 10 * unit, y: -4 * unit });
 }
 
 // input handlers
 
-window.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', e => {
   keysDown[e.key] = true;
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
@@ -188,6 +199,9 @@ window.addEventListener('keydown', (e) => {
       if (drawing.delete(pointer)) {
         cleanUp();
         canvas.setStatus('delete');
+        if (drawing.isEmpty()) {
+          doWithoutMovingPointer(() => scope.reset());
+        }
       }
       break;
     case 'l':
@@ -258,7 +272,7 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-window.addEventListener('keyup', (e) => {
+window.addEventListener('keyup', e => {
   delete keysDown[e.key];
 
   if (e.key === 'Meta') {
@@ -272,7 +286,7 @@ window.addEventListener('keyup', (e) => {
   }
 });
 
-canvas.el.addEventListener('pointerdown', (e) => {
+canvas.el.addEventListener('pointerdown', e => {
   canvas.el.setPointerCapture(e.pointerId);
   e.preventDefault();
   e.stopPropagation();
@@ -309,7 +323,7 @@ canvas.el.addEventListener('pointerdown', (e) => {
   }
 });
 
-canvas.el.addEventListener('pointermove', (e) => {
+canvas.el.addEventListener('pointermove', e => {
   const oldPos = { x: pointer.x, y: pointer.y };
   ({ x: pointer.x, y: pointer.y } = fromScreenPosition({
     x: (e as any).layerX,
@@ -347,7 +361,7 @@ canvas.el.addEventListener('pointermove', (e) => {
   }
 });
 
-canvas.el.addEventListener('pointerup', (e) => {
+canvas.el.addEventListener('pointerup', e => {
   canvas.el.releasePointerCapture(e.pointerId);
   pointer.down = false;
 
@@ -437,7 +451,7 @@ function _cleanUp() {
   for (const drawing of drawings) {
     for (const thing of drawing.things) {
       things.add(thing);
-      thing.forEachHandle((h) => handles.add(h));
+      thing.forEachHandle(h => handles.add(h));
     }
   }
 
@@ -455,7 +469,7 @@ function _cleanUp() {
   }
 
   for (const drawing of drawings) {
-    drawing.constraints.forEach((constraint) => {
+    drawing.constraints.forEach(constraint => {
       if (!constraint.isStillValid(things, handles)) {
         drawing.constraints.remove(constraint);
       }
