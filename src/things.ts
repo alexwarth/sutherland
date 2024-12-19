@@ -76,7 +76,7 @@ export class Handle implements Thing {
     color: string = config.instanceSideAttacherColor
   ): void {
     if (config.debug) {
-      drawText(transform(this), `(${this.x},${this.y})`);
+      drawText(transform(this), `(${this.x.toFixed(0)},${this.y.toFixed(0)})`);
     }
     drawLine(this, this, color, transform);
   }
