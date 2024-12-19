@@ -10,9 +10,9 @@ import {
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import {
+  Position,
   boundingBox,
   pointDist,
-  Position,
   rotateAround,
   scaleAround,
 } from './helpers';
@@ -23,6 +23,13 @@ export class Drawing {
   attachers: Handle[] = [];
   readonly constraints = new ConstraintSet();
   readonly selection = new Set<Thing>();
+
+  clear() {
+    this.things = [];
+    this.attachers = [];
+    this.constraints.clear();
+    this.selection.clear();
+  }
 
   isEmpty() {
     return this.things.length === 0;
