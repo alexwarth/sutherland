@@ -239,7 +239,7 @@ export class PointInstanceConstraint extends Constraint {
 export class SizeConstraint extends Constraint {
   constructor(
     readonly instance: Instance,
-    readonly multiplier = 1
+    readonly scale = 1
   ) {
     super([instance], []);
   }
@@ -249,6 +249,6 @@ export class SizeConstraint extends Constraint {
   }
 
   computeError() {
-    return this.instance.size * this.multiplier - this.instance.master.size;
+    return this.instance.size - this.scale * this.instance.master.size;
   }
 }
