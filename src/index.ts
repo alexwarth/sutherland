@@ -514,7 +514,7 @@ function addLetter(letter: string) {
 (window as any).addLetter = addLetter;
 
 function write(msg: string, scale = 1) {
-  drawing.clear();
+  // drawing.clear();
 
   let x = 0;
   const instances: Instance[] = [];
