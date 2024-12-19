@@ -511,8 +511,6 @@ function addLetter(letter: string) {
   }
 }
 
-(window as any).addLetter = addLetter;
-
 function write(msg: string, scale = 1) {
   // drawing.clear();
 
@@ -530,7 +528,7 @@ function write(msg: string, scale = 1) {
       { x, y: 0 },
       letter.size * scale
     )!;
-    x += scale * 20 * 5;
+    x += scale * config.fontScale * 5;
 
     if (instances.length > 0) {
       drawing.replaceHandle(
@@ -545,4 +543,7 @@ function write(msg: string, scale = 1) {
   }
 }
 
+(window as any).addLetter = addLetter;
+(window as any).letterDrawings = letterDrawings;
+(window as any).switchToDrawing = switchToDrawing;
 (window as any).write = write;

@@ -9,6 +9,7 @@ export const config = {
   handleRadius: 5,
   closeEnough: 5,
   crosshairsSize: 15,
+  fontScale: 10,
   kerning: 0.5,
   guideLineColor: 'rgba(255,255,255,.125)',
 };

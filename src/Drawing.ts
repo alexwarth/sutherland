@@ -95,10 +95,12 @@ export class Drawing {
     return true;
   }
 
-  addLine(aPos: Position, bPos: Position, guide = false) {
-    const line = new Line(aPos, bPos, guide);
-    this.mergeAndAddImplicitConstraints(line.a);
-    this.mergeAndAddImplicitConstraints(line.b);
+  addLine(aPos: Position, bPos: Position, isGuide = false) {
+    const line = new Line(aPos, bPos, isGuide);
+    if (!isGuide) {
+      this.mergeAndAddImplicitConstraints(line.a);
+      this.mergeAndAddImplicitConstraints(line.b);
+    }
     for (const thing of this.things) {
       thing.forEachHandle(h => {
         if (h !== line.a && h !== line.b && line.contains(h)) {
@@ -344,6 +346,7 @@ export class Drawing {
   }
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
+    // TODO: include arcs...
     return boundingBox(this.getPositions());
   }
 

@@ -13,7 +13,11 @@ type Command =
       end: number;
     };
 
-export function applyTo(drawing: Drawing, commands: Command[], scale = 10) {
+export function applyTo(
+  drawing: Drawing,
+  commands: Command[],
+  scale = config.fontScale
+) {
   for (const command of commands) {
     switch (command.command) {
       case 'line': {
@@ -47,16 +51,14 @@ export const commandsByLetter = new Map<string, Command[]>(
 
 export const letterDrawings = new Map<string, Drawing>();
 for (const [letter, commands] of commandsByLetter) {
-  const scale = 20;
   const drawing = new Drawing();
-  applyTo(drawing, commands, scale);
+  applyTo(drawing, commands, config.fontScale);
   const line = drawing.addLine(
-    { x: -config.kerning * scale, y: 0 },
-    { x: (4 + config.kerning) * scale, y: 0 },
+    { x: -config.kerning * config.fontScale, y: 0 },
+    { x: (4 + config.kerning) * config.fontScale, y: 0 },
     true
   );
   drawing.attachers.push(line.a, line.b);
-  drawing.center();
   letterDrawings.set(letter, drawing);
 }
 
