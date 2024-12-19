@@ -16,15 +16,7 @@ import {
   rotateAround,
   scaleAround,
 } from './helpers';
-import {
-  Arc,
-  Handle,
-  Instance,
-  Line,
-  MASTER_SIDE_ATTACHER_COLOR,
-  Thing,
-  Var,
-} from './things';
+import { Arc, Handle, Instance, Line, Thing, Var } from './things';
 
 export class Drawing {
   things: Thing[] = [];
@@ -50,7 +42,7 @@ export class Drawing {
     });
     if (depth === 0) {
       this.attachers.forEach(h =>
-        h.render(this.selection, transform, MASTER_SIDE_ATTACHER_COLOR)
+        h.render(this.selection, transform, config.masterSideAttacherColor)
       );
     }
   }

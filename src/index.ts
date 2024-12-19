@@ -139,17 +139,16 @@ function render() {
   );
 
   if (config.debug) {
-    const AXIS_COLOR = 'rgba(255,222,33,0.125)';
     const origin = toScreenPosition({ x: 0, y: 0 });
     canvas.drawLine(
       { x: 0, y: origin.y },
       { x: innerWidth, y: origin.y },
-      AXIS_COLOR
+      config.axisColor
     );
     canvas.drawLine(
       { x: origin.x, y: 0 },
       { x: origin.x, y: innerHeight },
-      AXIS_COLOR
+      config.axisColor
     );
     canvas.drawText(
       toScreenPosition(pointer),

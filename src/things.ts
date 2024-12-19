@@ -13,9 +13,6 @@ import {
 import { Drawing } from './Drawing';
 import { config } from './config';
 
-const INSTANCE_SIDE_ATTACHER_COLOR = 'rgb(255,222,33)';
-export const MASTER_SIDE_ATTACHER_COLOR = 'rgb(1,101,252)';
-
 export class Var {
   constructor(public value: number) {}
 }
@@ -31,9 +28,6 @@ export interface Thing {
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachVar(fn: (v: Var) => void): void;
 }
-
-const HANDLE_RADIUS = 5;
-const CLOSE_ENOUGH = HANDLE_RADIUS;
 
 export class Handle implements Thing {
   private static nextId = 0;
@@ -64,7 +58,7 @@ export class Handle implements Thing {
   }
 
   contains(pos: Position) {
-    return pointDist(pos, this) <= CLOSE_ENOUGH;
+    return pointDist(pos, this) <= config.closeEnough;
   }
 
   distanceTo(pos: Position) {
@@ -79,7 +73,7 @@ export class Handle implements Thing {
   render(
     selection: Set<Thing>,
     transform: Transform,
-    color: string = INSTANCE_SIDE_ATTACHER_COLOR,
+    color: string = config.instanceSideAttacherColor
   ): void {
     if (config.debug) {
       drawText(transform(this), `(${this.x},${this.y})`);
@@ -115,7 +109,11 @@ export class Line implements Thing {
   }
 
   contains(pos: Position) {
-    return !this.a.contains(pos) && !this.b.contains(pos) && this.distanceTo(pos) <= CLOSE_ENOUGH;
+    return (
+      !this.a.contains(pos) &&
+      !this.b.contains(pos) &&
+      this.distanceTo(pos) <= config.closeEnough
+    );
   }
 
   distanceTo(pos: Position) {
@@ -123,11 +121,16 @@ export class Line implements Thing {
   }
 
   moveBy(dx: number, dy: number) {
-    this.forEachHandle((h) => h.moveBy(dx, dy));
+    this.forEachHandle(h => h.moveBy(dx, dy));
   }
 
   render(selection: Set<Thing>, transform: Transform) {
-    drawLine(this.a, this.b, flickeryWhite(selection.has(this) ? 'bold' : 'normal'), transform);
+    drawLine(
+      this.a,
+      this.b,
+      flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
+      transform
+    );
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
@@ -145,7 +148,7 @@ export class Line implements Thing {
   }
 
   forEachVar(fn: (v: Var) => void): void {
-    this.forEachHandle((h) => h.forEachVar(fn));
+    this.forEachHandle(h => h.forEachVar(fn));
   }
 }
 
@@ -162,7 +165,7 @@ export class Arc implements Thing {
 
   contains(pos: Position) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return this.distanceTo(pos) <= CLOSE_ENOUGH;
+    return this.distanceTo(pos) <= config.closeEnough;
   }
 
   distanceTo(pos: Position) {
@@ -170,7 +173,7 @@ export class Arc implements Thing {
   }
 
   moveBy(dx: number, dy: number) {
-    this.forEachHandle((h) => h.moveBy(dx, dy));
+    this.forEachHandle(h => h.moveBy(dx, dy));
   }
 
   render(selection: Set<Thing>, transform: Transform) {
@@ -179,7 +182,7 @@ export class Arc implements Thing {
       this.a,
       this.b,
       flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
-      transform,
+      transform
     );
   }
 
@@ -202,7 +205,7 @@ export class Arc implements Thing {
   }
 
   forEachVar(fn: (v: Var) => void): void {
-    this.forEachHandle((h) => h.forEachVar(fn));
+    this.forEachHandle(h => h.forEachVar(fn));
   }
 }
 
@@ -210,7 +213,10 @@ export class Instance implements Thing {
   private static nextId = 0;
 
   readonly transform = (p: Position) =>
-    translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
+    translate(
+      scaleAround(rotateAround(p, origin, this.angle), origin, this.scale),
+      this
+    );
 
   readonly id = Instance.nextId++;
   readonly xVar: Var;
@@ -224,7 +230,7 @@ export class Instance implements Thing {
     x: number,
     y: number,
     size: number,
-    parent: Drawing,
+    parent: Drawing
   ) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
@@ -242,7 +248,9 @@ export class Instance implements Thing {
   addAttacher(masterSideAttacher: Handle, parent: Drawing) {
     const attacher = new Handle(this.transform(masterSideAttacher));
     this.attachers.push(attacher);
-    parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
+    parent.constraints.add(
+      new PointInstanceConstraint(attacher, this, masterSideAttacher)
+    );
   }
 
   get x() {
@@ -263,7 +271,8 @@ export class Instance implements Thing {
 
   get size() {
     return Math.sqrt(
-      Math.pow(this.angleAndSizeVecX.value, 2) + Math.pow(this.angleAndSizeVecY.value, 2),
+      Math.pow(this.angleAndSizeVecX.value, 2) +
+        Math.pow(this.angleAndSizeVecY.value, 2)
     );
   }
 
@@ -310,17 +319,17 @@ export class Instance implements Thing {
   moveBy(dx: number, dy: number) {
     this.x += dx;
     this.y += dy;
-    this.forEachHandle((h) => h.moveBy(dx, dy));
+    this.forEachHandle(h => h.moveBy(dx, dy));
   }
 
   render(selection: Set<Thing>, transform: Transform, depth = 0) {
-    this.master.render((pos) => transform(this.transform(pos)), depth + 1);
+    this.master.render(pos => transform(this.transform(pos)), depth + 1);
     if (depth === 1) {
       this.attachers.forEach((attacher, idx) => {
         drawLine(
           transform(this.transform(this.master.attachers[idx])),
           transform(attacher),
-          INSTANCE_SIDE_ATTACHER_COLOR,
+          config.instanceSideAttacherColor
         );
       });
     }
@@ -331,7 +340,7 @@ export class Instance implements Thing {
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
-    this.attachers = this.attachers.map((h) => (h === oldHandle ? newHandle : h));
+    this.attachers = this.attachers.map(h => (h === oldHandle ? newHandle : h));
   }
 
   forEachVar(fn: (v: Var) => void): void {
@@ -339,6 +348,6 @@ export class Instance implements Thing {
     fn(this.yVar);
     fn(this.angleAndSizeVecX);
     fn(this.angleAndSizeVecY);
-    this.forEachHandle((h) => h.forEachVar(fn));
+    this.forEachHandle(h => h.forEachVar(fn));
   }
 }
