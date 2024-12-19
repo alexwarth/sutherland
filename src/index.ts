@@ -3,6 +3,7 @@ import { config } from './config';
 import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
+import * as font from './font';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -72,6 +73,16 @@ function switchToDrawing(d: Drawing) {
 }
 
 switchToDrawing(drawings[1]);
+
+function showLetter(letter: string) {
+  drawing.clear();
+  const commands = font.commandsByLetter.get(letter);
+  if (commands) {
+    font.applyTo(drawing, commands, 25);
+  }
+}
+
+(window as any).showLetter = showLetter;
 
 // work done on each frame
 
