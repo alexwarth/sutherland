@@ -11,7 +11,7 @@ import { Handle, Instance, Thing, Var } from './things';
 export abstract class Constraint {
   constructor(
     protected readonly things: Thing[],
-    protected readonly handles: Handle[],
+    protected readonly handles: Handle[]
   ) {}
 
   abstract computeError(): number;
@@ -20,7 +20,10 @@ export abstract class Constraint {
   // TODO: consider returning false in certain constraint type-specific conditions
   // e.g., point-on-line(p, a, b) where p == a or p == b
   isStillValid(things: Set<Thing>, handles: Set<Handle>) {
-    return this.things.every((t) => things.has(t)) && this.handles.every((h) => handles.has(h));
+    return (
+      this.things.every(t => things.has(t)) &&
+      this.handles.every(h => handles.has(h))
+    );
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
@@ -77,7 +80,10 @@ export class HorizontalOrVerticalConstraint extends Constraint {
   }
 
   computeError() {
-    return Math.min(Math.abs(this.a.x - this.b.x), Math.abs(this.a.y - this.b.y));
+    return Math.min(
+      Math.abs(this.a.x - this.b.x),
+      Math.abs(this.a.y - this.b.y)
+    );
   }
 }
 
@@ -198,7 +204,7 @@ export class PointInstanceConstraint extends Constraint {
   constructor(
     instancePoint: Handle,
     readonly instance: Instance,
-    masterPoint: Handle,
+    masterPoint: Handle
   ) {
     super([instance], [instancePoint, masterPoint]);
   }
@@ -222,24 +228,27 @@ export class PointInstanceConstraint extends Constraint {
         scaleAround(
           rotateAround(this.masterPoint, origin, this.instance.angle),
           origin,
-          this.instance.scale,
+          this.instance.scale
         ),
-        this.instance,
-      ),
+        this.instance
+      )
     );
   }
 }
 
-export class FullSizeConstraint extends Constraint {
-  constructor(readonly instance: Instance) {
+export class SizeConstraint extends Constraint {
+  constructor(
+    readonly instance: Instance,
+    readonly multiplier = 1
+  ) {
     super([instance], []);
   }
 
   get signature() {
-    return `FS(${this.instance.id})`;
+    return `S(${this.instance.id})`;
   }
 
   computeError() {
-    return this.instance.size - this.instance.master.size;
+    return this.instance.size * this.multiplier - this.instance.master.size;
   }
 }

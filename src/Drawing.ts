@@ -2,7 +2,7 @@ import { config } from './config';
 import {
   EqualDistanceConstraint,
   FixedDistanceConstraint,
-  FullSizeConstraint,
+  SizeConstraint,
   HorizontalOrVerticalConstraint,
   PointInstanceConstraint,
   PointOnArcConstraint,
@@ -95,8 +95,8 @@ export class Drawing {
     return true;
   }
 
-  addLine(aPos: Position, bPos: Position) {
-    const line = new Line(aPos, bPos);
+  addLine(aPos: Position, bPos: Position, guide = false) {
+    const line = new Line(aPos, bPos, guide);
     this.mergeAndAddImplicitConstraints(line.a);
     this.mergeAndAddImplicitConstraints(line.b);
     for (const thing of this.things) {
@@ -225,7 +225,7 @@ export class Drawing {
     const things = this.thingsForOperation(pointerPos);
     for (const thing of things) {
       if (thing instanceof Instance) {
-        this.constraints.add(new FullSizeConstraint(thing));
+        this.constraints.add(new SizeConstraint(thing));
         return true;
       }
     }
