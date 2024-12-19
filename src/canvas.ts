@@ -47,8 +47,12 @@ export function clear() {
       status = '';
     } else {
       const alpha = 1 - easeOutQuint(statusAgeMillis / STATUS_TIME_MILLIS);
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.fillText(status, window.innerWidth - width - fontSizeInPixels, fontSizeInPixels);
+      ctx.fillStyle = `rgba(255,222,33,${alpha})`;
+      ctx.fillText(
+        status,
+        (innerWidth - width) / 2,
+        innerHeight - fontSizeInPixels
+      );
     }
   }
 }
@@ -61,7 +65,7 @@ export function drawLine(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = identity,
+  transform = identity
 ) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
@@ -77,7 +81,7 @@ export function drawArc(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = identity,
+  transform = identity
 ) {
   const ta = transform(a);
   const tb = transform(b);
@@ -96,7 +100,7 @@ export function drawText(
   pos: Position,
   text: string,
   fillStyle = flickeryWhite(),
-  transform = identity,
+  transform = identity
 ) {
   ctx.fillStyle = fillStyle;
   const fontSizeInPixels = 12;
