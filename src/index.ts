@@ -361,9 +361,11 @@ canvas.el.addEventListener('pointermove', e => {
     !drag &&
     drawing.selection.size === 0
   ) {
+    const dx = pointer.x - oldPos.x;
+    const dy = pointer.y - oldPos.y;
     doWithoutMovingPointer(() => {
-      scope.center.x -= (pointer.x - oldPos.x) * scope.scale;
-      scope.center.y -= (pointer.y - oldPos.y) * scope.scale;
+      scope.center.x -= dx;
+      scope.center.y -= dy;
     });
     return;
   }
