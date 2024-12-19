@@ -56,6 +56,7 @@ for (const [letter, commands] of commandsByLetter) {
     true
   );
   drawing.attachers.push(line.a, line.b);
+  drawing.center();
   letterDrawings.set(letter, drawing);
 }
 
