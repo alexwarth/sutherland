@@ -265,10 +265,12 @@ window.addEventListener('keydown', e => {
       toggleAttacher(pointer);
       break;
     case 'c':
-      canvas.setStatus('re-center');
-      doWithoutMovingPointer(() => {
-        scope.centerAt(pointer);
-      });
+      if (!drawing.isEmpty()) {
+        canvas.setStatus('re-center');
+        doWithoutMovingPointer(() => {
+          scope.centerAt(pointer);
+        });
+      }
       break;
     case 'd':
       config.debug = !config.debug;
