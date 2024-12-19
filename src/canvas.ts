@@ -1,5 +1,5 @@
 import { config } from './config';
-import { easeOutQuint, pointDist, Position, TAU } from './helpers';
+import { easeOutQuint, pointDist, Position } from './helpers';
 
 const STATUS_TIME_MILLIS = 4_000;
 
@@ -90,8 +90,6 @@ export function drawArc(
   ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
   const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
-  // const fullCircle = Math.abs(theta1 - theta2) < 0.01;
-  // ctx.arc(tc.x, tc.y, pointDist(tc, ta), fullCircle ? 0 : theta1, fullCircle ? TAU : theta2);
   ctx.arc(tc.x, tc.y, pointDist(tc, ta), theta1, theta2);
   ctx.stroke();
 }
