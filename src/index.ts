@@ -511,7 +511,7 @@ function addLetter(letter: string) {
 
 (window as any).addLetter = addLetter;
 
-function write(msg: string) {
+function write(msg: string, scale = 1) {
   drawing.clear();
 
   let x = 0;
@@ -523,8 +523,12 @@ function write(msg: string) {
       continue;
     }
 
-    const instance = drawing.addInstance(letter, { x, y: 0 }, letter.size)!;
-    x += 20 * 5;
+    const instance = drawing.addInstance(
+      letter,
+      { x, y: 0 },
+      letter.size * scale
+    )!;
+    x += scale * 20 * 5;
 
     if (instances.length > 0) {
       drawing.replaceHandle(
@@ -533,7 +537,7 @@ function write(msg: string) {
       );
     }
 
-    drawing.constraints.add(new SizeConstraint(instance));
+    drawing.constraints.add(new SizeConstraint(instance, scale));
 
     instances.push(instance);
   }
