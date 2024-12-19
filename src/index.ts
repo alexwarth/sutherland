@@ -2,8 +2,11 @@ import * as canvas from './canvas';
 import { config } from './config';
 import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
-import { Handle, Instance, Thing } from './things';
+import { Handle, Instance, Thing, Var } from './things';
+import { letterDrawings } from './font';
 import * as font from './font';
+import { SizeConstraint } from './constraints';
+import ConstraintSet from './ConstraintSet';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
@@ -73,16 +76,6 @@ function switchToDrawing(d: Drawing) {
 }
 
 switchToDrawing(drawings[1]);
-
-function showLetter(letter: string) {
-  drawing.clear();
-  const commands = font.commandsByLetter.get(letter);
-  if (commands) {
-    font.applyTo(drawing, commands, 25);
-  }
-}
-
-(window as any).showLetter = showLetter;
 
 // work done on each frame
 
@@ -476,7 +469,7 @@ function cleanUp() {
 function _cleanUp() {
   const things = new Set<Thing>();
   const handles = new Set<Handle>();
-  for (const drawing of drawings) {
+  for (const drawing of [...drawings, ...letterDrawings.values()]) {
     for (const thing of drawing.things) {
       things.add(thing);
       thing.forEachHandle(h => handles.add(h));
@@ -506,3 +499,44 @@ function _cleanUp() {
 
   return false;
 }
+
+// experiments w/ fonts
+
+function addLetter(letter: string) {
+  const commands = font.commandsByLetter.get(letter);
+  if (commands) {
+    font.applyTo(drawing, commands);
+  }
+}
+
+(window as any).addLetter = addLetter;
+
+function write(msg: string) {
+  drawing.clear();
+
+  let x = 0;
+  const instances: Instance[] = [];
+  const constraints = new ConstraintSet();
+  for (let idx = 0; idx < msg.length; idx++) {
+    const letter = letterDrawings.get(msg[idx]);
+    if (!letter) {
+      continue;
+    }
+
+    const instance = drawing.addInstance(letter, { x, y: 0 }, letter.size)!;
+    x += 20 * 5;
+
+    if (instances.length > 0) {
+      drawing.replaceHandle(
+        instance.attachers[0],
+        instances.at(-1)!.attachers[1]
+      );
+    }
+
+    drawing.constraints.add(new SizeConstraint(instance));
+
+    instances.push(instance);
+  }
+}
+
+(window as any).write = write;

@@ -1,6 +1,7 @@
 import { Drawing } from './Drawing';
 import rawJson from './yoshikis-font-data.json';
 import { Position } from './helpers';
+import { config } from './config';
 
 type Command =
   | { command: 'line'; start: Position; end: Position }
@@ -12,11 +13,7 @@ type Command =
       end: number;
     };
 
-export const commandsByLetter = new Map<string, Command[]>(
-  rawJson.data.values as any
-);
-
-export function applyTo(drawing: Drawing, commands: Command[], scale = 1) {
+export function applyTo(drawing: Drawing, commands: Command[], scale = 10) {
   for (const command of commands) {
     switch (command.command) {
       case 'line': {
@@ -40,6 +37,26 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = 1) {
         break;
     }
   }
+}
+
+export const commandsByLetter = new Map<string, Command[]>(
+  rawJson.data.values as any
+);
+
+// console.log(commandsByLetter);
+
+export const letterDrawings = new Map<string, Drawing>();
+for (const [letter, commands] of commandsByLetter) {
+  const scale = 20;
+  const drawing = new Drawing();
+  applyTo(drawing, commands, scale);
+  const line = drawing.addLine(
+    { x: -config.kerning * scale, y: 0 },
+    { x: (4 + config.kerning) * scale, y: 0 },
+    true
+  );
+  drawing.attachers.push(line.a, line.b);
+  letterDrawings.set(letter, drawing);
 }
 
 // helpers

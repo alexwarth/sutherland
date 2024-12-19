@@ -103,7 +103,11 @@ export class Line implements Thing {
   a: Handle;
   b: Handle;
 
-  constructor(aPos: Position, bPos: Position) {
+  constructor(
+    aPos: Position,
+    bPos: Position,
+    readonly isGuide: boolean
+  ) {
     this.a = new Handle(aPos);
     this.b = new Handle(bPos);
   }
@@ -128,7 +132,9 @@ export class Line implements Thing {
     drawLine(
       this.a,
       this.b,
-      flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
+      this.isGuide
+        ? config.guideLineColor
+        : flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
       transform
     );
   }
