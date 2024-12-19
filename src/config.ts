@@ -8,6 +8,7 @@ export const config = {
   axisColor: 'rgba(255,222,33,0.125)',
   handleRadius: 5,
   closeEnough: 5,
+  crosshairsSize: 15,
 };
 
 (window as any).config = config;

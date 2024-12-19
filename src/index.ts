@@ -60,19 +60,29 @@ for (let idx = 0; idx < 10; idx++) {
   drawings.push(new Drawing());
 }
 
-let drawing = drawings[1];
+let drawing: Drawing;
 
 function switchToDrawing(d: Drawing) {
   doWithoutMovingPointer(() => {
-    drawing.leave();
+    drawing?.leave();
     scope.reset();
     drawing = d;
     (window as any).drawing = d;
   });
 }
 
+switchToDrawing(drawings[1]);
+
+// work done on each frame
+
 function onFrame() {
-  if (keysDown[' ']) {
+  if (config.autoSolve) {
+    const t0 = performance.now();
+    let n = 0;
+    while (performance.now() - t0 < 20 && drawing.relax()) {
+      n++;
+    }
+  } else if (keysDown[' '] && !drawing.isEmpty()) {
     canvas.setStatus('solve');
     drawing.relax();
   }
@@ -87,22 +97,37 @@ onFrame();
 // rendering
 
 function render() {
-  if (config.autoSolve) {
-    const t0 = performance.now();
-    let n = 0;
-    while (performance.now() - t0 < 20 && drawing.relax()) {
-      n++;
-    }
-  }
-
   canvas.clear();
 
   if (!drawingInProgress && drawing.isEmpty()) {
-    ink();
+    renderInk();
   } else {
     drawing.render(toScreenPosition);
   }
 
+  renderDrawingInProgress();
+  renderCrosshairs();
+  renderDebugInfo();
+}
+
+function renderInk() {
+  const unit = innerWidth / 100;
+  const line = (p1: Position, p2: Position) =>
+    canvas.drawLine(p1, p2, canvas.flickeryWhite(), toScreenPosition);
+
+  // I
+  line({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
+  // N
+  line({ x: -3 * unit, y: -4 * unit }, { x: -3 * unit, y: 4 * unit });
+  line({ x: -3 * unit, y: 4 * unit }, { x: 2 * unit, y: -4 * unit });
+  line({ x: 2 * unit, y: -4 * unit }, { x: 2 * unit, y: 4 * unit });
+  // K
+  line({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
+  line({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
+  line({ x: 8 * unit, y: 2 * unit }, { x: 10 * unit, y: -4 * unit });
+}
+
+function renderDrawingInProgress() {
   switch (drawingInProgress?.type) {
     case 'line':
       canvas.drawLine(
@@ -124,20 +149,23 @@ function render() {
       }
       break;
   }
+}
 
-  const crosshairsSize = 15;
+function renderCrosshairs() {
   const tPointer = toScreenPosition(pointer);
   canvas.drawLine(
-    { x: tPointer.x - crosshairsSize, y: tPointer.y },
-    { x: tPointer.x + crosshairsSize, y: tPointer.y },
+    { x: tPointer.x - config.crosshairsSize, y: tPointer.y },
+    { x: tPointer.x + config.crosshairsSize, y: tPointer.y },
     canvas.flickeryWhite('bold')
   );
   canvas.drawLine(
-    { x: tPointer.x, y: tPointer.y - crosshairsSize },
-    { x: tPointer.x, y: tPointer.y + crosshairsSize },
+    { x: tPointer.x, y: tPointer.y - config.crosshairsSize },
+    { x: tPointer.x, y: tPointer.y + config.crosshairsSize },
     canvas.flickeryWhite('bold')
   );
+}
 
+function renderDebugInfo() {
   if (config.debug) {
     const origin = toScreenPosition({ x: 0, y: 0 });
     canvas.drawLine(
@@ -157,23 +185,6 @@ function render() {
   }
 }
 
-function ink() {
-  const unit = innerWidth / 100;
-  const line = (p1: Position, p2: Position) =>
-    canvas.drawLine(p1, p2, canvas.flickeryWhite(), toScreenPosition);
-
-  // I
-  line({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
-  // N
-  line({ x: -3 * unit, y: -4 * unit }, { x: -3 * unit, y: 4 * unit });
-  line({ x: -3 * unit, y: 4 * unit }, { x: 2 * unit, y: -4 * unit });
-  line({ x: 2 * unit, y: -4 * unit }, { x: 2 * unit, y: 4 * unit });
-  // K
-  line({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
-  line({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
-  line({ x: 8 * unit, y: 2 * unit }, { x: 10 * unit, y: -4 * unit });
-}
-
 // input handlers
 
 window.addEventListener('keydown', e => {
@@ -182,7 +193,9 @@ window.addEventListener('keydown', e => {
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
     const n = parseInt(e.code.slice(5));
     const m = drawings[n];
-    if (keysDown['Shift']) {
+    if (m === drawing) {
+      // don't do anything
+    } else if (keysDown['Shift']) {
       if (!m.isEmpty()) {
         canvas.setStatus('instantiate #' + n);
         drawing.addInstance(m, pointer, innerHeight / 5 / scope.scale);
@@ -191,6 +204,25 @@ window.addEventListener('keydown', e => {
       canvas.setStatus('drawing #' + n);
       switchToDrawing(m);
     }
+    return;
+  }
+
+  switch (e.key) {
+    case 'f':
+      config.flicker = !config.flicker;
+      return;
+    case 'd':
+      config.debug = !config.debug;
+      canvas.setStatus(`debug ${config.debug ? 'on' : 'off'}`);
+      return;
+    case 'S':
+      config.autoSolve = !config.autoSolve;
+      canvas.setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
+      return;
+  }
+
+  if (drawing.isEmpty()) {
+    // the operations below don't make sense for an empty drawing
     return;
   }
 
@@ -221,7 +253,7 @@ window.addEventListener('keydown', e => {
     case '=':
       if (drawing.resizeInstanceAt(pointer, 1.05)) {
         // found an instance, made it bigger
-      } else if (!drawing.isEmpty()) {
+      } else {
         doWithoutMovingPointer(() => {
           scope.scale = Math.min(scope.scale + 0.1, 10);
           canvas.setStatus('scale=' + scope.scale.toFixed(1));
@@ -231,7 +263,7 @@ window.addEventListener('keydown', e => {
     case '-':
       if (drawing.resizeInstanceAt(pointer, 0.95)) {
         // found an instance, made it smaller
-      } else if (!drawing.isEmpty()) {
+      } else {
         doWithoutMovingPointer(() => {
           scope.scale = Math.max(scope.scale - 0.1, 0.1);
           canvas.setStatus('scale=' + scope.scale.toFixed(1));
@@ -244,13 +276,6 @@ window.addEventListener('keydown', e => {
     case 'w':
       drawing.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
       break;
-    case 'f':
-      config.flicker = !config.flicker;
-      break;
-    case 'S':
-      config.autoSolve = !config.autoSolve;
-      canvas.setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
-      break;
     case 's':
       if (drawing.fullSize(pointer)) {
         canvas.setStatus('full size');
@@ -260,16 +285,10 @@ window.addEventListener('keydown', e => {
       toggleAttacher(pointer);
       break;
     case 'c':
-      if (!drawing.isEmpty()) {
-        canvas.setStatus('re-center');
-        doWithoutMovingPointer(() => {
-          scope.centerAt(pointer);
-        });
-      }
-      break;
-    case 'd':
-      config.debug = !config.debug;
-      canvas.setStatus(`debug ${config.debug ? 'on' : 'off'}`);
+      canvas.setStatus('re-center');
+      doWithoutMovingPointer(() => {
+        scope.centerAt(pointer);
+      });
       break;
   }
 });
@@ -277,14 +296,15 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => {
   delete keysDown[e.key];
 
-  if (e.key === 'Meta') {
-    endLines();
-  } else if (e.key === 'a') {
-    if (drawingInProgress?.type === 'arc') {
-      drawingInProgress = null;
-    }
-  } else if (e.key === ' ') {
-    canvas.setStatus('');
+  switch (e.key) {
+    case 'Meta':
+      endLines();
+      break;
+    case 'a':
+      if (drawingInProgress?.type === 'arc') {
+        drawingInProgress = null;
+      }
+      break;
   }
 });
 
@@ -316,12 +336,10 @@ canvas.el.addEventListener('pointerdown', e => {
 
   drawing.clearSelection();
   const thing = drawing.thingAt(pointer);
-  if (thing) {
-    if (thing instanceof Instance) {
-      drag = { thing, offset: pointDiff(pointer, thing) };
-    } else {
-      drawing.toggleSelected(thing);
-    }
+  if (thing instanceof Instance) {
+    drag = { thing, offset: pointDiff(pointer, thing) };
+  } else if (thing) {
+    drawing.toggleSelected(thing);
   }
 });
 
@@ -339,12 +357,9 @@ canvas.el.addEventListener('pointermove', e => {
     !drag &&
     drawing.selection.size === 0
   ) {
-    // TODO: think about this more, it sometimes misbehaves
-    const dx = pointer.x - oldPos.x;
-    const dy = pointer.y - oldPos.y;
     doWithoutMovingPointer(() => {
-      scope.center.x -= dx * scope.scale;
-      scope.center.y -= dy * scope.scale;
+      scope.center.x -= (pointer.x - oldPos.x) * scope.scale;
+      scope.center.y -= (pointer.y - oldPos.y) * scope.scale;
     });
     return;
   }
