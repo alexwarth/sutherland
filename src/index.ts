@@ -155,7 +155,10 @@ function render() {
       { x: origin.x, y: innerHeight },
       AXIS_COLOR
     );
-    canvas.drawText(toScreenPosition(pointer), `(${pointer.x}, ${pointer.y})`);
+    canvas.drawText(
+      toScreenPosition(pointer),
+      `(${pointer.x.toFixed(0)}, ${pointer.y.toFixed(0)})`
+    );
   }
 }
 
