@@ -1,6 +1,6 @@
 import * as canvas from './canvas';
 import { config } from './config';
-import { pointDiff, Position, origin, scaleAround, translate } from './helpers';
+import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 
@@ -143,17 +143,19 @@ function render() {
   );
 
   if (config.debug) {
+    const AXIS_COLOR = 'rgba(255,222,33,0.125)';
+    const origin = toScreenPosition({ x: 0, y: 0 });
     canvas.drawLine(
-      { x: -innerWidth, y: innerHeight / 2 },
-      { x: innerWidth, y: innerHeight / 2 }
+      { x: 0, y: origin.y },
+      { x: innerWidth, y: origin.y },
+      AXIS_COLOR
     );
     canvas.drawLine(
-      { x: innerWidth / 2, y: -innerHeight },
-      { x: innerWidth / 2, y: innerHeight }
+      { x: origin.x, y: 0 },
+      { x: origin.x, y: innerHeight },
+      AXIS_COLOR
     );
     canvas.drawText(toScreenPosition(pointer), `(${pointer.x}, ${pointer.y})`);
-    const zz = toScreenPosition({ x: 0, y: 0 });
-    canvas.drawLine(zz, zz);
   }
 }
 
