@@ -4,10 +4,6 @@ import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: when instantiating a drawing w/ attachers, enter a mode where you have to drag each
-// attacher to the place where you want them. (will give us the ability to merge those points,
-// add point-on-line constraints, etc.) should show "placing attacher 1/4"...
-
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 const pointer: Position & { down: boolean } = {
