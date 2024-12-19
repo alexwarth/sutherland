@@ -14,6 +14,7 @@ Controls:
   - To **draw an arc**, hold down the `A` key: 1st click is the center, 2nd and 3rd are the end points
   - To **move a point / line / arc**, just drag it
   - To **pan**, drag the background
+  - To **re-center** the scope at the position of the cursor, press `C`
   - To **zoom in / out**, press `+` / `-`
   - To **delete a line / arc / instance**, point at it and press backspace
   - To **toggle flicker on / off**, press `F`
@@ -30,4 +31,3 @@ Controls:
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
-
