@@ -181,16 +181,19 @@ export class Drawing {
     if (things.size === 0) {
       return false;
     }
+    let ans = false;
     for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
+        ans = true;
       }
     }
     this.selection.clear();
-    return true;
+    return ans;
   }
 
   equalDistance() {
+    let ans = false;
     let prevLine: Line | null = null;
     for (const thing of this.selection) {
       if (!(thing instanceof Line)) {
@@ -201,10 +204,12 @@ export class Drawing {
         this.constraints.add(
           new EqualDistanceConstraint(prevLine.a, prevLine.b, thing.a, thing.b)
         );
+        ans = true;
       }
       prevLine = thing;
     }
     this.selection.clear();
+    return ans;
   }
 
   horizontalOrVertical(pointerPos: Position) {
@@ -212,26 +217,29 @@ export class Drawing {
     if (things.size === 0) {
       return false;
     }
+    let ans = false;
     for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(
           new HorizontalOrVerticalConstraint(thing.a, thing.b)
         );
+        ans = true;
       }
     }
     this.selection.clear();
-    return true;
+    return ans;
   }
 
   fullSize(pointerPos: Position) {
+    let ans = false;
     const things = this.thingsForOperation(pointerPos);
     for (const thing of things) {
       if (thing instanceof Instance) {
         this.constraints.add(new SizeConstraint(thing));
-        return true;
+        ans = true;
       }
     }
-    return false;
+    return ans;
   }
 
   snap(pos: Position, dragThing: (Thing & Position) | null) {

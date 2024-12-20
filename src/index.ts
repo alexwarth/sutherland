@@ -245,8 +245,9 @@ window.addEventListener('keydown', e => {
       }
       break;
     case 'e':
-      canvas.setStatus('equal length');
-      drawing.equalDistance();
+      if (drawing.equalDistance()) {
+        canvas.setStatus('equal length');
+      }
       break;
     case 'h':
       if (drawing.horizontalOrVertical(pointer)) {
