@@ -516,19 +516,23 @@ function addLetter(letter: string) {
 }
 
 function write(msg: string, scale = 1) {
-  const letterWidth = scale * config.fontScale * (4 + config.kerning * 2);
-  let x = scope.center.x - 0.5 * msg.length * letterWidth;
+  const letterScale = (l: string) => scale * (l === l.toLowerCase() ? 0.75 : 1);
+  const letterWidth = (l: string) =>
+    letterScale(l) * config.fontScale * (4 + config.kerning * 2);
+  let x =
+    scope.center.x - 0.5 * [...msg].map(letterWidth).reduce((a, b) => a + b, 0);
   const instances: Instance[] = [];
-  const constraints = new ConstraintSet();
   for (let idx = 0; idx < msg.length; idx++) {
-    const letter = font.letterDrawings.get(msg[idx]);
+    const l = msg[idx];
+    const ls = letterScale(l);
+    const letter = font.letterDrawings.get(l.toUpperCase());
     if (letter) {
       const instance = drawing.addInstance(
         letter,
         { x, y: scope.center.y },
-        letter.size * scale
+        letter.size * ls
       )!;
-      drawing.constraints.add(new SizeConstraint(instance, scale));
+      drawing.constraints.add(new SizeConstraint(instance, ls));
       if (instances.length > 0) {
         drawing.replaceHandle(
           instance.attachers[0],
@@ -537,7 +541,7 @@ function write(msg: string, scale = 1) {
       }
       instances.push(instance);
     }
-    x += letterWidth;
+    x += letterWidth(l);
   }
 }
 

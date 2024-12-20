@@ -307,6 +307,13 @@ export class Instance implements Thing {
   }
 
   contains(pos: Position): boolean {
+    const { topLeft: ttl, bottomRight: tbr } = this.boundingBox();
+    const ans =
+      ttl.x <= pos.x && pos.x <= tbr.x && tbr.y <= pos.y && pos.y <= ttl.y;
+    return ans;
+  }
+
+  boundingBox() {
     const { topLeft, bottomRight } = this.master.boundingBox();
     const ps = [
       topLeft,
@@ -314,8 +321,7 @@ export class Instance implements Thing {
       { x: topLeft.x, y: bottomRight.y },
       { x: bottomRight.x, y: topLeft.y },
     ].map(this.transform);
-    const { topLeft: ttl, bottomRight: tbr } = boundingBox(ps);
-    return ttl.x <= pos.x && pos.x <= tbr.x && tbr.y <= pos.y && pos.y <= ttl.y;
+    return boundingBox(ps);
   }
 
   distanceTo(pos: Position) {
