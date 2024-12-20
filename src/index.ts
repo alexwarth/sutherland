@@ -347,6 +347,10 @@ canvas.el.addEventListener('pointerdown', e => {
 });
 
 canvas.el.addEventListener('pointermove', e => {
+  if (!e.metaKey) {
+    delete keysDown['Meta'];
+  }
+
   const oldPos = { x: pointer.x, y: pointer.y };
   ({ x: pointer.x, y: pointer.y } = fromScreenPosition({
     x: (e as any).layerX,
