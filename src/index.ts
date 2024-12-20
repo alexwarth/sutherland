@@ -527,7 +527,7 @@ function write(msg: string, scale = 1) {
       { x, y: 0 },
       letter.size * scale
     )!;
-    x += scale * config.fontScale * 5;
+    x += scale * config.fontScale * (4 + config.kerning * 2);
 
     if (instances.length > 0) {
       drawing.replaceHandle(
