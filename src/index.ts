@@ -3,7 +3,6 @@ import { config } from './config';
 import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing, Var } from './things';
-import { letterDrawings } from './font';
 import * as font from './font';
 import { SizeConstraint } from './constraints';
 import ConstraintSet from './ConstraintSet';
@@ -471,7 +470,7 @@ function cleanUp() {
 function _cleanUp() {
   const things = new Set<Thing>();
   const handles = new Set<Handle>();
-  for (const drawing of [...drawings, ...letterDrawings.values()]) {
+  for (const drawing of [...drawings, ...font.letterDrawings.values()]) {
     for (const thing of drawing.things) {
       things.add(thing);
       thing.forEachHandle(h => handles.add(h));
@@ -518,7 +517,7 @@ function write(msg: string, scale = 1) {
   const instances: Instance[] = [];
   const constraints = new ConstraintSet();
   for (let idx = 0; idx < msg.length; idx++) {
-    const letter = letterDrawings.get(msg[idx]);
+    const letter = font.letterDrawings.get(msg[idx]);
     if (!letter) {
       continue;
     }
@@ -544,6 +543,6 @@ function write(msg: string, scale = 1) {
 }
 
 (window as any).addLetter = addLetter;
-(window as any).letterDrawings = letterDrawings;
+(window as any).letterDrawings = font.letterDrawings;
 (window as any).switchToDrawing = switchToDrawing;
 (window as any).write = write;
