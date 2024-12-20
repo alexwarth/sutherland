@@ -314,8 +314,8 @@ export class Instance implements Thing {
       { x: topLeft.x, y: bottomRight.y },
       { x: bottomRight.x, y: topLeft.y },
     ].map(this.transform);
-    const { topLeft: min, bottomRight: max } = boundingBox(ps);
-    return min.x <= pos.x && pos.x <= max.x && min.y <= pos.y && pos.y <= max.y;
+    const { topLeft: ttl, bottomRight: tbr } = boundingBox(ps);
+    return ttl.x <= pos.x && pos.x <= tbr.x && tbr.y <= pos.y && pos.y <= ttl.y;
   }
 
   distanceTo(pos: Position) {

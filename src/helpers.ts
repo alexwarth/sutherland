@@ -41,7 +41,11 @@ export function scaleAround(p: Position, c: Position, scale: number): Position {
   return { x: sx + c.x, y: sy + c.y };
 }
 
-export function rotateAround(p: Position, c: Position, angle: number): Position {
+export function rotateAround(
+  p: Position,
+  c: Position,
+  angle: number
+): Position {
   // Translate point to the origin
   const tx = p.x - c.x;
   const ty = p.y - c.y;
@@ -68,8 +72,8 @@ export function boundingBox(ps: Iterable<Position>) {
     maxY = Math.max(maxY, p.y);
   }
   return {
-    topLeft: { x: minX, y: minY },
-    bottomRight: { x: maxX, y: maxY },
+    topLeft: { x: minX, y: maxY },
+    bottomRight: { x: maxX, y: minY },
   };
 }
 
@@ -85,7 +89,10 @@ function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
     return pointDist2(p, v);
   }
 
-  const t = Math.max(0, Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1));
+  const t = Math.max(
+    0,
+    Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1)
+  );
   return pointDist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
 }
 
