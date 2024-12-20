@@ -355,7 +355,15 @@ export class Drawing {
 
   boundingBox(): { topLeft: Position; bottomRight: Position } {
     // TODO: include arcs...
-    return boundingBox(this.getPositions());
+    const ps = [...this.getPositions()];
+    for (const thing of this.things) {
+      if (thing instanceof Instance) {
+        const bb = thing.boundingBox();
+        ps.push(bb.topLeft);
+        ps.push(bb.bottomRight);
+      }
+    }
+    return boundingBox(ps);
   }
 
   get size() {
