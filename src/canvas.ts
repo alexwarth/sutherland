@@ -1,8 +1,6 @@
 import { config } from './config';
 import { easeOutQuint, pointDist, Position } from './helpers';
 
-const STATUS_TIME_MILLIS = 4_000;
-
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
 
@@ -43,10 +41,10 @@ export function clear() {
     ctx.font = `${fontSizeInPixels}px Monaco`;
     const width = ctx.measureText(status).width;
     const statusAgeMillis = Date.now() - statusTimeMillis;
-    if (statusAgeMillis > STATUS_TIME_MILLIS) {
+    if (statusAgeMillis > config.statusTimeMillis) {
       status = '';
     } else {
-      const alpha = 1 - easeOutQuint(statusAgeMillis / STATUS_TIME_MILLIS);
+      const alpha = 1 - easeOutQuint(statusAgeMillis / config.statusTimeMillis);
       ctx.fillStyle = `rgba(255,222,33,${alpha})`;
       ctx.fillText(
         status,

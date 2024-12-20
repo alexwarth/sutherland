@@ -12,6 +12,7 @@ export const config = {
   fontScale: 10,
   kerning: 0.5,
   guideLineColor: 'rgba(255,255,255,.125)',
+  statusTimeMillis: 4_000,
 };
 
 (window as any).config = config;
