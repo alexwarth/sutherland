@@ -511,34 +511,28 @@ function addLetter(letter: string) {
 }
 
 function write(msg: string, scale = 1) {
-  // drawing.clear();
-
-  let x = 0;
+  const letterWidth = scale * config.fontScale * (4 + config.kerning * 2);
+  let x = scope.center.x - 0.5 * msg.length * letterWidth;
   const instances: Instance[] = [];
   const constraints = new ConstraintSet();
   for (let idx = 0; idx < msg.length; idx++) {
     const letter = font.letterDrawings.get(msg[idx]);
-    if (!letter) {
-      continue;
+    if (letter) {
+      const instance = drawing.addInstance(
+        letter,
+        { x, y: scope.center.y },
+        letter.size * scale
+      )!;
+      drawing.constraints.add(new SizeConstraint(instance, scale));
+      if (instances.length > 0) {
+        drawing.replaceHandle(
+          instance.attachers[0],
+          instances.at(-1)!.attachers[1]
+        );
+      }
+      instances.push(instance);
     }
-
-    const instance = drawing.addInstance(
-      letter,
-      { x, y: 0 },
-      letter.size * scale
-    )!;
-    x += scale * config.fontScale * (4 + config.kerning * 2);
-
-    if (instances.length > 0) {
-      drawing.replaceHandle(
-        instance.attachers[0],
-        instances.at(-1)!.attachers[1]
-      );
-    }
-
-    drawing.constraints.add(new SizeConstraint(instance, scale));
-
-    instances.push(instance);
+    x += letterWidth;
   }
 }
 
