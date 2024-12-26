@@ -5,7 +5,6 @@ import { Drawing } from './Drawing';
 import { Handle, Instance, Thing, Var } from './things';
 import * as font from './font';
 import { SizeConstraint } from './constraints';
-import ConstraintSet from './ConstraintSet';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
