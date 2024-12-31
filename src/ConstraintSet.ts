@@ -37,6 +37,7 @@ export default class ConstraintSet {
   }
 
   relax(vars: Set<Var>) {
+    this.forEach(c => c.preRelax());
     let ans = false;
     for (const v of vars) {
       ans = this.relaxWithVar(v) || ans;

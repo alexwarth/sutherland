@@ -1,4 +1,6 @@
+import { config } from './config';
 import {
+  Position,
   origin,
   pointDist,
   pointDistToLineSegment,
@@ -13,6 +15,9 @@ export abstract class Constraint {
     protected readonly things: Thing[],
     protected readonly handles: Handle[]
   ) {}
+
+  // override in subclasses like weight constraint
+  preRelax(): void {}
 
   abstract computeError(): number;
   abstract get signature(): string;
@@ -38,25 +43,24 @@ export abstract class Constraint {
   }
 }
 
-export class PointsEqualConstraint extends Constraint {
-  constructor(p1: Handle, p2: Handle) {
-    super([], [p1, p2]);
+export class FixedPointConstraint extends Constraint {
+  readonly pos: Position;
+
+  constructor(p: Handle, { x, y }: Position) {
+    super([], [p]);
+    this.pos = { x, y };
   }
 
-  private get p1() {
+  private get p() {
     return this.handles[0];
   }
 
-  private get p2() {
-    return this.handles[1];
-  }
-
   get signature() {
-    return `PE(${this.p1.id},${this.p2.id})`;
+    return `FP(${this.p.id})`;
   }
 
   computeError() {
-    return pointDist(this.p1, this.p2);
+    return pointDist(this.p, this.pos) * 100;
   }
 }
 
@@ -95,11 +99,11 @@ export class FixedDistanceConstraint extends Constraint {
     this.distance = pointDist(a, b);
   }
 
-  private get a() {
+  get a() {
     return this.handles[0];
   }
 
-  private get b() {
+  get b() {
     return this.handles[1];
   }
 
@@ -250,5 +254,31 @@ export class SizeConstraint extends Constraint {
 
   computeError() {
     return this.instance.size - this.scale * this.instance.master.size;
+  }
+}
+
+export class WeightConstraint extends Constraint {
+  private readonly distance: number;
+  private y0: number;
+
+  constructor(a: Handle) {
+    super([], [a]);
+  }
+
+  get a() {
+    return this.handles[0];
+  }
+
+  get signature() {
+    return `W(${this.a.id})`;
+  }
+
+  override preRelax() {
+    this.y0 = this.a.y;
+  }
+
+  computeError() {
+    const wantY = this.y0 - config.weight;
+    return wantY - this.a.y;
   }
 }
