@@ -7,6 +7,8 @@ import {
   PointInstanceConstraint,
   PointOnArcConstraint,
   PointOnLineConstraint,
+  FixedPointConstraint,
+  WeightConstraint,
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import {
@@ -174,6 +176,26 @@ export class Drawing {
     this.things = this.things.filter(thing => !deletedThings.has(thing));
     this.selection.clear();
     return true;
+  }
+
+  fixedPoint(pointerPos: Position) {
+    const h = this.handleAt(pointerPos, null);
+    if (h) {
+      this.constraints.add(new FixedPointConstraint(h, pointerPos));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  weight(pointerPos: Position) {
+    const h = this.handleAt(pointerPos, null);
+    if (h) {
+      this.constraints.add(new WeightConstraint(h));
+      return true;
+    } else {
+      return false;
+    }
   }
 
   fixedDistance(pointerPos: Position) {
