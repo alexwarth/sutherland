@@ -1,6 +1,8 @@
 export const config = {
   debug: false,
-  flicker: false,
+  flicker: true,
+  baseAlphaMultiplier: 2,
+  lineWidth: 3,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
   masterSideAttacherColor: 'rgb(1,101,252)',
@@ -13,6 +15,10 @@ export const config = {
   kerning: 0.5,
   guideLineColor: 'rgba(255,255,255,.125)',
   statusTimeMillis: 4_000,
+  usePredictedEvents: false,
+  weight: 25,
+  distanceConstraintTextScale: 0.3,
+  distanceConstraintLabelPct: 0.25,
 };
 
 (window as any).config = config;
