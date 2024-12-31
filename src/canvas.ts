@@ -33,7 +33,7 @@ export function setStatus(newStatus: string) {
 
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
-  ctx.lineWidth = 5;
+  ctx.lineWidth = config.lineWidth;
   ctx.lineCap = 'round';
 
   if (status.length > 0) {
@@ -119,8 +119,9 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
     baseAlpha = 0.7;
     multiplier = 0.1;
   }
+  baseAlpha *= config.baseAlphaMultiplier;
   const alpha = config.flicker
     ? Math.random() * multiplier + baseAlpha
     : 0.75 * multiplier + baseAlpha;
-  return `rgba(255, 255, 255, ${alpha})`;
+  return `rgba(255,255,255,${alpha})`;
 }
