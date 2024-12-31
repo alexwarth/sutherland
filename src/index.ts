@@ -1,12 +1,16 @@
 import * as canvas from './canvas';
 import { config } from './config';
-import { pointDiff, Position } from './helpers';
+import { pointDiff, Position, scaleAround } from './helpers';
 import { Drawing } from './Drawing';
-import { Handle, Instance, Thing, Var } from './things';
+import { Handle, Instance, Thing } from './things';
 import * as font from './font';
-import { SizeConstraint } from './constraints';
+import { FixedDistanceConstraint, SizeConstraint } from './constraints';
+import * as NativeEvents from './NativeEvents';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
+
+let pencilHovering = true;
+let pencilDown = false;
 
 const pointer: Position & { down: boolean } = {
   x: Infinity,
@@ -78,6 +82,8 @@ switchToDrawing(drawings[1]);
 // work done on each frame
 
 function onFrame() {
+  processEvents();
+
   if (config.autoSolve) {
     const t0 = performance.now();
     let n = 0;
@@ -96,20 +102,104 @@ function onFrame() {
 
 onFrame();
 
+class Samples {
+  readonly samples: number[] = [];
+
+  constructor() {}
+
+  toString() {
+    if (this.samples.length === 0) {
+      return 'n/a';
+    }
+    const min = Math.min(...this.samples);
+    const avg = this.samples.reduce((x, y) => x + y, 0) / this.samples.length;
+    const max = Math.max(...this.samples);
+    return `${min}..${avg}..${max}`;
+  }
+}
+
+function processEvents() {
+  // const pressure = new Samples();
+  // const altitude = new Samples();
+  for (const e of NativeEvents.getQueuedEvents()) {
+    if (e.type === 'pencil') {
+      onPencilMove(e.position);
+      if (!pencilDown && e.pressure >= 3) {
+        pencilDown = true;
+        onPencilPressed();
+      } else if (e.pressure < 3) {
+        pencilDown = false;
+      }
+      if (e.pressure >= 0.01) {
+        pencilHovering = true;
+      } else if (pencilHovering && e.pressure < 0.01) {
+        pencilHovering = false;
+        onPencilUp();
+      }
+    }
+    // if (e.type === 'pencil') {
+    // canvas.setStatus(
+    //   `${e.type} (${e.position.x.toFixed(2)}, ${e.position.y.toFixed(2)}) ${e.pressure.toFixed(2)} ${e.altitude.toFixed(2)}`
+    // );
+    // pressure.samples.push(e.pressure);
+    // altitude.samples.push(e.altitude);
+    // }
+  }
+  // canvas.setStatus('p=${pressure}, a=${altitude}');
+  // canvas.setStatus('' + NativeEvents.getQueuedEvents().length);
+  // NativeEvents.getQueuedEvents();
+}
+
+function onPencilPressed() {
+  // canvas.setStatus('pencil pressed');
+  moreLines();
+}
+
+function onPencilUp() {
+  endLines();
+}
+
 // rendering
 
 function render() {
   canvas.clear();
 
+  drawText('0123456789', 0.5, { x: 100, y: 100 });
+  drawText('4321', 0.5, { x: innerWidth - 100, y: 100 });
+  drawText('hello', 0.5, { x: 100, y: innerHeight - 100 });
+  drawText('world', 0.5, { x: innerWidth - 100, y: innerHeight - 100 });
+
   if (!drawingInProgress && drawing.isEmpty()) {
     renderInk();
   } else {
     drawing.render(toScreenPosition);
+    renderConstraints();
   }
 
   renderDrawingInProgress();
-  renderCrosshairs();
+  if (pencilHovering) {
+    renderCrosshairs();
+  }
   renderDebugInfo();
+}
+
+function renderConstraints() {
+  drawing.constraints.forEach(c => {
+    if (c instanceof FixedDistanceConstraint) {
+      let e = (c.computeError() * 100).toFixed(0);
+      if (e === '-0') {
+        e = '0';
+      }
+      drawText(
+        e,
+        config.distanceConstraintTextScale,
+        toScreenPosition({
+          x: c.a.x + config.distanceConstraintLabelPct * (c.b.x - c.a.x),
+          y: c.a.y + config.distanceConstraintLabelPct * (c.b.y - c.a.y),
+        })
+      );
+    }
+  });
 }
 
 function renderInk() {
@@ -243,6 +333,16 @@ window.addEventListener('keydown', e => {
         canvas.setStatus('fixed distance');
       }
       break;
+    case '.':
+      if (drawing.fixedPoint(pointer)) {
+        canvas.setStatus('fixed point');
+      }
+      break;
+    case 'W':
+      if (drawing.weight(pointer)) {
+        canvas.setStatus('weight');
+      }
+      break;
     case 'e':
       if (drawing.equalDistance()) {
         canvas.setStatus('equal length');
@@ -347,15 +447,18 @@ canvas.el.addEventListener('pointerdown', e => {
 });
 
 canvas.el.addEventListener('pointermove', e => {
+  // canvas.setStatus(`pm ${(e as any).layerX} ${(e as any).layerY}`);
+
   if (!e.metaKey) {
     delete keysDown['Meta'];
   }
 
+  onPencilMove({ x: (e as any).layerX, y: (e as any).layerY });
+});
+
+function onPencilMove(screenPos: Position) {
   const oldPos = { x: pointer.x, y: pointer.y };
-  ({ x: pointer.x, y: pointer.y } = fromScreenPosition({
-    x: (e as any).layerX,
-    y: (e as any).layerY,
-  }));
+  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(screenPos));
 
   if (
     pointer.down &&
@@ -385,7 +488,7 @@ canvas.el.addEventListener('pointermove', e => {
     const newY = pointer.y - drag.offset.y;
     drag.thing.moveBy(newX - drag.thing.x, newY - drag.thing.y);
   }
-});
+}
 
 canvas.el.addEventListener('pointerup', e => {
   canvas.el.releasePointerCapture(e.pointerId);
@@ -515,30 +618,49 @@ function addLetter(letter: string) {
 }
 
 function write(msg: string, scale = 1) {
+  let lastInstance: Instance | null = null;
+  lettersDo(msg, scale, (letter, x, ls) => {
+    const instance = drawing.addInstance(
+      letter,
+      { x, y: scope.center.y },
+      letter.size * ls
+    )!;
+    drawing.constraints.add(new SizeConstraint(instance, ls));
+    if (lastInstance) {
+      drawing.replaceHandle(instance.attachers[0], lastInstance.attachers[1]);
+    }
+    lastInstance = instance;
+  });
+}
+
+function drawText(text: string, scale: number, pos: Position) {
+  lettersDo(text, scale, (letter, x0, ls) =>
+    letter.render(
+      ({ x, y }) => ({
+        x: x * ls + x0 - scope.center.x + pos.x,
+        y: -y * ls + pos.y,
+      }),
+      1
+    )
+  );
+}
+
+function lettersDo(
+  msg: string,
+  scale: number,
+  fn: (letter: Drawing, x: number, ls: number) => void
+) {
   const letterScale = (l: string) => scale * (l === l.toLowerCase() ? 0.75 : 1);
   const letterWidth = (l: string) =>
     letterScale(l) * config.fontScale * (4 + config.kerning * 2);
   let x =
     scope.center.x - 0.5 * [...msg].map(letterWidth).reduce((a, b) => a + b, 0);
-  const instances: Instance[] = [];
   for (let idx = 0; idx < msg.length; idx++) {
     const l = msg[idx];
     const ls = letterScale(l);
     const letter = font.letterDrawings.get(l.toUpperCase());
     if (letter) {
-      const instance = drawing.addInstance(
-        letter,
-        { x, y: scope.center.y },
-        letter.size * ls
-      )!;
-      drawing.constraints.add(new SizeConstraint(instance, ls));
-      if (instances.length > 0) {
-        drawing.replaceHandle(
-          instance.attachers[0],
-          instances.at(-1)!.attachers[1]
-        );
-      }
-      instances.push(instance);
+      fn(letter, x, ls);
     }
     x += letterWidth(l);
   }
