@@ -1,9 +1,9 @@
 import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import {
+  Position,
   pointDist,
   pointDistToLineSegment,
-  Position,
   rotateAround,
   scaleAround,
   translate,
@@ -236,12 +236,13 @@ export class Instance implements Thing {
     x: number,
     y: number,
     size: number,
+    angle: number,
     parent: Drawing
   ) {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
-    this.angleAndSizeVecX = new Var(size);
-    this.angleAndSizeVecY = new Var(0);
+    this.angleAndSizeVecX = new Var(size * Math.cos(angle));
+    this.angleAndSizeVecY = new Var(angle * Math.sin(angle));
     this.addAttachers(master, parent);
   }
 

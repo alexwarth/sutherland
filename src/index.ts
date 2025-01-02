@@ -164,10 +164,10 @@ function onPencilUp() {
 function render() {
   canvas.clear();
 
-  drawText('0123456789', 0.5, { x: 100, y: 100 });
-  drawText('4321', 0.5, { x: innerWidth - 100, y: 100 });
-  drawText('hello', 0.5, { x: 100, y: innerHeight - 100 });
-  drawText('world', 0.5, { x: innerWidth - 100, y: innerHeight - 100 });
+  // drawText('0123456789', 0.5, { x: 100, y: 100 });
+  // drawText('4321', 0.5, { x: innerWidth - 100, y: 100 });
+  // drawText('hello', 0.5, { x: 100, y: innerHeight - 100 });
+  // drawText('world', 0.5, { x: innerWidth - 100, y: innerHeight - 100 });
 
   if (!drawingInProgress && drawing.isEmpty()) {
     renderInk();
@@ -216,7 +216,7 @@ function renderInk() {
   // K
   line({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
   line({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
-  line({ x: 8 * unit, y: 2 * unit }, { x: 10 * unit, y: -4 * unit });
+  line({ x: 8 * unit, y: 2.4 * unit }, { x: 10 * unit, y: -4 * unit });
 }
 
 function renderDrawingInProgress() {
@@ -290,7 +290,7 @@ window.addEventListener('keydown', e => {
     } else if (keysDown['Shift']) {
       if (!m.isEmpty()) {
         canvas.setStatus('instantiate #' + n);
-        drawing.addInstance(m, pointer, innerHeight / 5 / scope.scale);
+        drawing.addInstance(m, pointer, innerHeight / 5 / scope.scale, 0);
       }
     } else {
       canvas.setStatus('drawing #' + n);
@@ -392,6 +392,12 @@ window.addEventListener('keydown', e => {
       doWithoutMovingPointer(() => {
         scope.centerAt(pointer);
       });
+      break;
+    case 'D':
+      if (drawing.dismember(pointer)) {
+        cleanUp();
+        canvas.setStatus('dismember');
+      }
       break;
   }
 });

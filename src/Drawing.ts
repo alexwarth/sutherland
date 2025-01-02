@@ -56,13 +56,18 @@ export class Drawing {
     }
   }
 
-  addInstance(master: Drawing, { x, y }: Position, size: number) {
+  addInstance(
+    master: Drawing,
+    { x, y }: Position,
+    size: number,
+    angle: number
+  ) {
     if (master === this) {
       // TODO: detect cycles, too!
       return null;
     }
 
-    const instance = new Instance(master, x, y, size, this);
+    const instance = new Instance(master, x, y, size, angle, this);
     this.things.push(instance);
     return instance;
   }
@@ -262,6 +267,61 @@ export class Drawing {
       }
     }
     return ans;
+  }
+
+  dismember(pointerPos: Position) {
+    let ans = false;
+    const things = this.thingsForOperation(pointerPos);
+    for (const thing of things) {
+      if (thing instanceof Instance) {
+        this.inline(thing);
+        ans = true;
+      }
+    }
+    return ans;
+  }
+
+  inline(instance: Instance) {
+    const { things, constraints } = instance.master;
+    const handleMap = new Map<Handle, Handle>();
+    const thingMap = new Map<Thing, Thing>();
+    for (const thing of things) {
+      if (thing instanceof Line) {
+        const line = this.addLine(
+          instance.transform(thing.a),
+          instance.transform(thing.b),
+          thing.isGuide
+        );
+        handleMap.set(thing.a, line.a);
+        handleMap.set(thing.b, line.b);
+      } else if (thing instanceof Arc) {
+        const arc = this.addArc(
+          instance.transform(thing.a),
+          instance.transform(thing.b),
+          instance.transform(thing.c)
+        );
+        handleMap.set(thing.a, arc.a);
+        handleMap.set(thing.b, arc.b);
+        handleMap.set(thing.c, arc.c);
+      } else if (thing instanceof Instance) {
+        // TODO: fix bug w/ angle and scale -- not quite right yet
+        const newInstance = this.addInstance(
+          thing.master,
+          instance.transform(thing),
+          instance.scale * thing.size,
+          instance.angle + thing.angle
+        )!;
+        thingMap.set(thing, newInstance);
+      } else {
+        throw new Error('unsupported thing type: ' + thing.constructor.name);
+      }
+    }
+
+    constraints.forEach(c => {
+      this.constraints.add(c.map(thingMap, handleMap));
+    });
+
+    this.things = this.things.filter(thing => thing !== instance);
   }
 
   snap(pos: Position, dragThing: (Thing & Position) | null) {
