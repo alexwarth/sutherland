@@ -290,7 +290,7 @@ window.addEventListener('keydown', e => {
     } else if (keysDown['Shift']) {
       if (!m.isEmpty()) {
         canvas.setStatus('instantiate #' + n);
-        drawing.addInstance(m, pointer, innerHeight / 5 / scope.scale, 0);
+        drawing.addInstance(m, pointer, (0.5 * m.size) / scope.scale, 0);
       }
     } else {
       canvas.setStatus('drawing #' + n);
