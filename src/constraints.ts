@@ -19,6 +19,11 @@ export abstract class Constraint {
   // override in subclasses like weight constraint
   preRelax(): void {}
 
+  abstract map(
+    thingMap: Map<Thing, Thing>,
+    handleMap: Map<Handle, Handle>
+  ): Constraint;
+
   abstract computeError(): number;
   abstract get signature(): string;
 
@@ -51,6 +56,10 @@ export class FixedPointConstraint extends Constraint {
     this.pos = { x, y };
   }
 
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new FixedPointConstraint(handleMap.get(this.p)!, this.pos);
+  }
+
   private get p() {
     return this.handles[0];
   }
@@ -67,6 +76,13 @@ export class FixedPointConstraint extends Constraint {
 export class HorizontalOrVerticalConstraint extends Constraint {
   constructor(a: Handle, b: Handle) {
     super([], [a, b]);
+  }
+
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new HorizontalOrVerticalConstraint(
+      handleMap.get(this.a)!,
+      handleMap.get(this.b)!
+    );
   }
 
   private get a() {
@@ -99,6 +115,13 @@ export class FixedDistanceConstraint extends Constraint {
     this.distance = pointDist(a, b);
   }
 
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new FixedDistanceConstraint(
+      handleMap.get(this.a)!,
+      handleMap.get(this.b)!
+    );
+  }
+
   get a() {
     return this.handles[0];
   }
@@ -121,6 +144,15 @@ export class FixedDistanceConstraint extends Constraint {
 export class EqualDistanceConstraint extends Constraint {
   constructor(a1: Handle, b1: Handle, a2: Handle, b2: Handle) {
     super([], [a1, b1, a2, b2]);
+  }
+
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new EqualDistanceConstraint(
+      handleMap.get(this.a1)!,
+      handleMap.get(this.b1)!,
+      handleMap.get(this.a2)!,
+      handleMap.get(this.b2)!
+    );
   }
 
   private get a1() {
@@ -153,6 +185,14 @@ export class PointOnLineConstraint extends Constraint {
     super([], [p, a, b]);
   }
 
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new PointOnLineConstraint(
+      handleMap.get(this.p)!,
+      handleMap.get(this.a)!,
+      handleMap.get(this.b)!
+    );
+  }
+
   private get p() {
     return this.handles[0];
   }
@@ -177,6 +217,15 @@ export class PointOnLineConstraint extends Constraint {
 export class PointOnArcConstraint extends Constraint {
   constructor(p: Handle, a: Handle, b: Handle, c: Handle) {
     super([], [p, a, b, c]);
+  }
+
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new PointOnArcConstraint(
+      handleMap.get(this.p)!,
+      handleMap.get(this.a)!,
+      handleMap.get(this.b)!,
+      handleMap.get(this.c)!
+    );
   }
 
   private get p() {
@@ -211,6 +260,14 @@ export class PointInstanceConstraint extends Constraint {
     masterPoint: Handle
   ) {
     super([instance], [instancePoint, masterPoint]);
+  }
+
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new PointInstanceConstraint(
+      handleMap.get(this.instancePoint)!,
+      thingMap.get(this.instance) as Instance,
+      this.masterPoint
+    );
   }
 
   get instancePoint() {
@@ -248,6 +305,13 @@ export class SizeConstraint extends Constraint {
     super([instance], []);
   }
 
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new SizeConstraint(
+      thingMap.get(this.instance) as Instance,
+      this.scale
+    );
+  }
+
   get signature() {
     return `S(${this.instance.id})`;
   }
@@ -263,6 +327,10 @@ export class WeightConstraint extends Constraint {
 
   constructor(a: Handle) {
     super([], [a]);
+  }
+
+  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
+    return new WeightConstraint(handleMap.get(this.a)!);
   }
 
   get a() {
