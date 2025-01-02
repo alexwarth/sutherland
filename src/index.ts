@@ -629,7 +629,8 @@ function write(msg: string, scale = 1) {
     const instance = drawing.addInstance(
       letter,
       { x, y: scope.center.y },
-      letter.size * ls
+      letter.size * ls,
+      0
     )!;
     drawing.constraints.add(new SizeConstraint(instance, ls));
     if (lastInstance) {
