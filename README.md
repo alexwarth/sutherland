@@ -1,13 +1,18 @@
 # sutherland
 
 To run:
+======
 
 ```
 yarn
 vite
 ```
 
+... then point your web browser at  http://localhost:5173/
+(or whatever else vite tells you the URL is)
+
 Controls:
+========
 
 - Drawing, etc.:
   - To **draw lines**, click around while holding down the "meta" key (⌘ or ⊞)
