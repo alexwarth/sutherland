@@ -23,6 +23,7 @@ Controls:
   - To **instantiate a drawing**, press `SHIFT` + one of the digit keys
   - To **rotate an instance**, press `Q` / `W` while pointing at it
   - To **scale an instance**, press `+` / `-` while pointing at it
+  - To **dismember an instance**, press `SHIFT` + `D` while pointing at it
 - Constraints:
   - **horizontal or vertical (HorV)**: point to a line and press `H`
   - **point on line**: drag a point to a line, drop it there
