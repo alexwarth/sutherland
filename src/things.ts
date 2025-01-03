@@ -242,7 +242,7 @@ export class Instance implements Thing {
     this.xVar = new Var(x);
     this.yVar = new Var(y);
     this.angleAndSizeVecX = new Var(size * Math.cos(angle));
-    this.angleAndSizeVecY = new Var(angle * Math.sin(angle));
+    this.angleAndSizeVecY = new Var(size * Math.sin(angle));
     this.addAttachers(master, parent);
   }
 

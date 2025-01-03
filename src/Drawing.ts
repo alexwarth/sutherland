@@ -304,10 +304,9 @@ export class Drawing {
         handleMap.set(thing.b, arc.b);
         handleMap.set(thing.c, arc.c);
       } else if (thing instanceof Instance) {
-        // TODO: fix bug w/ angle and scale -- not quite right yet
         const newInstance = this.addInstance(
           thing.master,
-          instance.transform(thing),
+          instance.transform(thing), // move the center to the right place
           instance.scale * thing.size,
           instance.angle + thing.angle
         )!;
