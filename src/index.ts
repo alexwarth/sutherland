@@ -374,10 +374,10 @@ window.addEventListener('keydown', e => {
       }
       break;
     case 'q':
-      drawing.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
+      drawing.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
       break;
     case 'w':
-      drawing.rotateInstanceAt(pointer, (5 * Math.PI) / 180);
+      drawing.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
       break;
     case 's':
       if (drawing.fullSize(pointer)) {
