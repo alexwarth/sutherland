@@ -19,6 +19,7 @@ import {
   scaleAround,
 } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
+import * as canvas from './canvas';
 
 export class Drawing {
   things: Thing[] = [];
@@ -158,10 +159,12 @@ export class Drawing {
         this.constraints.add(
           new PointOnLineConstraint(handle, thing.a, thing.b)
         );
+        canvas.setStatus('(point on line)');
       } else if (thing instanceof Arc) {
         this.constraints.add(
           new PointOnArcConstraint(handle, thing.a, thing.b, thing.c)
         );
+        canvas.setStatus('(point on arc)');
       }
     }
   }
