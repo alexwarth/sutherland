@@ -19,6 +19,7 @@ export const config = {
   weight: 25,
   distanceConstraintTextScale: 0.3,
   distanceConstraintLabelPct: 0.25,
+  showImplicitConstraints: true,
 };
 
 (window as any).config = config;

@@ -159,12 +159,16 @@ export class Drawing {
         this.constraints.add(
           new PointOnLineConstraint(handle, thing.a, thing.b)
         );
-        canvas.setStatus('(point on line)');
+        if (config.showImplicitConstraints) {
+          canvas.setStatus('(point on line)');
+        }
       } else if (thing instanceof Arc) {
         this.constraints.add(
           new PointOnArcConstraint(handle, thing.a, thing.b, thing.c)
         );
-        canvas.setStatus('(point on arc)');
+        if (config.showImplicitConstraints) {
+          canvas.setStatus('(point on arc)');
+        }
       }
     }
   }
