@@ -1,6 +1,6 @@
 import * as canvas from './canvas';
 import { config } from './config';
-import { pointDiff, Position, scaleAround } from './helpers';
+import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
 import { Handle, Instance, Thing } from './things';
 import * as font from './font';

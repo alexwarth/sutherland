@@ -8,7 +8,7 @@ import {
   scaleAround,
   translate,
 } from './helpers';
-import { Handle, Instance, Thing, Var } from './things';
+import { Handle, Instance, Thing } from './things';
 
 export abstract class Constraint {
   constructor(
