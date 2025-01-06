@@ -322,36 +322,25 @@ window.addEventListener('keydown', e => {
     case 'Backspace':
       if (drawing.delete(pointer)) {
         cleanUp();
-        canvas.setStatus('delete');
         if (drawing.isEmpty()) {
           doWithoutMovingPointer(() => scope.reset());
         }
       }
       break;
     case 'l':
-      if (drawing.fixedDistance(pointer)) {
-        canvas.setStatus('fixed distance');
-      }
+      drawing.fixedDistance(pointer);
       break;
     case '.':
-      if (drawing.fixedPoint(pointer)) {
-        canvas.setStatus('fixed point');
-      }
+      drawing.fixedPoint(pointer);
       break;
     case 'W':
-      if (drawing.weight(pointer)) {
-        canvas.setStatus('weight');
-      }
+      drawing.weight(pointer);
       break;
     case 'e':
-      if (drawing.equalDistance()) {
-        canvas.setStatus('equal length');
-      }
+      drawing.equalDistance();
       break;
     case 'h':
-      if (drawing.horizontalOrVertical(pointer)) {
-        canvas.setStatus('HorV');
-      }
+      drawing.horizontalOrVertical(pointer);
       break;
     case '=':
       if (drawing.resizeInstanceAt(pointer, 1.05)) {
@@ -380,9 +369,7 @@ window.addEventListener('keydown', e => {
       drawing.rotateInstanceAt(pointer, (-5 * Math.PI) / 180);
       break;
     case 's':
-      if (drawing.fullSize(pointer)) {
-        canvas.setStatus('full size');
-      }
+      drawing.fullSize(pointer);
       break;
     case 'A':
       toggleAttacher(pointer);
@@ -396,7 +383,6 @@ window.addEventListener('keydown', e => {
     case 'D':
       if (drawing.dismember(pointer)) {
         cleanUp();
-        canvas.setStatus('dismember');
       }
       break;
   }

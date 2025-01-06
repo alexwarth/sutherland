@@ -183,6 +183,7 @@ export class Drawing {
 
     this.things = this.things.filter(thing => !deletedThings.has(thing));
     this.selection.clear();
+    canvas.setStatus('delete');
     return true;
   }
 
@@ -190,6 +191,7 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new FixedPointConstraint(h, pointerPos));
+      canvas.setStatus('fixed point');
       return true;
     } else {
       return false;
@@ -200,6 +202,7 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new WeightConstraint(h));
+      canvas.setStatus('weight');
       return true;
     } else {
       return false;
@@ -215,6 +218,7 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
+        canvas.setStatus('fixed distance');
         ans = true;
       }
     }
@@ -234,6 +238,7 @@ export class Drawing {
         this.constraints.add(
           new EqualDistanceConstraint(prevLine.a, prevLine.b, thing.a, thing.b)
         );
+        canvas.setStatus('equal length');
         ans = true;
       }
       prevLine = thing;
@@ -253,6 +258,7 @@ export class Drawing {
         this.constraints.add(
           new HorizontalOrVerticalConstraint(thing.a, thing.b)
         );
+        canvas.setStatus('HorV');
         ans = true;
       }
     }
@@ -266,6 +272,7 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Instance) {
         this.constraints.add(new SizeConstraint(thing));
+        canvas.setStatus('full size');
         ans = true;
       }
     }
@@ -278,6 +285,7 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Instance) {
         this.inline(thing);
+        canvas.setStatus('dismember');
         ans = true;
       }
     }
