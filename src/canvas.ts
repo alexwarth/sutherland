@@ -4,6 +4,8 @@ import { easeOutQuint, pointDist, Position } from './helpers';
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
 
+let initialized = false;
+
 export function init(_el: HTMLCanvasElement) {
   el = _el;
   ctx = el.getContext('2d')!;
@@ -21,12 +23,18 @@ export function init(_el: HTMLCanvasElement) {
     el.style.height = oldH + 'px';
     ctx.scale(devicePixelRatio, devicePixelRatio);
   }
+
+  initialized = true;
 }
 
 let status = '';
 let statusTimeMillis = 0;
 
 export function setStatus(newStatus: string) {
+  if (!initialized) {
+    return;
+  }
+
   status = newStatus;
   statusTimeMillis = Date.now();
 }
