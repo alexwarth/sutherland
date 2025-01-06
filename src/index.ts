@@ -445,7 +445,9 @@ canvas.el.addEventListener('pointermove', e => {
     delete keysDown['Meta'];
   }
 
-  onPencilMove({ x: (e as any).layerX, y: (e as any).layerY });
+  if (e.pointerType === 'pen' || e.pointerType === 'mouse') {
+    onPencilMove({ x: (e as any).layerX, y: (e as any).layerY });
+  }
 });
 
 function onPencilMove(screenPos: Position) {
