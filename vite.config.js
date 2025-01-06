@@ -8,4 +8,7 @@ export default defineConfig({
       name: 'sutherland',
     },
   },
+  server: {
+    host: true,
+  }
 });
