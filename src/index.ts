@@ -119,22 +119,30 @@ function processEvents() {
   // const pressure = new Samples();
   // const altitude = new Samples();
   for (const e of NativeEvents.getQueuedEvents()) {
-    if (e.type === 'pencil') {
-      onPencilMove(e.position);
-      if (!pencilDown && e.pressure >= 3) {
-        pencilDown = true;
-        onPencilPressed();
-      } else if (e.pressure < 3) {
-        pencilDown = false;
-      }
-      if (e.pressure >= 0.01) {
-        pencilHovering = true;
-      } else if (pencilHovering && e.pressure < 0.01) {
-        pencilHovering = false;
-        onPencilUp();
-      }
-    } else if (e.type === 'finger' && e.phase === 'began') {
-      canvas.setStatus(`finger down at (${e.position.x}, ${e.position.y})`);
+    switch (e.type) {
+      case 'pencil':
+        onPencilMove(e.position);
+        if (!pencilDown && e.pressure >= 3) {
+          pencilDown = true;
+          onPencilPressed();
+        } else if (e.pressure < 3) {
+          pencilDown = false;
+        }
+        if (e.pressure >= 0.01) {
+          pencilHovering = true;
+        } else if (pencilHovering && e.pressure < 0.01) {
+          pencilHovering = false;
+          onPencilUp();
+        }
+        break;
+      case 'finger':
+        if (e.phase === 'began') {
+          onFingerDown(e.position, e.id);
+        } else if (e.phase === 'moved') {
+          onFingerMove(e.position, e.id);
+        } else if (e.phase === 'ended') {
+          onFingerUp(e.position, e.id);
+        }
     }
     // if (e.type === 'pencil') {
     // canvas.setStatus(
@@ -156,6 +164,24 @@ function onPencilPressed() {
 
 function onPencilUp() {
   endLines();
+}
+
+function onFingerDown(pos: Position, id: number) {
+  canvas.setStatus(
+    `finger ${id} down at (${pos.x.toFixed()}, ${pos.y.toFixed()})`
+  );
+}
+
+function onFingerMove(pos: Position, id: number) {
+  canvas.setStatus(
+    `finger ${id} move to (${pos.x.toFixed()}, ${pos.y.toFixed()})`
+  );
+}
+
+function onFingerUp(pos: Position, id: number) {
+  canvas.setStatus(
+    `finger ${id} up at (${pos.x.toFixed()}, ${pos.y.toFixed()})`
+  );
 }
 
 // rendering
@@ -434,52 +460,54 @@ window.addEventListener('keyup', e => {
   }
 });
 
-canvas.el.addEventListener('pointerdown', e => {
-  canvas.el.setPointerCapture(e.pointerId);
-  e.preventDefault();
-  e.stopPropagation();
+if (!tabletMode) {
+  canvas.el.addEventListener('pointerdown', e => {
+    canvas.el.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
 
-  pointer.down = true;
+    pointer.down = true;
 
-  if (keysDown['Shift']) {
-    drawing.toggleSelections(pointer);
-    return;
-  } else if (keysDown['Meta']) {
-    moreLines();
-    return;
-  } else if (keysDown['a']) {
-    moreArc();
-    return;
-  }
+    if (keysDown['Shift']) {
+      drawing.toggleSelections(pointer);
+      return;
+    } else if (keysDown['Meta']) {
+      moreLines();
+      return;
+    } else if (keysDown['a']) {
+      moreArc();
+      return;
+    }
 
-  drag = null;
+    drag = null;
 
-  const handle = drawing.handleAt(pointer);
-  if (handle) {
-    drag = { thing: handle, offset: { x: 0, y: 0 } };
-    return;
-  }
+    const handle = drawing.handleAt(pointer);
+    if (handle) {
+      drag = { thing: handle, offset: { x: 0, y: 0 } };
+      return;
+    }
 
-  drawing.clearSelection();
-  const thing = drawing.thingAt(pointer);
-  if (thing instanceof Instance) {
-    drag = { thing, offset: pointDiff(pointer, thing) };
-  } else if (thing) {
-    drawing.toggleSelected(thing);
-  }
-});
+    drawing.clearSelection();
+    const thing = drawing.thingAt(pointer);
+    if (thing instanceof Instance) {
+      drag = { thing, offset: pointDiff(pointer, thing) };
+    } else if (thing) {
+      drawing.toggleSelected(thing);
+    }
+  });
 
-canvas.el.addEventListener('pointermove', e => {
-  // canvas.setStatus(`pm ${(e as any).layerX} ${(e as any).layerY}`);
+  canvas.el.addEventListener('pointermove', e => {
+    // canvas.setStatus(`pm ${(e as any).layerX} ${(e as any).layerY}`);
 
-  if (!e.metaKey) {
-    delete keysDown['Meta'];
-  }
+    if (!e.metaKey) {
+      delete keysDown['Meta'];
+    }
 
-  if (e.pointerType === 'pen' || e.pointerType === 'mouse') {
-    onPencilMove({ x: (e as any).layerX, y: (e as any).layerY });
-  }
-});
+    if (e.pointerType === 'pen' || e.pointerType === 'mouse') {
+      onPencilMove({ x: (e as any).layerX, y: (e as any).layerY });
+    }
+  });
+}
 
 function onPencilMove(screenPos: Position) {
   const oldPos = { x: pointer.x, y: pointer.y };
