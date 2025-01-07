@@ -11,16 +11,29 @@ const tabletMode = new URLSearchParams(window.location.search).get('tablet');
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
-const tabletButtons = [
-  { label: '1', scale: 0.5, y1: 0, y2: 0 },
-  { label: '2', scale: 0.5, y1: 0, y2: 0 },
-  { label: '3', scale: 0.5, y1: 0, y2: 0 },
-  { label: '4', scale: 0.5, y1: 0, y2: 0 },
-  { label: 'arc', scale: 0.5, y1: 0, y2: 0 },
-  { label: 'eq', scale: 0.5, y1: 0, y2: 0 },
-  { label: 'del', scale: 0.5, y1: 0, y2: 0 },
-  { label: 'solve', scale: 0.4, y1: 0, y2: 0 },
-];
+const tabletButtons = new Map<
+  string,
+  {
+    label: string;
+    scale: number;
+    y1: number;
+    y2: number;
+    fingerId: number | null;
+  }
+>();
+
+[
+  { label: '1', scale: 0.5 },
+  { label: '2', scale: 0.5 },
+  { label: '3', scale: 0.5 },
+  { label: '4', scale: 0.5 },
+  { label: 'arc', scale: 0.5 },
+  { label: 'eq', scale: 0.5 },
+  { label: 'del', scale: 0.5 },
+  { label: 'solve', scale: 0.4 },
+].forEach(b => {
+  tabletButtons.set(b.label, { ...b, y1: 0, y2: 0, fingerId: null });
+});
 
 let pencilHovering = true;
 let pencilDown = false;
@@ -223,8 +236,9 @@ function renderTabletButtons() {
     );
   }
 
-  const numButtons = tabletButtons.length;
-  tabletButtons.forEach((b, idx) => {
+  const numButtons = tabletButtons.size;
+  let idx = 0;
+  for (const b of tabletButtons.values()) {
     b.y1 = (idx * innerHeight) / numButtons;
     b.y2 = b.y1 + innerHeight / numButtons;
     if (config.tablet.showButtonLines) {
@@ -237,7 +251,8 @@ function renderTabletButtons() {
       x: config.tablet.buttonWidth / 2,
       y: (b.y1 + b.y2) / 2 + b.scale * config.fontScale * 3,
     });
-  });
+    idx++;
+  }
 }
 
 function renderConstraints() {
