@@ -9,7 +9,11 @@ let initialized = false;
 export function init(_el: HTMLCanvasElement) {
   el = _el;
   ctx = el.getContext('2d')!;
+  updateCanvasSize();
+  initialized = true;
+}
 
+function updateCanvasSize() {
   el.width = innerWidth;
   el.height = innerHeight;
 
@@ -23,9 +27,9 @@ export function init(_el: HTMLCanvasElement) {
     el.style.height = oldH + 'px';
     ctx.scale(devicePixelRatio, devicePixelRatio);
   }
-
-  initialized = true;
 }
+
+window.addEventListener('resize', updateCanvasSize);
 
 let status = '';
 let statusTimeMillis = 0;
