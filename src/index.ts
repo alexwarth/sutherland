@@ -9,6 +9,17 @@ import * as NativeEvents from './NativeEvents';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
+const tabletButtons = [
+  { label: '1', scale: 0.5, y1: 0, y2: 0 },
+  { label: '2', scale: 0.5, y1: 0, y2: 0 },
+  { label: '3', scale: 0.5, y1: 0, y2: 0 },
+  { label: '4', scale: 0.5, y1: 0, y2: 0 },
+  { label: 'arc', scale: 0.5, y1: 0, y2: 0 },
+  { label: 'eq', scale: 0.5, y1: 0, y2: 0 },
+  { label: 'del', scale: 0.5, y1: 0, y2: 0 },
+  { label: 'solve', scale: 0.4, y1: 0, y2: 0 },
+];
+
 let pencilHovering = true;
 let pencilDown = false;
 
@@ -102,22 +113,6 @@ function onFrame() {
 
 onFrame();
 
-class Samples {
-  readonly samples: number[] = [];
-
-  constructor() {}
-
-  toString() {
-    if (this.samples.length === 0) {
-      return 'n/a';
-    }
-    const min = Math.min(...this.samples);
-    const avg = this.samples.reduce((x, y) => x + y, 0) / this.samples.length;
-    const max = Math.max(...this.samples);
-    return `${min}..${avg}..${max}`;
-  }
-}
-
 function processEvents() {
   // const pressure = new Samples();
   // const altitude = new Samples();
@@ -136,6 +131,8 @@ function processEvents() {
         pencilHovering = false;
         onPencilUp();
       }
+    } else if (e.type === 'finger' && e.phase === 'began') {
+      canvas.setStatus(`finger down at (${e.position.x}, ${e.position.y})`);
     }
     // if (e.type === 'pencil') {
     // canvas.setStatus(
@@ -180,7 +177,39 @@ function render() {
   if (pencilHovering) {
     renderCrosshairs();
   }
+
+  renderTabletButtons();
+
   renderDebugInfo();
+}
+
+function renderTabletButtons() {
+  if (!config.tablet.on) {
+    return;
+  }
+
+  if (config.tablet.showButtonLines) {
+    canvas.drawLine(
+      { x: config.tablet.buttonWidth, y: 0 },
+      { x: config.tablet.buttonWidth, y: innerHeight }
+    );
+  }
+
+  const numButtons = tabletButtons.length;
+  tabletButtons.forEach((b, idx) => {
+    b.y1 = (idx * innerHeight) / numButtons;
+    b.y2 = b.y1 + innerHeight / numButtons;
+    if (config.tablet.showButtonLines) {
+      canvas.drawLine(
+        { x: 0, y: b.y2 },
+        { x: config.tablet.buttonWidth, y: b.y2 }
+      );
+    }
+    drawText(b.label, b.scale, {
+      x: config.tablet.buttonWidth / 2,
+      y: (b.y1 + b.y2) / 2 + b.scale * config.fontScale * 3,
+    });
+  });
 }
 
 function renderConstraints() {

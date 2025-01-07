@@ -20,6 +20,11 @@ export const config = {
   distanceConstraintTextScale: 0.3,
   distanceConstraintLabelPct: 0.25,
   showImplicitConstraints: false,
+  tablet: {
+    on: false,
+    buttonWidth: 100,
+    showButtonLines: false,
+  },
 };
 
 (window as any).config = config;
