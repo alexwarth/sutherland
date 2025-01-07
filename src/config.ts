@@ -21,7 +21,6 @@ export const config = {
   distanceConstraintLabelPct: 0.25,
   showImplicitConstraints: false,
   tablet: {
-    on: false,
     buttonWidth: 100,
     showButtonLines: false,
   },

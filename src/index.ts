@@ -7,6 +7,8 @@ import * as font from './font';
 import { FixedDistanceConstraint, SizeConstraint } from './constraints';
 import * as NativeEvents from './NativeEvents';
 
+const tabletMode = new URLSearchParams(window.location.search).get('tablet');
+
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
 const tabletButtons = [
@@ -184,7 +186,7 @@ function render() {
 }
 
 function renderTabletButtons() {
-  if (!config.tablet.on) {
+  if (!tabletMode) {
     return;
   }
 
