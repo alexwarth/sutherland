@@ -1,4 +1,5 @@
 import * as canvas from './canvas';
+import scope from './scope';
 import { config } from './config';
 import { pointDiff, Position } from './helpers';
 import { Drawing } from './Drawing';
@@ -50,40 +51,6 @@ let drawingInProgress:
   | null = null;
 let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null =
   null;
-
-// scope
-
-const scope = {
-  center: { x: 0, y: 0 },
-  scale: 1,
-  reset() {
-    this.scale = 1;
-    this.centerAt({ x: 0, y: 0 });
-  },
-  centerAt({ x, y }: Position) {
-    this.center.x = x;
-    this.center.y = y;
-  },
-  setScale(newScale: number) {
-    this.scale = newScale;
-  },
-};
-
-scope.reset();
-
-function toScreenPosition({ x, y }: Position) {
-  return {
-    x: (x - scope.center.x) * scope.scale + innerWidth / 2,
-    y: -(y - scope.center.y) * scope.scale + innerHeight / 2,
-  };
-}
-
-function fromScreenPosition({ x, y }: Position) {
-  return {
-    x: (x - innerWidth / 2) / scope.scale + scope.center.x,
-    y: scope.center.y - (y - innerHeight / 2) / scope.scale,
-  };
-}
 
 // drawings
 
@@ -210,7 +177,7 @@ function render() {
   if (!drawingInProgress && drawing.isEmpty()) {
     renderInk();
   } else {
-    drawing.render(toScreenPosition);
+    drawing.render(scope.toScreenPosition);
     renderConstraints();
   }
 
@@ -265,7 +232,7 @@ function renderConstraints() {
       drawText(
         e,
         config.distanceConstraintTextScale,
-        toScreenPosition({
+        scope.toScreenPosition({
           x: c.a.x + config.distanceConstraintLabelPct * (c.b.x - c.a.x),
           y: c.a.y + config.distanceConstraintLabelPct * (c.b.y - c.a.y),
         })
@@ -277,7 +244,7 @@ function renderConstraints() {
 function renderInk() {
   const unit = innerWidth / 100;
   const line = (p1: Position, p2: Position) =>
-    canvas.drawLine(p1, p2, canvas.flickeryWhite(), toScreenPosition);
+    canvas.drawLine(p1, p2, canvas.flickeryWhite(), scope.toScreenPosition);
 
   // I
   line({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
@@ -298,7 +265,7 @@ function renderDrawingInProgress() {
         drawingInProgress.start,
         pointer,
         canvas.flickeryWhite(),
-        toScreenPosition
+        scope.toScreenPosition
       );
       break;
     case 'arc':
@@ -308,7 +275,7 @@ function renderDrawingInProgress() {
           drawingInProgress.positions[1],
           pointer,
           canvas.flickeryWhite(),
-          toScreenPosition
+          scope.toScreenPosition
         );
       }
       break;
@@ -316,7 +283,7 @@ function renderDrawingInProgress() {
 }
 
 function renderCrosshairs() {
-  const tPointer = toScreenPosition(pointer);
+  const tPointer = scope.toScreenPosition(pointer);
   canvas.drawLine(
     { x: tPointer.x - config.crosshairsSize, y: tPointer.y },
     { x: tPointer.x + config.crosshairsSize, y: tPointer.y },
@@ -331,7 +298,7 @@ function renderCrosshairs() {
 
 function renderDebugInfo() {
   if (config.debug) {
-    const origin = toScreenPosition({ x: 0, y: 0 });
+    const origin = scope.toScreenPosition({ x: 0, y: 0 });
     canvas.drawLine(
       { x: 0, y: origin.y },
       { x: innerWidth, y: origin.y },
@@ -343,7 +310,7 @@ function renderDebugInfo() {
       config.axisColor
     );
     canvas.drawText(
-      toScreenPosition(pointer),
+      scope.toScreenPosition(pointer),
       `(${pointer.x.toFixed(0)}, ${pointer.y.toFixed(0)})`
     );
   }
@@ -526,7 +493,7 @@ if (!tabletMode) {
 
 function onPencilMove(screenPos: Position) {
   const oldPos = { x: pointer.x, y: pointer.y };
-  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(screenPos));
+  ({ x: pointer.x, y: pointer.y } = scope.fromScreenPosition(screenPos));
 
   if (
     pointer.down &&
@@ -599,9 +566,9 @@ function moreArc() {
 }
 
 function doWithoutMovingPointer(fn: () => void) {
-  const pointerScreenPos = toScreenPosition(pointer);
+  const pointerScreenPos = scope.toScreenPosition(pointer);
   fn();
-  ({ x: pointer.x, y: pointer.y } = fromScreenPosition(pointerScreenPos));
+  ({ x: pointer.x, y: pointer.y } = scope.fromScreenPosition(pointerScreenPos));
 }
 
 function toggleAttacher(pointerPos: Position) {
