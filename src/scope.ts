@@ -8,6 +8,14 @@ export default {
     scale = 1;
     this.centerAt({ x: 0, y: 0 });
   },
+
+  get scale() {
+    return scale;
+  },
+  set scale(newScale: number) {
+    scale = newScale;
+  },
+
   centerAt({ x, y }: Position) {
     center.x = x;
     center.y = y;
@@ -18,12 +26,7 @@ export default {
   set center(newCenter) {
     this.centerAt(newCenter);
   },
-  get scale() {
-    return scale;
-  },
-  set scale(newScale: number) {
-    scale = newScale;
-  },
+
   toScreenPosition({ x, y }: Position) {
     return {
       x: (x - center.x) * scale + innerWidth / 2,
