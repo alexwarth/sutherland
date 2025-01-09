@@ -1,25 +1,21 @@
-import { config } from './config';
+import config from './config';
+import scope from './scope';
+import * as canvas from './canvas';
+import { lettersDo } from './font';
 import {
   EqualDistanceConstraint,
   FixedDistanceConstraint,
-  SizeConstraint,
+  FixedPointConstraint,
   HorizontalOrVerticalConstraint,
   PointInstanceConstraint,
   PointOnArcConstraint,
   PointOnLineConstraint,
-  FixedPointConstraint,
+  SizeConstraint,
   WeightConstraint,
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
-import {
-  Position,
-  boundingBox,
-  pointDist,
-  rotateAround,
-  scaleAround,
-} from './helpers';
+import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing, Var } from './things';
-import * as canvas from './canvas';
 
 export class Drawing {
   things: Thing[] = [];
@@ -42,8 +38,8 @@ export class Drawing {
     return this.constraints.relax(this.getVars());
   }
 
-  render(transform: (pos: Position) => Position, depth = 0) {
-    this.things.forEach(t => {
+  render(transform = scope.toScreenPosition, depth = 0) {
+    this.things.forEach((t) => {
       if (t instanceof Instance) {
         t.render(this.selection, transform, depth + 1);
       } else {
@@ -51,18 +47,29 @@ export class Drawing {
       }
     });
     if (depth === 0) {
-      this.attachers.forEach(h =>
-        h.render(this.selection, transform, config.masterSideAttacherColor)
+      this.attachers.forEach((h) =>
+        h.render(this.selection, transform, config.masterSideAttacherColor),
       );
+      this.constraints.forEach((c) => {
+        if (c instanceof FixedDistanceConstraint) {
+          let e = (c.computeError() * 100).toFixed();
+          if (e === '-0') {
+            e = '0';
+          }
+          this.drawText(
+            e,
+            config.distanceConstraintTextScale,
+            transform({
+              x: c.a.x + config.distanceConstraintLabelPct * (c.b.x - c.a.x),
+              y: c.a.y + config.distanceConstraintLabelPct * (c.b.y - c.a.y),
+            }),
+          );
+        }
+      });
     }
   }
 
-  addInstance(
-    master: Drawing,
-    { x, y }: Position,
-    size: number,
-    angle: number
-  ) {
+  addInstance(master: Drawing, { x, y }: Position, size: number, angle: number) {
     if (master === this) {
       // TODO: detect cycles, too!
       return null;
@@ -110,7 +117,7 @@ export class Drawing {
       this.mergeAndAddImplicitConstraints(line.b);
     }
     for (const thing of this.things) {
-      thing.forEachHandle(h => {
+      thing.forEachHandle((h) => {
         if (h !== line.a && h !== line.b && line.contains(h)) {
           this.constraints.add(new PointOnLineConstraint(h, line.a, line.b));
         }
@@ -125,15 +132,11 @@ export class Drawing {
     this.mergeAndAddImplicitConstraints(arc.c);
     this.mergeAndAddImplicitConstraints(arc.a);
     this.mergeAndAddImplicitConstraints(arc.b);
-    this.constraints.add(
-      new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c)
-    );
+    this.constraints.add(new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c));
     for (const thing of this.things) {
-      thing.forEachHandle(h => {
+      thing.forEachHandle((h) => {
         if (h !== arc.a && h !== arc.b && h !== arc.c && arc.contains(h)) {
-          this.constraints.add(
-            new PointOnArcConstraint(h, arc.a, arc.b, arc.c)
-          );
+          this.constraints.add(new PointOnArcConstraint(h, arc.a, arc.b, arc.c));
         }
       });
     }
@@ -144,7 +147,7 @@ export class Drawing {
   mergeAndAddImplicitConstraints(handle: Handle) {
     const thingsToIgnore = new Set<Thing>();
     for (const thing of this.things) {
-      thing.forEachHandle(h => {
+      thing.forEachHandle((h) => {
         if (h !== handle && h.contains(handle)) {
           this.replaceHandle(h, handle);
           thingsToIgnore.add(thing);
@@ -156,16 +159,12 @@ export class Drawing {
       if (thingsToIgnore.has(thing) || !thing.contains(handle)) {
         // skip
       } else if (thing instanceof Line) {
-        this.constraints.add(
-          new PointOnLineConstraint(handle, thing.a, thing.b)
-        );
+        this.constraints.add(new PointOnLineConstraint(handle, thing.a, thing.b));
         if (config.showImplicitConstraints) {
           canvas.setStatus('(point on line)');
         }
       } else if (thing instanceof Arc) {
-        this.constraints.add(
-          new PointOnArcConstraint(handle, thing.a, thing.b, thing.c)
-        );
+        this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
         if (config.showImplicitConstraints) {
           canvas.setStatus('(point on arc)');
         }
@@ -174,8 +173,8 @@ export class Drawing {
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
-    this.things.forEach(thing => thing.replaceHandle(oldHandle, newHandle));
-    this.attachers = this.attachers.map(a => (a === oldHandle ? newHandle : a));
+    this.things.forEach((thing) => thing.replaceHandle(oldHandle, newHandle));
+    this.attachers = this.attachers.map((a) => (a === oldHandle ? newHandle : a));
     this.constraints.replaceHandle(oldHandle, newHandle);
   }
 
@@ -185,9 +184,8 @@ export class Drawing {
       return false;
     }
 
-    this.things = this.things.filter(thing => !deletedThings.has(thing));
+    this.things = this.things.filter((thing) => !deletedThings.has(thing));
     this.selection.clear();
-    canvas.setStatus('delete');
     return true;
   }
 
@@ -195,7 +193,6 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new FixedPointConstraint(h, pointerPos));
-      canvas.setStatus('fixed point');
       return true;
     } else {
       return false;
@@ -206,7 +203,6 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new WeightConstraint(h));
-      canvas.setStatus('weight');
       return true;
     } else {
       return false;
@@ -222,7 +218,6 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Line) {
         this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
-        canvas.setStatus('fixed distance');
         ans = true;
       }
     }
@@ -239,10 +234,7 @@ export class Drawing {
       }
 
       if (prevLine) {
-        this.constraints.add(
-          new EqualDistanceConstraint(prevLine.a, prevLine.b, thing.a, thing.b)
-        );
-        canvas.setStatus('equal length');
+        this.constraints.add(new EqualDistanceConstraint(prevLine.a, prevLine.b, thing.a, thing.b));
         ans = true;
       }
       prevLine = thing;
@@ -259,10 +251,7 @@ export class Drawing {
     let ans = false;
     for (const thing of things) {
       if (thing instanceof Line) {
-        this.constraints.add(
-          new HorizontalOrVerticalConstraint(thing.a, thing.b)
-        );
-        canvas.setStatus('HorV');
+        this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
         ans = true;
       }
     }
@@ -276,7 +265,6 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Instance) {
         this.constraints.add(new SizeConstraint(thing));
-        canvas.setStatus('full size');
         ans = true;
       }
     }
@@ -289,7 +277,6 @@ export class Drawing {
     for (const thing of things) {
       if (thing instanceof Instance) {
         this.inline(thing);
-        canvas.setStatus('dismember');
         ans = true;
       }
     }
@@ -305,7 +292,7 @@ export class Drawing {
         const line = this.addLine(
           instance.transform(thing.a),
           instance.transform(thing.b),
-          thing.isGuide
+          thing.isGuide,
         );
         handleMap.set(thing.a, line.a);
         handleMap.set(thing.b, line.b);
@@ -313,7 +300,7 @@ export class Drawing {
         const arc = this.addArc(
           instance.transform(thing.a),
           instance.transform(thing.b),
-          instance.transform(thing.c)
+          instance.transform(thing.c),
         );
         handleMap.set(thing.a, arc.a);
         handleMap.set(thing.b, arc.b);
@@ -323,7 +310,7 @@ export class Drawing {
           thing.master,
           instance.transform(thing), // move the center to the right place
           instance.scale * thing.size,
-          instance.angle + thing.angle
+          instance.angle + thing.angle,
         )!;
         thingMap.set(thing, newInstance);
       } else {
@@ -331,14 +318,14 @@ export class Drawing {
       }
     }
 
-    constraints.forEach(c => {
+    constraints.forEach((c) => {
       this.constraints.add(c.map(thingMap, handleMap));
     });
 
-    this.things = this.things.filter(thing => thing !== instance);
+    this.things = this.things.filter((thing) => thing !== instance);
   }
 
-  snap(pos: Position, dragThing: (Thing & Position) | null) {
+  snap(pos: Position, dragThing?: Thing & Position) {
     const handle = this.handleAt(pos, dragThing);
     if (handle) {
       pos.x = handle.x;
@@ -349,19 +336,15 @@ export class Drawing {
     const constraints = new ConstraintSet();
     const snappedPos = new Handle(pos);
     const vars = new Set<Var>();
-    snappedPos.forEachVar(v => vars.add(v));
+    snappedPos.forEachVar((v) => vars.add(v));
 
     for (const thing of this.things) {
       if (this.selection.has(thing) || !thing.contains(pos)) {
         // ignore
       } else if (thing instanceof Line) {
-        constraints.add(
-          new PointOnLineConstraint(snappedPos, thing.a, thing.b)
-        );
+        constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
       } else if (thing instanceof Arc) {
-        constraints.add(
-          new PointOnArcConstraint(snappedPos, thing.a, thing.b, thing.c)
-        );
+        constraints.add(new PointOnArcConstraint(snappedPos, thing.a, thing.b, thing.c));
       }
     }
 
@@ -372,14 +355,11 @@ export class Drawing {
     pos.y = snappedPos.y;
   }
 
-  handleAt(
-    pos: Position,
-    dragThing: (Thing & Position) | null = null
-  ): Handle | null {
+  handleAt(pos: Position, dragThing: (Thing & Position) | null = null): Handle | null {
     let minDist = Infinity;
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {
-      thing.forEachHandle(h => {
+      thing.forEachHandle((h) => {
         if (h !== dragThing && h.contains(pos)) {
           const dist = pointDist(pos, h);
           if (dist < minDist) {
@@ -427,7 +407,7 @@ export class Drawing {
     this.selection.clear();
   }
 
-  moveSelection(dx: number, dy: number) {
+  moveSelectionBy(dx: number, dy: number) {
     for (const h of this.getHandles(this.selection)) {
       h.x += dx;
       h.y += dy;
@@ -482,7 +462,7 @@ export class Drawing {
   private getHandles(things: Iterable<Thing>) {
     const handles = new Set<Handle>();
     for (const thing of things) {
-      thing.forEachHandle(h => handles.add(h));
+      thing.forEachHandle((h) => handles.add(h));
     }
     return handles;
   }
@@ -491,7 +471,7 @@ export class Drawing {
     let handle: Handle;
     let idx = 0;
     for (const thing of this.things) {
-      thing.forEachHandle(h => {
+      thing.forEachHandle((h) => {
         if (idx++ === handleIdx) {
           handle = h;
         }
@@ -513,7 +493,7 @@ export class Drawing {
   private getVars() {
     const vars = new Set<Var>();
     for (const thing of this.things) {
-      thing.forEachVar(v => vars.add(v));
+      thing.forEachVar((v) => vars.add(v));
     }
     return vars;
   }
@@ -529,17 +509,36 @@ export class Drawing {
 
   onAttacherRemoved(m: Drawing, a: Handle) {
     // remove point-instance constraint and instance-side attacher from every instance of m
-    this.constraints.forEach(constraint => {
-      if (
-        constraint instanceof PointInstanceConstraint &&
-        constraint.masterPoint === a
-      ) {
+    this.constraints.forEach((constraint) => {
+      if (constraint instanceof PointInstanceConstraint && constraint.masterPoint === a) {
         const { instance, instancePoint } = constraint;
-        instance.attachers = instance.attachers.filter(
-          h => h !== instancePoint
-        );
+        instance.attachers = instance.attachers.filter((h) => h !== instancePoint);
         this.constraints.remove(constraint);
       }
     });
+  }
+
+  write(msg: string, scale = 1) {
+    let lastInstance: Instance | null = null;
+    lettersDo(msg, scale, (letter, x, ls) => {
+      const instance = this.addInstance(letter, { x, y: scope.center.y }, letter.size * ls, 0)!;
+      this.constraints.add(new SizeConstraint(instance, ls));
+      if (lastInstance) {
+        this.replaceHandle(instance.attachers[0], lastInstance.attachers[1]);
+      }
+      lastInstance = instance;
+    });
+  }
+
+  drawText(text: string, scale: number, pos: Position) {
+    lettersDo(text, scale, (letter, x0, ls) =>
+      letter.render(
+        ({ x, y }) => ({
+          x: x * ls + x0 - scope.center.x + pos.x,
+          y: -y * ls + pos.y,
+        }),
+        1,
+      ),
+    );
   }
 }

@@ -1,7 +1,9 @@
+import config from './config';
+import scope from './scope';
 import { Drawing } from './Drawing';
-import rawJson from './yoshikis-font-data.json';
 import { Position } from './helpers';
-import { config } from './config';
+
+import rawJson from './yoshikis-font-data.json';
 
 type Command =
   | { command: 'line'; start: Position; end: Position }
@@ -13,11 +15,7 @@ type Command =
       end: number;
     };
 
-export function applyTo(
-  drawing: Drawing,
-  commands: Command[],
-  scale = config.fontScale
-) {
+export function applyTo(drawing: Drawing, commands: Command[], scale = config.fontScale) {
   for (const command of commands) {
     switch (command.command) {
       case 'line': {
@@ -32,7 +30,7 @@ export function applyTo(
         drawing.addArc(
           pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
-          center
+          center,
         );
         break;
       }
@@ -43,9 +41,7 @@ export function applyTo(
   }
 }
 
-export const commandsByLetter = new Map<string, Command[]>(
-  rawJson.data.values as any
-);
+const commandsByLetter = new Map<string, Command[]>(rawJson.data.values as any);
 
 // console.log(commandsByLetter);
 
@@ -56,10 +52,29 @@ for (const [letter, commands] of commandsByLetter) {
   const line = drawing.addLine(
     { x: -config.kerning * config.fontScale, y: 0 },
     { x: (4 + config.kerning) * config.fontScale, y: 0 },
-    true
+    true,
   );
   drawing.attachers.push(line.a, line.b);
   letterDrawings.set(letter, drawing);
+}
+
+export function lettersDo(
+  msg: string,
+  scale: number,
+  fn: (letter: Drawing, x: number, ls: number) => void,
+) {
+  const letterScale = (l: string) => scale * (l === l.toLowerCase() ? 0.75 : 1);
+  const letterWidth = (l: string) => letterScale(l) * config.fontScale * (4 + config.kerning * 2);
+  let x = scope.center.x - 0.5 * [...msg].map(letterWidth).reduce((a, b) => a + b, 0);
+  for (let idx = 0; idx < msg.length; idx++) {
+    const l = msg[idx];
+    const ls = letterScale(l);
+    const letter = letterDrawings.get(l.toUpperCase());
+    if (letter) {
+      fn(letter, x, ls);
+    }
+    x += letterWidth(l);
+  }
 }
 
 // helpers
@@ -68,11 +83,7 @@ function pointTimes({ x, y }: Position, m: number): Position {
   return { x: x * m, y: y * m };
 }
 
-function pointPlusPolarVector(
-  { x, y }: Position,
-  theta: number,
-  dist: number
-): Position {
+function pointPlusPolarVector({ x, y }: Position, theta: number, dist: number): Position {
   return {
     x: x + dist * Math.cos(theta),
     y: y + dist * Math.sin(theta),

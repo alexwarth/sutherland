@@ -1,4 +1,4 @@
-export const config = {
+const config = {
   debug: false,
   flicker: true,
   baseAlphaMultiplier: 2,
@@ -27,3 +27,5 @@ export const config = {
 };
 
 (window as any).config = config;
+
+export default config;

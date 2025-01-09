@@ -1,4 +1,4 @@
-import { config } from './config';
+import config from './config';
 import { easeOutQuint, pointDist, Position } from './helpers';
 
 export let el: HTMLCanvasElement;
@@ -58,11 +58,7 @@ export function clear() {
     } else {
       const alpha = 1 - easeOutQuint(statusAgeMillis / config.statusTimeMillis);
       ctx.fillStyle = `rgba(255,222,33,${alpha})`;
-      ctx.fillText(
-        status,
-        (innerWidth - width) / 2,
-        innerHeight - fontSizeInPixels
-      );
+      ctx.fillText(status, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
     }
   }
 }
@@ -75,7 +71,7 @@ export function drawLine(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = identity
+  transform = identity,
 ) {
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
@@ -91,7 +87,7 @@ export function drawArc(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
-  transform = identity
+  transform = identity,
 ) {
   const ta = transform(a);
   const tb = transform(b);
@@ -108,7 +104,7 @@ export function drawText(
   pos: Position,
   text: string,
   fillStyle = flickeryWhite(),
-  transform = identity
+  transform = identity,
 ) {
   ctx.fillStyle = fillStyle;
   const fontSizeInPixels = 12;

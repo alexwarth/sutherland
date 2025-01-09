@@ -6,7 +6,7 @@
 // For now, the rest of the system only works in terms of finger and pencil.
 // Other types of touches are synthesized into pencil/finger touches.
 
-import { config } from './config';
+import config from './config';
 import type { Position } from './helpers';
 
 export type TouchId = number; // Stable identity shared by the series of events that make up a single touch

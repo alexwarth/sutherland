@@ -1,4 +1,4 @@
-import { config } from './config';
+import config from './config';
 import { Constraint } from './constraints';
 import { Handle, Var } from './things';
 
@@ -7,16 +7,14 @@ export default class ConstraintSet {
 
   add(constraint: Constraint) {
     const sig = constraint.signature;
-    if (!this.constraints.find(c => c.signature === sig)) {
+    if (!this.constraints.find((c) => c.signature === sig)) {
       // only add if it's not a duplicate
       this.constraints.push(constraint);
     }
   }
 
   remove(constraintToRemove: Constraint) {
-    this.constraints = this.constraints.filter(
-      constraint => constraint !== constraintToRemove
-    );
+    this.constraints = this.constraints.filter((constraint) => constraint !== constraintToRemove);
   }
 
   clear() {
@@ -26,7 +24,7 @@ export default class ConstraintSet {
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
     const constraints = this.constraints;
     this.constraints = [];
-    constraints.forEach(constraint => {
+    constraints.forEach((constraint) => {
       constraint.replaceHandle(oldHandle, newHandle);
       this.add(constraint);
     });
@@ -37,7 +35,7 @@ export default class ConstraintSet {
   }
 
   relax(vars: Set<Var>) {
-    this.forEach(c => c.preRelax());
+    this.forEach((c) => c.preRelax());
     let ans = false;
     for (const v of vars) {
       ans = this.relaxWithVar(v) || ans;
@@ -47,8 +45,7 @@ export default class ConstraintSet {
 
   private relaxWithVar(v: Var) {
     const origValue = v.value;
-    const errorToBeat =
-      this.computeError() - config.minWorthwhileErrorImprovement;
+    const errorToBeat = this.computeError() - config.minWorthwhileErrorImprovement;
 
     v.value = origValue + 1;
     const ePlus1 = this.computeError();
@@ -70,7 +67,7 @@ export default class ConstraintSet {
 
   private computeError() {
     return this.constraints
-      .map(c => Math.pow(c.computeError(), 2))
+      .map((c) => Math.pow(c.computeError(), 2))
       .reduce((e1, e2) => e1 + e2, 0);
   }
 }
