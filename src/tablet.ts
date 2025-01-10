@@ -3,11 +3,10 @@ import scope from './scope';
 import * as app from './app';
 import * as NativeEvents from './NativeEvents';
 import { drawLine, setStatus } from './canvas';
-import { pointDiff, Position } from './helpers';
+import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
 // TODO:
-// * zoom
 // * instance scale
 // * instance rotate
 
@@ -218,6 +217,10 @@ function onButtonClick(b: Button) {
 }
 
 function onFingerMove(pos: Position, id: number) {
+  if (app.drawing().isEmpty()) {
+    return;
+  }
+
   const oldPos = fingerPositions.get(id);
   if (!oldPos) {
     return;
@@ -225,12 +228,30 @@ function onFingerMove(pos: Position, id: number) {
 
   fingerPositions.set(id, pos);
 
-  if (app.drawing().isEmpty()) {
+  if (fingerPositions.size === 1) {
+    const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
+    app.panBy(d.x, d.y);
     return;
   }
 
-  const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
-  app.panBy(d.x, d.y);
+  if (fingerPositions.size !== 2) {
+    return;
+  }
+
+  let otherFingerPos: Position | null = null;
+  for (const [otherId, otherPos] of fingerPositions.entries()) {
+    if (otherId !== id) {
+      otherFingerPos = otherPos;
+      break;
+    }
+  }
+  if (!otherFingerPos) {
+    throw new Error('nothing makes sense anymore!');
+  }
+
+  const oldDist = pointDist(otherFingerPos, oldPos);
+  const newDist = pointDist(otherFingerPos, pos);
+  scope.scale *= newDist / oldDist;
 }
 
 function onFingerUp(pos: Position, id: number) {
