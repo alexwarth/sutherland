@@ -2,9 +2,12 @@ import config from './config';
 import scope from './scope';
 import * as app from './app';
 import * as NativeEvents from './NativeEvents';
-import { drawLine, setStatus } from './canvas';
+import { drawLine } from './canvas';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
+
+// TODO: rethink selections, add an eq button
+// TODO: add UI for attachers here
 
 class Button {
   y1 = 0;
@@ -100,13 +103,11 @@ function processEvents() {
 let pencilClickInProgress = false;
 let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
 
-function onPencilDown(pos: Position, pressure: number) {
-  app.pen.moveToScreenPos(pos);
+function onPencilDown(screenPos: Position, pressure: number) {
+  app.pen.moveToScreenPos(screenPos);
 }
 
 function onPencilMove(screenPos: Position, pressure: number) {
-  // setStatus(`pencil moved to (${pos.x.toFixed()}, ${pos.y.toFixed()}) p=${pressure.toFixed(2)}`);
-
   const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(screenPos);
   app.pen.snapPos(drag?.thing);
@@ -125,7 +126,7 @@ function onPencilMove(screenPos: Position, pressure: number) {
 
   if (!pencilClickInProgress && pressure > 3) {
     pencilClickInProgress = true;
-    onPencilClick(pos);
+    onPencilClick();
   }
   if (pencilClickInProgress && pressure < 1) {
     endDragEtc();
@@ -142,9 +143,7 @@ function endDragEtc() {
   app.clearSelection();
 }
 
-function onPencilClick(pos: Position) {
-  // setStatus(`click at (${pos.x.toFixed()}, ${pos.y.toFixed()})`);
-
+function onPencilClick() {
   const handle = app.handle();
   if (handle) {
     drag = { thing: handle, offset: { x: 0, y: 0 } };
@@ -160,26 +159,25 @@ function onPencilClick(pos: Position) {
   }
 }
 
-function onPencilUp(pos: Position) {
-  // setStatus(`pencil up at (${pos.x.toFixed()}, ${pos.y.toFixed()})`);
+function onPencilUp(screenPos: Position) {
   app.pen.clearPos();
   endDragEtc();
   app.endLines();
   app.endArc();
 }
 
-const fingerPositions = new Map<number, Position>();
+const fingerScreenPositions = new Map<number, Position>();
 
-function onFingerDown(pos: Position, id: number) {
+function onFingerDown(screenPos: Position, id: number) {
   for (const b of buttons.values()) {
-    if (b.contains(pos)) {
+    if (b.contains(screenPos)) {
       b.fingerId = id;
       onButtonClick(b);
       return;
     }
   }
 
-  fingerPositions.set(id, pos);
+  fingerScreenPositions.set(id, screenPos);
 }
 
 function onButtonClick(b: Button) {
@@ -213,69 +211,62 @@ function onButtonClick(b: Button) {
   }
 }
 
-function onFingerMove(pos: Position, id: number) {
-  if (app.drawing().isEmpty()) {
+function onFingerMove(screenPos: Position, id: number) {
+  if (app.drawing().isEmpty() || fingerScreenPositions.size > 2) {
     return;
   }
 
-  const oldPos = fingerPositions.get(id);
-  if (!oldPos) {
+  const oldScreenPos = fingerScreenPositions.get(id);
+  if (!oldScreenPos) {
     return;
   }
 
-  fingerPositions.set(id, pos);
+  fingerScreenPositions.set(id, screenPos);
 
-  if (fingerPositions.size === 1 && !app.pen.pos) {
-    const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
-    app.panBy(d.x, d.y);
+  const pos = scope.fromScreenPosition(screenPos);
+  const oldPos = scope.fromScreenPosition(oldScreenPos);
+
+  if (!app.pen.pos) {
+    app.panBy(pos.x - oldPos.x, pos.y - oldPos.y);
+  }
+
+  if (fingerScreenPositions.size !== 2) {
     return;
   }
 
-  if (fingerPositions.size !== 2) {
-    return;
-  }
-
-  let otherFingerPos: Position | null = null;
-  for (const [otherId, otherPos] of fingerPositions.entries()) {
+  let otherFingerScreenPos: Position | null = null;
+  for (const [otherId, otherScreenPos] of fingerScreenPositions.entries()) {
     if (otherId !== id) {
-      otherFingerPos = otherPos;
+      otherFingerScreenPos = otherScreenPos;
       break;
     }
   }
-  if (!otherFingerPos) {
-    throw new Error('nothing makes sense anymore!');
+  if (!otherFingerScreenPos) {
+    throw new Error('bruh?!');
   }
 
-  if (!app.instance() && !app.pen.pos) {
-    const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
-    app.panBy(d.x, d.y);
-  }
+  const otherFingerPos = scope.fromScreenPosition(otherFingerScreenPos);
 
-  const oldDist = pointDist(
-    scope.fromScreenPosition(otherFingerPos),
-    scope.fromScreenPosition(oldPos),
-  );
-  const newDist = pointDist(
-    scope.fromScreenPosition(otherFingerPos),
-    scope.fromScreenPosition(pos),
-  );
+  const oldDist = pointDist(otherFingerPos, oldPos);
+  const newDist = pointDist(otherFingerPos, pos);
   const m = newDist / oldDist;
+
+  const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
+  const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
+
   if (!app.scaleInstanceBy(m) && !app.pen.pos) {
     scope.scale *= m;
   }
 
-  const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
-  const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
-  app.rotateInstanceBy(oldAngle - newAngle);
+  app.rotateInstanceBy(newAngle - oldAngle);
 }
 
-function onFingerUp(pos: Position, id: number) {
-  // setStatus(`finger ${id} up at (${pos.x.toFixed()}, ${pos.y.toFixed()})`);
+function onFingerUp(screenPos: Position, id: number) {
   for (const b of buttons.values()) {
     if (b.fingerId === id) {
       b.fingerId = null;
     }
   }
 
-  fingerPositions.delete(id);
+  fingerScreenPositions.delete(id);
 }
