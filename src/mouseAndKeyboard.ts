@@ -141,6 +141,7 @@ function onPointerDown(e: PointerEvent) {
   e.stopPropagation();
 
   app.pen.moveToScreenPos(e);
+  app.pen.snapPos();
   penDown = true;
 
   if (keysDown['Shift']) {
