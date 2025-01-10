@@ -1,4 +1,5 @@
 import config from './config';
+import scope from './scope';
 import * as app from './app';
 import * as NativeEvents from './NativeEvents';
 import { drawLine, setStatus } from './canvas';
@@ -6,7 +7,6 @@ import { pointDiff, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
 // TODO:
-// * pan
 // * zoom
 // * instance scale
 // * instance rotate
@@ -173,6 +173,8 @@ function onPencilUp(pos: Position) {
   app.endArc();
 }
 
+const fingerPositions = new Map<number, Position>();
+
 function onFingerDown(pos: Position, id: number) {
   for (const b of buttons.values()) {
     if (b.contains(pos)) {
@@ -181,7 +183,8 @@ function onFingerDown(pos: Position, id: number) {
       return;
     }
   }
-  // setStatus(`finger ${id} down at (${pos.x.toFixed()}, ${pos.y.toFixed()})`);
+
+  fingerPositions.set(id, pos);
 }
 
 function onButtonClick(b: Button) {
@@ -215,7 +218,19 @@ function onButtonClick(b: Button) {
 }
 
 function onFingerMove(pos: Position, id: number) {
-  // setStatus(`finger ${id} move to (${pos.x.toFixed()}, ${pos.y.toFixed()})`);
+  const oldPos = fingerPositions.get(id);
+  if (!oldPos) {
+    return;
+  }
+
+  fingerPositions.set(id, pos);
+
+  if (app.drawing().isEmpty()) {
+    return;
+  }
+
+  const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
+  app.panBy(d.x, d.y);
 }
 
 function onFingerUp(pos: Position, id: number) {
@@ -225,4 +240,6 @@ function onFingerUp(pos: Position, id: number) {
       b.fingerId = null;
     }
   }
+
+  fingerPositions.delete(id);
 }
