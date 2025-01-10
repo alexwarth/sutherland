@@ -6,10 +6,6 @@ import { drawLine, setStatus } from './canvas';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
-// TODO:
-// * instance scale
-// * instance rotate
-
 class Button {
   y1 = 0;
   y2 = 0;
@@ -190,6 +186,7 @@ function onButtonClick(b: Button) {
   switch (b.label) {
     case 'clear':
       app.drawing().clear();
+      scope.reset();
       break;
     case '1':
     case '2':
@@ -228,7 +225,7 @@ function onFingerMove(pos: Position, id: number) {
 
   fingerPositions.set(id, pos);
 
-  if (fingerPositions.size === 1) {
+  if (fingerPositions.size === 1 && !app.pen.pos) {
     const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
     app.panBy(d.x, d.y);
     return;
@@ -249,9 +246,27 @@ function onFingerMove(pos: Position, id: number) {
     throw new Error('nothing makes sense anymore!');
   }
 
-  const oldDist = pointDist(otherFingerPos, oldPos);
-  const newDist = pointDist(otherFingerPos, pos);
-  scope.scale *= newDist / oldDist;
+  if (!app.instance() && !app.pen.pos) {
+    const d = pointDiff(scope.fromScreenPosition(pos), scope.fromScreenPosition(oldPos));
+    app.panBy(d.x, d.y);
+  }
+
+  const oldDist = pointDist(
+    scope.fromScreenPosition(otherFingerPos),
+    scope.fromScreenPosition(oldPos),
+  );
+  const newDist = pointDist(
+    scope.fromScreenPosition(otherFingerPos),
+    scope.fromScreenPosition(pos),
+  );
+  const m = newDist / oldDist;
+  if (!app.scaleInstanceBy(m) && !app.pen.pos) {
+    scope.scale *= m;
+  }
+
+  const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
+  const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
+  app.rotateInstanceBy(oldAngle - newAngle);
 }
 
 function onFingerUp(pos: Position, id: number) {
