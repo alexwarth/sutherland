@@ -5,6 +5,13 @@ import { drawLine, setStatus } from './canvas';
 import { pointDiff, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
+// TODO:
+// * clear
+// * pan
+// * zoom
+// * instance scale
+// * instance rotate
+
 class Button {
   y1 = 0;
   y2 = 0;
