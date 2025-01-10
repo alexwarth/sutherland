@@ -6,7 +6,6 @@ import { pointDiff, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
 // TODO:
-// * clear
 // * pan
 // * zoom
 // * instance scale
@@ -187,6 +186,9 @@ function onFingerDown(pos: Position, id: number) {
 
 function onButtonClick(b: Button) {
   switch (b.label) {
+    case 'clear':
+      app.drawing().clear();
+      break;
     case '1':
     case '2':
     case '3':
