@@ -2,12 +2,12 @@ import config from './config';
 import scope from './scope';
 import * as app from './app';
 import * as NativeEvents from './NativeEvents';
-import { drawLine } from './canvas';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: rethink selections, add an eq button
-// TODO: add UI for attachers here
+// TODO: add MOVE button
+// TODO: add EQ button
+// TODO: nix selections?
 
 class Button {
   leftX = 0;
