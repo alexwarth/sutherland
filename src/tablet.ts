@@ -13,12 +13,10 @@ class Button {
   leftX = 0;
   topY = 0;
   height: number;
+  scale = 0.4;
   fingerId: number | null = null;
 
-  constructor(
-    readonly label: string,
-    readonly scale: number,
-  ) {
+  constructor(readonly label: string) {
     this.height = config.fontScale * 8;
   }
 
@@ -43,24 +41,26 @@ class Button {
   }
 }
 
-const solveButton = new Button('solve', 0.4);
+const solveButton = new Button('solve');
 const col1 = [
-  new Button('1', 0.5),
-  new Button('2', 0.5),
-  new Button('line', 0.4),
-  new Button('horv', 0.5),
-  new Button('dism', 0.5),
-  new Button('del', 0.5),
+  new Button('1'),
+  new Button('2'),
+  new Button('line'),
+  new Button('move'),
+  new Button('horv'),
+  new Button('dism'),
+  new Button('del'),
   solveButton,
 ];
 const col2 = [
-  new Button('3', 0.5),
-  new Button('4', 0.5),
-  new Button('arc', 0.5),
-  new Button('fix', 0.5),
-  new Button('att', 0.5),
-  new Button('clear', 0.4),
-  new Button('auto', 0.5),
+  new Button('3'),
+  new Button('4'),
+  new Button('arc'),
+  new Button('eq'),
+  new Button('fix'),
+  new Button('att'),
+  new Button('clear'),
+  new Button('auto'),
 ];
 const col3 = [];
 const allButtons = [...col1, ...col2, ...col3];
