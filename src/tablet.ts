@@ -10,17 +10,32 @@ import { Handle, Instance, Thing } from './things';
 // TODO: add UI for attachers here
 
 class Button {
-  y1 = 0;
-  y2 = 0;
+  leftX = 0;
+  topY = 0;
+  height: number;
   fingerId: number | null = null;
 
   constructor(
     readonly label: string,
     readonly scale: number,
-  ) {}
+  ) {
+    this.height = config.fontScale * 8;
+  }
 
   contains({ x, y }: Position) {
-    return x < config.tablet.buttonWidth && this.y1 <= y && y < this.y2;
+    return (
+      this.leftX <= x &&
+      x < this.leftX + config.tablet.buttonWidth &&
+      this.topY <= y &&
+      y < this.topY + this.height
+    );
+  }
+
+  render() {
+    app.drawing().drawText(this.label, this.scale, {
+      x: this.leftX + config.tablet.buttonWidth / 2,
+      y: this.topY + this.height / 2 + this.scale * config.fontScale * 3,
+    });
   }
 
   get isDown() {
@@ -28,51 +43,46 @@ class Button {
   }
 }
 
-const buttons = new Map<string, Button>();
+const solveButton = new Button('solve', 0.4);
+const buttonsOnLeft = [
+  new Button('1', 0.5),
+  new Button('2', 0.5),
+  new Button('3', 0.5),
+  new Button('4', 0.5),
+  new Button('line', 0.4),
+  new Button('arc', 0.5),
+  new Button('horv', 0.5),
+  new Button('fix', 0.5),
+  new Button('del', 0.5),
+  solveButton,
+];
+const buttonsOnRight = [new Button('clear', 0.4)];
+const allButtons = [...buttonsOnLeft, ...buttonsOnRight];
 
 export function init() {
-  [
-    new Button('clear', 0.4),
-    new Button('1', 0.5),
-    new Button('2', 0.5),
-    new Button('3', 0.5),
-    new Button('4', 0.5),
-    new Button('line', 0.4),
-    new Button('arc', 0.5),
-    new Button('horv', 0.5),
-    new Button('fix', 0.5),
-    new Button('del', 0.5),
-    new Button('solve', 0.4),
-  ].forEach((b) => buttons.set(b.label, b));
+  // no op
 }
 
 export function onFrame() {
   processEvents();
-  if (buttons.get('solve')?.fingerId) {
+  if (solveButton.isDown) {
     app.solve();
   }
 }
 
 export function render() {
-  if (config.tablet.showButtonLines) {
-    drawLine(
-      { x: config.tablet.buttonWidth, y: 0 },
-      { x: config.tablet.buttonWidth, y: innerHeight },
-    );
+  layOutButtonColumn(0, buttonsOnLeft);
+  layOutButtonColumn(innerWidth - config.tablet.buttonWidth, buttonsOnRight);
+  for (const b of allButtons) {
+    b.render();
   }
+}
 
-  const numButtons = buttons.size;
+function layOutButtonColumn(leftX: number, buttons: Button[]) {
   let idx = 0;
-  for (const b of buttons.values()) {
-    b.y1 = (idx * innerHeight) / numButtons;
-    b.y2 = b.y1 + innerHeight / numButtons;
-    if (config.tablet.showButtonLines) {
-      drawLine({ x: 0, y: b.y2 }, { x: config.tablet.buttonWidth, y: b.y2 });
-    }
-    app.drawing().drawText(b.label, b.scale, {
-      x: config.tablet.buttonWidth / 2,
-      y: (b.y1 + b.y2) / 2 + b.scale * config.fontScale * 3,
-    });
+  for (const b of buttons) {
+    b.leftX = leftX;
+    b.topY = idx * b.height;
     idx++;
   }
 }
@@ -170,7 +180,7 @@ function onPencilUp(screenPos: Position) {
 const fingerScreenPositions = new Map<number, Position>();
 
 function onFingerDown(screenPos: Position, id: number) {
-  for (const b of buttons.values()) {
+  for (const b of allButtons) {
     if (b.contains(screenPos)) {
       b.fingerId = id;
       onButtonClick(b);
@@ -266,7 +276,7 @@ function onFingerMove(screenPos: Position, id: number) {
 }
 
 function onFingerUp(screenPos: Position, id: number) {
-  for (const b of buttons.values()) {
+  for (const b of allButtons) {
     if (b.fingerId === id) {
       b.fingerId = null;
     }

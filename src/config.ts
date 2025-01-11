@@ -22,7 +22,6 @@ const config = {
   showImplicitConstraints: false,
   tablet: {
     buttonWidth: 100,
-    showButtonLines: false,
   },
 };
 
