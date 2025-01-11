@@ -44,20 +44,22 @@ class Button {
 }
 
 const solveButton = new Button('solve', 0.4);
-const buttonsOnLeft = [
+const col1 = [
   new Button('1', 0.5),
   new Button('2', 0.5),
-  new Button('3', 0.5),
-  new Button('4', 0.5),
   new Button('line', 0.4),
-  new Button('arc', 0.5),
   new Button('horv', 0.5),
-  new Button('fix', 0.5),
   new Button('del', 0.5),
   solveButton,
 ];
-const buttonsOnRight = [new Button('clear', 0.4)];
-const allButtons = [...buttonsOnLeft, ...buttonsOnRight];
+const col2 = [
+  new Button('3', 0.5),
+  new Button('4', 0.5),
+  new Button('arc', 0.5),
+  new Button('fix', 0.5),
+];
+const col3 = [new Button('clear', 0.4)];
+const allButtons = [...col1, ...col2, ...col3];
 
 export function init() {
   // no op
@@ -71,8 +73,9 @@ export function onFrame() {
 }
 
 export function render() {
-  layOutButtonColumn(0, buttonsOnLeft);
-  layOutButtonColumn(innerWidth - config.tablet.buttonWidth, buttonsOnRight);
+  layOutButtonColumn(0, col1);
+  layOutButtonColumn(config.tablet.buttonWidth, col2);
+  layOutButtonColumn(innerWidth - config.tablet.buttonWidth, col3);
   for (const b of allButtons) {
     b.render();
   }
