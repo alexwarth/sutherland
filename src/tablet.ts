@@ -5,7 +5,6 @@ import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: add MOVE button
 // TODO: add EQ button
 // TODO: nix selections?
 
@@ -162,19 +161,7 @@ function endDragEtc() {
 }
 
 function onPencilClick() {
-  const handle = app.handle();
-  if (handle) {
-    drag = { thing: handle, offset: { x: 0, y: 0 } };
-    return;
-  }
-
-  app.clearSelection();
-  const thing = app.thing();
-  if (thing instanceof Instance) {
-    drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
-  } else if (thing) {
-    app.toggleSelected(thing);
-  }
+  // no op (now done w/ MOVE button)
 }
 
 function onPencilUp(screenPos: Position) {
@@ -219,6 +206,19 @@ function onButtonClick(b: Button) {
       break;
     case 'arc':
       app.moreArc();
+      break;
+    case 'move':
+      const handle = app.handle();
+      if (handle) {
+        drag = { thing: handle, offset: { x: 0, y: 0 } };
+        break;
+      }
+      const thing = app.thing();
+      if (thing instanceof Instance) {
+        drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
+      } else if (thing) {
+        app.toggleSelected(thing);
+      }
       break;
     case 'horv':
       app.horizontalOrVertical();
