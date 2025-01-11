@@ -40,7 +40,7 @@ export function init() {
     new Button('line', 0.4),
     new Button('arc', 0.5),
     new Button('horv', 0.5),
-    new Button('dist', 0.5),
+    new Button('fix', 0.5),
     new Button('del', 0.5),
     new Button('solve', 0.4),
   ].forEach((b) => buttons.set(b.label, b));
@@ -206,8 +206,8 @@ function onButtonClick(b: Button) {
     case 'horv':
       app.horizontalOrVertical();
       break;
-    case 'dist':
-      app.fixedDistance();
+    case 'fix':
+      app.fixedPoint() || app.fixedDistance();
       break;
     case 'del':
       app.del();

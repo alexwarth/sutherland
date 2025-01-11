@@ -281,6 +281,9 @@ export function fixedDistance() {
 export function fixedPoint() {
   if (pen.pos && _drawing.fixedPoint(pen.pos)) {
     setStatus('fixed point');
+    return true;
+  } else {
+    return false;
   }
 }
 
