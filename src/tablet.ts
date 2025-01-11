@@ -57,8 +57,9 @@ const col2 = [
   new Button('4', 0.5),
   new Button('arc', 0.5),
   new Button('fix', 0.5),
+  new Button('clear', 0.4),
 ];
-const col3 = [new Button('clear', 0.4)];
+const col3 = [];
 const allButtons = [...col1, ...col2, ...col3];
 
 export function init() {
