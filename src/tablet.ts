@@ -49,6 +49,7 @@ const col1 = [
   new Button('2', 0.5),
   new Button('line', 0.4),
   new Button('horv', 0.5),
+  new Button('dism', 0.5),
   new Button('del', 0.5),
   solveButton,
 ];
@@ -57,7 +58,9 @@ const col2 = [
   new Button('4', 0.5),
   new Button('arc', 0.5),
   new Button('fix', 0.5),
+  new Button('att', 0.5),
   new Button('clear', 0.4),
+  new Button('auto', 0.5),
 ];
 const col3 = [];
 const allButtons = [...col1, ...col2, ...col3];
@@ -223,8 +226,17 @@ function onButtonClick(b: Button) {
     case 'fix':
       app.fixedPoint() || app.fixedDistance();
       break;
+    case 'dism':
+      app.dismember();
+      break;
+    case 'att':
+      app.toggleAttacher();
+      break;
     case 'del':
       app.del();
+      break;
+    case 'auto':
+      app.toggleAutoSolve();
       break;
   }
 }
