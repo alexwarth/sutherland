@@ -262,6 +262,11 @@ export function solve() {
   }
 }
 
+export function toggleAutoSolve() {
+  config.autoSolve = !config.autoSolve;
+  setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
+}
+
 export function del() {
   if (pen.pos && _drawing.delete(pen.pos)) {
     setStatus('delete');

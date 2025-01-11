@@ -50,8 +50,7 @@ function onKeyDown(e: KeyboardEvent) {
       setStatus(`debug ${config.debug ? 'on' : 'off'}`);
       return;
     case 'S':
-      config.autoSolve = !config.autoSolve;
-      setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
+      app.toggleAutoSolve();
       return;
   }
 
