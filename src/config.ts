@@ -2,7 +2,7 @@ const config = {
   debug: false,
   flicker: true,
   baseAlphaMultiplier: 2,
-  lineWidth: 3,
+  lineWidth: 3.5,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
   masterSideAttacherColor: 'rgb(1,101,252)',
