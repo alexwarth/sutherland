@@ -1,5 +1,5 @@
 import config from './config';
-import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
+import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
 import {
@@ -78,7 +78,7 @@ export class Handle implements Thing {
     if (config.debug) {
       drawText(transform(this), `(${this.x.toFixed(0)},${this.y.toFixed(0)})`);
     }
-    drawLine(this, this, color, transform);
+    drawPoint(this, color, transform);
   }
 
   forEachHandle(fn: (h: Handle) => void) {
@@ -329,11 +329,13 @@ export class Instance implements Thing {
     this.master.render((pos) => transform(this.transform(pos)), depth + 1);
     if (depth === 1) {
       this.attachers.forEach((attacher, idx) => {
+        const tAttacher = transform(attacher);
         drawLine(
           transform(this.transform(this.master.attachers[idx])),
-          transform(attacher),
+          tAttacher,
           config.instanceSideAttacherColor,
         );
+        drawPoint(tAttacher, config.instanceSideAttacherColor);
       });
     }
   }
