@@ -4,7 +4,7 @@ import { drawArc, drawLine, drawText, flickeryWhite, setStatus } from './canvas'
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
 import { Position } from './helpers';
-import { Handle, Instance, Thing } from './things';
+import { Handle, Instance, Line, Thing } from './things';
 
 // ---------- pen ----------
 
@@ -248,6 +248,11 @@ export function handle() {
 
 export function thing() {
   return pen.pos ? _drawing.thingAt(pen.pos) : null;
+}
+
+export function line() {
+  const t = thing();
+  return t instanceof Line ? t : null;
 }
 
 export function instance() {

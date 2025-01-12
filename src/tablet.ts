@@ -3,9 +3,9 @@ import scope from './scope';
 import * as app from './app';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
-import { Handle, Instance, Thing } from './things';
-
-// TODO: implement EQ button
+import { Handle, Instance, Line, Thing } from './things';
+import { setStatus } from './canvas';
+import { EqualDistanceConstraint } from './constraints';
 
 class Button {
   leftX = 0;
@@ -122,6 +122,7 @@ function processEvents() {
 
 let pencilClickInProgress = false;
 let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
+let line: Line | null = null; // for EQ
 
 function onPencilDown(screenPos: Position, pressure: number) {
   app.pen.moveToScreenPos(screenPos);
@@ -189,7 +190,7 @@ function onFingerDown(screenPos: Position, id: number) {
 }
 
 function onButtonClick(b: Button) {
-  switch (b.label) {
+  switch (b.label.toLowerCase()) {
     case 'clear':
       app.drawing().clear();
       scope.reset();
@@ -221,6 +222,20 @@ function onButtonClick(b: Button) {
         drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
       } else if (thing) {
         app.toggleSelected(thing);
+      }
+      break;
+    case 'eq':
+      if (!line) {
+        line = app.line();
+        setStatus('selected line');
+        break;
+      }
+      const otherLine = app.line();
+      if (otherLine) {
+        app
+          .drawing()
+          .constraints.add(new EqualDistanceConstraint(line.a, line.b, otherLine.a, otherLine.b));
+        setStatus('equal length');
       }
       break;
     case 'horv':
