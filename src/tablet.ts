@@ -43,24 +43,24 @@ const solveButton = new Button('SOLVE');
 const col1 = [
   new Button('1'),
   new Button('2'),
+  new Button('3'),
   new Button('LINE'),
   new Button('MOVE'),
   new Button('HORV'),
   new Button('weight'),
   new Button('DISM'),
-  new Button(''),
   new Button('DEL'),
   solveButton,
 ];
 const col2 = [
   new Button('3'),
   new Button('4'),
+  new Button('6'),
   new Button('ARC'),
   new Button('EQ'),
   new Button('FIX'),
   new Button(''),
   new Button('ATT'),
-  new Button(''),
   new Button('CLEAR'),
   new Button('AUTO'),
 ];
