@@ -5,14 +5,13 @@ import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Thing } from './things';
 
-// TODO: add EQ button
-// TODO: nix selections?
+// TODO: implement EQ button
 
 class Button {
   leftX = 0;
   topY = 0;
   height: number;
-  scale = 0.4;
+  scale = 0.35;
   fingerId: number | null = null;
 
   constructor(readonly label: string) {
@@ -40,26 +39,30 @@ class Button {
   }
 }
 
-const solveButton = new Button('solve');
+const solveButton = new Button('SOLVE');
 const col1 = [
   new Button('1'),
   new Button('2'),
-  new Button('line'),
-  new Button('move'),
-  new Button('horv'),
-  new Button('dism'),
-  new Button('del'),
+  new Button('LINE'),
+  new Button('MOVE'),
+  new Button('HORV'),
+  new Button('weight'),
+  new Button('DISM'),
+  new Button(''),
+  new Button('DEL'),
   solveButton,
 ];
 const col2 = [
   new Button('3'),
   new Button('4'),
-  new Button('arc'),
-  new Button('eq'),
-  new Button('fix'),
-  new Button('att'),
-  new Button('clear'),
-  new Button('auto'),
+  new Button('ARC'),
+  new Button('EQ'),
+  new Button('FIX'),
+  new Button(''),
+  new Button('ATT'),
+  new Button(''),
+  new Button('CLEAR'),
+  new Button('AUTO'),
 ];
 const col3 = [];
 const allButtons = [...col1, ...col2, ...col3];
@@ -225,6 +228,9 @@ function onButtonClick(b: Button) {
       break;
     case 'fix':
       app.fixedPoint() || app.fixedDistance();
+      break;
+    case 'weight':
+      app.weight();
       break;
     case 'dism':
       app.dismember();
