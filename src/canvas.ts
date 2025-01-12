@@ -67,12 +67,28 @@ function identity(pos: Position) {
   return pos;
 }
 
+export function drawPoint(p: Position, strokeStyle = flickeryWhite(), transform = identity) {
+  const oldLineWidth = ctx.lineWidth;
+  ctx.lineWidth *= 2;
+  ctx.strokeStyle = strokeStyle;
+  ctx.beginPath();
+  const tp = transform(p);
+  ctx.moveTo(tp.x, tp.y);
+  ctx.lineTo(tp.x, tp.y);
+  ctx.stroke();
+  ctx.lineWidth = oldLineWidth;
+}
+
 export function drawLine(
   a: Position,
   b: Position,
   strokeStyle = flickeryWhite(),
   transform = identity,
 ) {
+  const oldLineWidth = ctx.lineWidth;
+  if (a.x === b.x && a.y === b.y) {
+    ctx.lineWidth *= 2;
+  }
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
   const ta = transform(a);
@@ -80,6 +96,7 @@ export function drawLine(
   ctx.moveTo(ta.x, ta.y);
   ctx.lineTo(tb.x, tb.y);
   ctx.stroke();
+  ctx.lineWidth = oldLineWidth;
 }
 
 export function drawArc(
