@@ -63,7 +63,7 @@ export function lettersDo(
   scale: number,
   fn: (letter: Drawing, x: number, ls: number) => void,
 ) {
-  const letterScale = (l: string) => scale * (l === l.toLowerCase() ? 0.75 : 1);
+  const letterScale = (l: string) => scale * (l === l.toUpperCase() ? 1 : 0.75);
   const letterWidth = (l: string) => letterScale(l) * config.fontScale * (4 + config.kerning * 2);
   let x = scope.center.x - 0.5 * [...msg].map(letterWidth).reduce((a, b) => a + b, 0);
   for (let idx = 0; idx < msg.length; idx++) {
