@@ -1,5 +1,5 @@
 import config from './config';
-import { easeOutQuint, pointDist, Position } from './helpers';
+import { easeOutQuint, pointDist, Position, TAU } from './helpers';
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
@@ -67,16 +67,12 @@ function identity(pos: Position) {
   return pos;
 }
 
-export function drawPoint(p: Position, strokeStyle = flickeryWhite(), transform = identity) {
-  const oldLineWidth = ctx.lineWidth;
-  ctx.lineWidth *= 2;
-  ctx.strokeStyle = strokeStyle;
-  ctx.beginPath();
+export function drawPoint(p: Position, fillStyle = flickeryWhite(), transform = identity) {
   const tp = transform(p);
-  ctx.moveTo(tp.x, tp.y);
-  ctx.lineTo(tp.x, tp.y);
-  ctx.stroke();
-  ctx.lineWidth = oldLineWidth;
+  ctx.fillStyle = fillStyle;
+  ctx.beginPath();
+  ctx.arc(tp.x, tp.y, ctx.lineWidth * 2, 0, TAU);
+  ctx.fill();
 }
 
 export function drawLine(
