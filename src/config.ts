@@ -5,7 +5,7 @@ const config = {
   lineWidth: 3.5,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
-  masterSideAttacherColor: 'rgb(1,101,252)',
+  masterSideAttacherColor: 'rgb(255,165,0)',
   instanceSideAttacherColor: 'rgb(255,222,33)',
   axisColor: 'rgba(255,222,33,0.125)',
   handleRadius: 5,
