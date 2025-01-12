@@ -47,7 +47,7 @@ const col1 = [
   new Button('LINE'),
   new Button('MOVE'),
   new Button('HORV'),
-  new Button('weight'),
+  new Button('SIZE'),
   new Button('DISM'),
   new Button('DEL'),
   solveButton,
@@ -59,7 +59,7 @@ const col2 = [
   new Button('ARC'),
   new Button('EQ'),
   new Button('FIX'),
-  new Button(''),
+  new Button('weight'),
   new Button('ATT'),
   new Button('CLEAR'),
   new Button('AUTO'),
@@ -234,6 +234,9 @@ function onButtonClick(b: Button) {
       break;
     case 'fix':
       app.fixedPoint() || app.fixedDistance();
+      break;
+    case 'size':
+      app.fullSize();
       break;
     case 'weight':
       app.weight();
