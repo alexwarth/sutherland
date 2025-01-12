@@ -53,8 +53,8 @@ const col1 = [
   solveButton,
 ];
 const col2 = [
-  new Button('3'),
   new Button('4'),
+  new Button('5'),
   new Button('6'),
   new Button('ARC'),
   new Button('EQ'),
