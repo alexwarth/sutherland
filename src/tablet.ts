@@ -201,6 +201,7 @@ function onButtonClick(b: Button) {
     case '4':
       if (app.pen.pos) {
         app.instantiate(b.label);
+        move();
       } else {
         app.switchToDrawing(b.label);
       }
@@ -212,17 +213,7 @@ function onButtonClick(b: Button) {
       app.moreArc();
       break;
     case 'move':
-      const handle = app.handle();
-      if (handle) {
-        drag = { thing: handle, offset: { x: 0, y: 0 } };
-        break;
-      }
-      const thing = app.thing();
-      if (thing instanceof Instance) {
-        drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
-      } else if (thing) {
-        app.toggleSelected(thing);
-      }
+      move();
       break;
     case 'eq':
       if (!line) {
@@ -259,6 +250,21 @@ function onButtonClick(b: Button) {
     case 'auto':
       app.toggleAutoSolve();
       break;
+  }
+}
+
+function move() {
+  const handle = app.handle();
+  if (handle) {
+    drag = { thing: handle, offset: { x: 0, y: 0 } };
+    return;
+  }
+
+  const thing = app.thing();
+  if (thing instanceof Instance) {
+    drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
+  } else if (thing) {
+    app.toggleSelected(thing);
   }
 }
 
