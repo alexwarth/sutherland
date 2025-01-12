@@ -64,7 +64,7 @@ const col2 = [
   new Button('CLEAR'),
   new Button('AUTO'),
 ];
-const col3 = [];
+const col3 = [new Button('reload')];
 const allButtons = [...col1, ...col2, ...col3];
 
 export function init() {
@@ -249,6 +249,9 @@ function onButtonClick(b: Button) {
       break;
     case 'auto':
       app.toggleAutoSolve();
+      break;
+    case 'reload':
+      location.reload();
       break;
   }
 }
