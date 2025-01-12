@@ -127,12 +127,13 @@ export class Line implements Thing {
   }
 
   render(selection: Set<Thing>, transform: Transform) {
-    drawLine(
-      this.a,
-      this.b,
-      this.isGuide ? config.guideLineColor : flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
-      transform,
-    );
+    if (this.isGuide && !config.showGuideLines) {
+      return;
+    }
+    const style = this.isGuide
+      ? config.guideLineColor
+      : flickeryWhite(selection.has(this) ? 'bold' : 'normal');
+    drawLine(this.a, this.b, style, transform);
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
