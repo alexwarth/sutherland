@@ -190,21 +190,21 @@ function onFingerDown(screenPos: Position, id: number) {
 }
 
 function onButtonClick(b: Button) {
-  switch (b.label.toLowerCase()) {
+  const label = b.label.toLowerCase();
+  if ('1' <= label && label <= '9') {
+    if (app.pen.pos) {
+      app.instantiate(b.label);
+      move();
+    } else {
+      app.switchToDrawing(b.label);
+    }
+    return;
+  }
+
+  switch (label) {
     case 'clear':
       app.drawing().clear();
       scope.reset();
-      break;
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-      if (app.pen.pos) {
-        app.instantiate(b.label);
-        move();
-      } else {
-        app.switchToDrawing(b.label);
-      }
       break;
     case 'line':
       app.moreLines();
