@@ -39,13 +39,14 @@ class Button {
   }
 }
 
+const moveButton = new Button('MOVE');
 const solveButton = new Button('SOLVE');
 const col1 = [
   new Button('1'),
   new Button('2'),
   new Button('3'),
   new Button('LINE'),
-  new Button('MOVE'),
+  moveButton,
   new Button('HORV'),
   new Button('SIZE'),
   new Button('DISM'),
@@ -126,6 +127,9 @@ let line: Line | null = null; // for EQ
 
 function onPencilDown(screenPos: Position, pressure: number) {
   app.pen.moveToScreenPos(screenPos);
+  if (moveButton.isDown) {
+    move();
+  }
 }
 
 function onPencilMove(screenPos: Position, pressure: number) {
