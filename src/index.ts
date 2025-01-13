@@ -22,3 +22,5 @@ function onFrame() {
 }
 
 onFrame();
+
+(window as any).app = app;
