@@ -110,9 +110,9 @@ export class Drawing {
     return true;
   }
 
-  addLine(aPos: Position, bPos: Position, isGuide = false) {
+  addLine(aPos: Position, bPos: Position, isGuide = false, snap = true) {
     const line = new Line(aPos, bPos, isGuide);
-    if (!isGuide) {
+    if (!isGuide && snap) {
       this.mergeAndAddImplicitConstraints(line.a);
       this.mergeAndAddImplicitConstraints(line.b);
     }
@@ -127,11 +127,13 @@ export class Drawing {
     return line;
   }
 
-  addArc(aPos: Position, bPos: Position, cPos: Position) {
+  addArc(aPos: Position, bPos: Position, cPos: Position, snap = true) {
     const arc = new Arc(aPos, bPos, cPos);
-    this.mergeAndAddImplicitConstraints(arc.c);
-    this.mergeAndAddImplicitConstraints(arc.a);
-    this.mergeAndAddImplicitConstraints(arc.b);
+    if (snap) {
+      this.mergeAndAddImplicitConstraints(arc.c);
+      this.mergeAndAddImplicitConstraints(arc.a);
+      this.mergeAndAddImplicitConstraints(arc.b);
+    }
     this.constraints.add(new EqualDistanceConstraint(arc.a, arc.c, arc.b, arc.c));
     for (const thing of this.things) {
       thing.forEachHandle((h) => {

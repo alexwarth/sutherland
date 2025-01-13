@@ -21,7 +21,7 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config.fo
       case 'line': {
         const start = pointTimes(command.start, scale);
         const end = pointTimes(command.end, scale);
-        drawing.addLine(start, end);
+        drawing.addLine(start, end, false, false);
         break;
       }
       case 'arc': {
@@ -31,6 +31,7 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config.fo
           pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
           center,
+          false,
         );
         break;
       }
