@@ -1,7 +1,7 @@
 const config = {
   debug: false,
   flicker: true,
-  baseAlphaMultiplier: 2,
+  baseAlphaMultiplier: 1.5,
   lineWidth: 3.5,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
