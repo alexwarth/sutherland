@@ -7,6 +7,9 @@ import { Handle, Instance, Line, Thing } from './things';
 import { setStatus } from './canvas';
 import { EqualDistanceConstraint } from './constraints';
 
+// TODO: stop using selection to move non-instances
+// (every Thing should move the same way)
+
 class Button {
   leftX = 0;
   topY = 0;
