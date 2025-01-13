@@ -324,6 +324,10 @@ function onFingerMove(screenPos: Position, id: number) {
   const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
   const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
 
+  if (app.instance() && !drag) {
+    move();
+  }
+
   if (!app.scaleInstanceBy(m) && !app.pen.pos) {
     scope.scale *= m;
   }
