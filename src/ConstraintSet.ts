@@ -1,4 +1,5 @@
 import config from './config';
+import scope from './scope';
 import { Constraint } from './constraints';
 import { Handle, Var } from './things';
 
@@ -36,28 +37,30 @@ export default class ConstraintSet {
 
   relax(vars: Set<Var>) {
     this.forEach((c) => c.preRelax());
+    const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
+    const minWorthwhileErrorImprovement = config.minWorthwhileErrorImprovement * epsilon;
     let ans = false;
     for (const v of vars) {
-      ans = this.relaxWithVar(v) || ans;
+      ans = this.relaxWithVar(v, epsilon, minWorthwhileErrorImprovement) || ans;
     }
     return ans;
   }
 
-  private relaxWithVar(v: Var) {
+  private relaxWithVar(v: Var, epsilon: number, minWorthwhileErrorImprovement: number) {
     const origValue = v.value;
-    const errorToBeat = this.computeError() - config.minWorthwhileErrorImprovement;
+    const errorToBeat = this.computeError() - minWorthwhileErrorImprovement;
 
-    v.value = origValue + 1;
-    const ePlus1 = this.computeError();
+    v.value = origValue + epsilon;
+    const ePlusEpsilon = this.computeError();
 
-    v.value = origValue - 1;
-    const eMinus1 = this.computeError();
+    v.value = origValue - epsilon;
+    const eMinusEpsilon = this.computeError();
 
-    if (ePlus1 < Math.min(errorToBeat, eMinus1)) {
-      v.value = origValue + 1;
+    if (ePlusEpsilon < Math.min(errorToBeat, eMinusEpsilon)) {
+      v.value = origValue + epsilon;
       return true;
-    } else if (eMinus1 < Math.min(errorToBeat, ePlus1)) {
-      v.value = origValue - 1;
+    } else if (eMinusEpsilon < Math.min(errorToBeat, ePlusEpsilon)) {
+      v.value = origValue - epsilon;
       return true;
     } else {
       v.value = origValue;
