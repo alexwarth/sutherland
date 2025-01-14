@@ -10,6 +10,11 @@ import { EqualDistanceConstraint } from './constraints';
 // TODO: stop using selection to move non-instances
 // (every Thing should move the same way)
 
+// TODO: harden the notion of "capture" / "claiming" fingers,
+// the pointer, which thing is bing dragged, rotated, scaled, etc.
+// so that when things overlap, the thing that you are manipulating
+// stays the same.
+
 class Button {
   leftX = 0;
   topY = 0;
