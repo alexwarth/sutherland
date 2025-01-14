@@ -1,6 +1,7 @@
 import config from './config';
 import scope from './scope';
 import * as app from './app';
+import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
@@ -143,7 +144,7 @@ function onPencilDown(screenPos: Position, pressure: number) {
 function onPencilMove(screenPos: Position, pressure: number) {
   const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(screenPos);
-  app.pen.snapPos(drag?.thing);
+  snap();
   const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
   if (oldPos && app.drawing().selection.size > 0) {
@@ -163,6 +164,18 @@ function onPencilMove(screenPos: Position, pressure: number) {
   }
   if (pencilClickInProgress && pressure < 1) {
     endDragEtc();
+  }
+}
+
+let snappedTo: Handle | string | null = null;
+
+function snap() {
+  const st = app.pen.snapPos(drag?.thing);
+  if (st == null) {
+    snappedTo = null;
+  } else if (st !== snappedTo) {
+    snappedTo = st;
+    wrapper.send('hapticImpact');
   }
 }
 
