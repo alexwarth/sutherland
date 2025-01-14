@@ -4,9 +4,9 @@ import * as app from './app';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
-import { Handle, Instance, Line, Thing } from './things';
-import { setStatus } from './canvas';
-import { EqualDistanceConstraint } from './constraints';
+import { Handle, Thing } from './things';
+
+// TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
 // TODO: harden the notion of "capture" / "claiming" fingers,
 // the pointer, which thing is bing dragged, rotated, scaled, etc.
@@ -139,7 +139,6 @@ function onPencilDown(screenPos: Position, pressure: number) {
 }
 
 function onPencilMove(screenPos: Position, pressure: number) {
-  const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(screenPos);
   snap();
   const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
@@ -165,8 +164,12 @@ function snap() {
   const st = app.pen.snapPos(drag?.thing);
   if (st !== snappedTo) {
     snappedTo = st;
-    wrapper.send('hapticImpact');
+    hapticBump();
   }
+}
+
+function hapticBump() {
+  wrapper.send('hapticImpact');
 }
 
 // TODO: come up w/ a better name for this method
