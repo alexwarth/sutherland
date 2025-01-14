@@ -22,6 +22,10 @@ export default class ConstraintSet {
     this.constraints = [];
   }
 
+  isEmpty() {
+    return this.constraints.length === 0;
+  }
+
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
     const constraints = this.constraints;
     this.constraints = [];
