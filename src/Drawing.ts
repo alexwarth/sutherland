@@ -307,7 +307,7 @@ export class Drawing {
     if (handle) {
       pos.x = handle.x;
       pos.y = handle.y;
-      return 'handle';
+      return 'H';
     }
 
     const constraints = new ConstraintSet();
@@ -315,13 +315,16 @@ export class Drawing {
     const vars = new Set<Var>();
     snappedPos.forEachVar((v) => vars.add(v));
 
+    const signature: string[] = [];
     for (const thing of this.things) {
       if (thing === dragThing || !thing.contains(pos)) {
         // ignore
       } else if (thing instanceof Line) {
         constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
+        signature.push('L');
       } else if (thing instanceof Arc) {
         constraints.add(new PointOnArcConstraint(snappedPos, thing.a, thing.b, thing.c));
+        signature.push('A');
       }
     }
 
@@ -334,7 +337,7 @@ export class Drawing {
     }
     pos.x = snappedPos.x;
     pos.y = snappedPos.y;
-    return 'constraints';
+    return signature.join();
   }
 
   handleAt(pos: Position, dragThing: Thing | null = null): Handle | null {
