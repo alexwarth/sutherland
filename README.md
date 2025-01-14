@@ -1,18 +1,16 @@
 # sutherland
 
-To run:
-======
+# To run:
 
 ```
 yarn
 vite
 ```
 
-... then point your web browser at  http://localhost:5173/
+... then point your web browser at http://localhost:5173/
 (or whatever else vite tells you the URL is)
 
-Controls:
-========
+# Controls:
 
 - Drawing, etc.:
   - To **draw lines**, click around while holding down the "meta" key (⌘ or ⊞)
@@ -34,6 +32,7 @@ Controls:
   - **point on line**: drag a point to a line, drop it there
   - (this constraint is also added when you draw a line that terminates on another line)
   - to **designate/undesignate a point as an attacher**, point at it and press `SHIFT` + `A`
+  - to make several lines have **equal length**, click on them while pressing `E`
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
