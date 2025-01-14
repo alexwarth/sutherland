@@ -48,8 +48,6 @@ function doWithoutMovingPointer(fn: () => void) {
 
 // ---------- drawings ----------
 
-let _line: Line | null = null;
-
 const drawings: { [key: string]: Drawing } = {};
 for (let idx = 1; idx < 10; idx++) {
   drawings['' + idx] = new Drawing();
@@ -71,7 +69,7 @@ export function switchToDrawing(id: string) {
   _drawing.leave();
   _drawing = d;
   doWithoutMovingPointer(() => scope.reset());
-  _line = null;
+  endEqualLength();
   setStatus('drawing #' + id);
 }
 
@@ -368,10 +366,12 @@ export function toggleAttacher() {
   }
 }
 
-export function equalLength() {
-  if (!_line) {
-    if ((_line = line())) {
-      setStatus('selected line');
+let _equalLengthLine: Line | null = null;
+
+export function moreEqualLength() {
+  if (!_equalLengthLine) {
+    if ((_equalLengthLine = line())) {
+      setStatus('equal length');
     }
     return;
   }
@@ -379,12 +379,14 @@ export function equalLength() {
   const otherLine = line();
   if (otherLine) {
     drawing().constraints.add(
-      new EqualDistanceConstraint(_line.a, _line.b, otherLine.a, otherLine.b),
+      new EqualDistanceConstraint(_equalLengthLine.a, _equalLengthLine.b, otherLine.a, otherLine.b),
     );
     setStatus('equal length');
-  } else {
-    _line = null;
   }
+}
+
+export function endEqualLength() {
+  _equalLengthLine = null;
 }
 
 export function setScale(newScale: number) {

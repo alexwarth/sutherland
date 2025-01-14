@@ -47,6 +47,7 @@ class Button {
 
 const moveButton = new Button('MOVE');
 const solveButton = new Button('SOLVE');
+const eqButton = new Button('EQ');
 const col1 = [
   new Button('1'),
   new Button('2'),
@@ -64,7 +65,7 @@ const col2 = [
   new Button('5'),
   new Button('6'),
   new Button('ARC'),
-  new Button('EQ'),
+  eqButton,
   new Button('FIX'),
   new Button('weight'),
   new Button('ATT'),
@@ -129,7 +130,6 @@ function processEvents() {
 
 let pencilClickInProgress = false;
 let drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
-let line: Line | null = null; // for EQ
 
 function onPencilDown(screenPos: Position, pressure: number) {
   app.pen.moveToScreenPos(screenPos);
@@ -179,7 +179,9 @@ function endDragEtc() {
 }
 
 function onPencilClick() {
-  // no op (now done w/ MOVE button)
+  if (eqButton.isDown) {
+    app.moreEqualLength();
+  }
 }
 
 function onPencilUp(screenPos: Position) {
@@ -195,7 +197,7 @@ function onFingerDown(screenPos: Position, id: number) {
   for (const b of allButtons) {
     if (b.contains(screenPos)) {
       b.fingerId = id;
-      onButtonClick(b);
+      onButtonDown(b);
       return;
     }
   }
@@ -203,7 +205,7 @@ function onFingerDown(screenPos: Position, id: number) {
   fingerScreenPositions.set(id, screenPos);
 }
 
-function onButtonClick(b: Button) {
+function onButtonDown(b: Button) {
   const label = b.label.toLowerCase();
   if ('1' <= label && label <= '9') {
     if (app.pen.pos) {
@@ -228,9 +230,6 @@ function onButtonClick(b: Button) {
       break;
     case 'move':
       move();
-      break;
-    case 'eq':
-      app.equalLength();
       break;
     case 'horv':
       app.horizontalOrVertical();
@@ -259,6 +258,12 @@ function onButtonClick(b: Button) {
     case 'reload':
       location.reload();
       break;
+  }
+}
+
+function onButtonUp(b: Button) {
+  if (b === eqButton) {
+    app.endEqualLength();
   }
 }
 
@@ -332,6 +337,7 @@ function onFingerMove(screenPos: Position, id: number) {
 function onFingerUp(screenPos: Position, id: number) {
   for (const b of allButtons) {
     if (b.fingerId === id) {
+      onButtonUp(b);
       b.fingerId = null;
     }
   }

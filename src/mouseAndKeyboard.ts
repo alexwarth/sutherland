@@ -72,9 +72,6 @@ function onKeyDown(e: KeyboardEvent) {
     case 'W':
       app.weight();
       break;
-    case 'e':
-      app.equalLength();
-      break;
     case 'h':
       app.horizontalOrVertical();
       break;
@@ -131,6 +128,9 @@ function onKeyUp(e: KeyboardEvent) {
         app.pen.clearPos();
       }
       break;
+    case 'e':
+      app.endEqualLength();
+      break;
   }
 }
 
@@ -150,6 +150,9 @@ function onPointerDown(e: PointerEvent) {
   } else if (keysDown['a']) {
     app.moreArc();
     drawingInProgress = true;
+    return;
+  } else if (keysDown['e']) {
+    app.moreEqualLength();
     return;
   }
 
