@@ -136,6 +136,7 @@ function onPencilDown(screenPos: Position, pressure: number) {
   if (moveButton.isDown) {
     move();
   }
+  prepareHaptics();
 }
 
 function onPencilMove(screenPos: Position, pressure: number) {
@@ -166,6 +167,10 @@ function snap() {
     snappedTo = st;
     hapticBump();
   }
+}
+
+function prepareHaptics() {
+  wrapper.send('prepareHaptics');
 }
 
 function hapticBump() {
