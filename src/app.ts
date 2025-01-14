@@ -5,6 +5,7 @@ import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
 import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
+import { EqualDistanceConstraint } from './constraints';
 
 // ---------- pen ----------
 
@@ -47,6 +48,8 @@ function doWithoutMovingPointer(fn: () => void) {
 
 // ---------- drawings ----------
 
+let _line: Line | null = null;
+
 const drawings: { [key: string]: Drawing } = {};
 for (let idx = 1; idx < 10; idx++) {
   drawings['' + idx] = new Drawing();
@@ -68,8 +71,8 @@ export function switchToDrawing(id: string) {
   _drawing.leave();
   _drawing = d;
   doWithoutMovingPointer(() => scope.reset());
+  _line = null;
   setStatus('drawing #' + id);
-  (window as any).drawing = _drawing;
 }
 
 const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
@@ -346,22 +349,6 @@ export function scaleInstanceBy(scaleMultiplier: number) {
   return !!pen.pos && _drawing.resizeInstanceAt(pen.pos, scaleMultiplier);
 }
 
-export function toggleSelected(thing?: Thing) {
-  if (thing) {
-    _drawing.toggleSelected(thing);
-  } else if (pen.pos) {
-    _drawing.toggleSelections(pen.pos);
-  }
-}
-
-export function moveSelectionBy(dx: number, dy: number) {
-  _drawing.moveSelectionBy(dx, dy);
-}
-
-export function clearSelection() {
-  _drawing.clearSelection();
-}
-
 export function toggleAttacher() {
   if (!pen.pos) {
     return;
@@ -382,8 +369,21 @@ export function toggleAttacher() {
 }
 
 export function equalLength() {
-  if (_drawing.equalDistance()) {
+  if (!_line) {
+    if ((_line = line())) {
+      setStatus('selected line');
+    }
+    return;
+  }
+
+  const otherLine = line();
+  if (otherLine) {
+    drawing().constraints.add(
+      new EqualDistanceConstraint(_line.a, _line.b, otherLine.a, otherLine.b),
+    );
     setStatus('equal length');
+  } else {
+    _line = null;
   }
 }
 

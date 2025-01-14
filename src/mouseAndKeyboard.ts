@@ -143,10 +143,7 @@ function onPointerDown(e: PointerEvent) {
   app.pen.snapPos();
   penDown = true;
 
-  if (keysDown['Shift']) {
-    app.toggleSelected();
-    return;
-  } else if (keysDown['Meta']) {
+  if (keysDown['Meta']) {
     app.moreLines();
     drawingInProgress = true;
     return;
@@ -164,12 +161,9 @@ function onPointerDown(e: PointerEvent) {
     return;
   }
 
-  app.clearSelection();
   const thing = app.thing();
-  if (thing instanceof Instance) {
+  if (thing) {
     drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
-  } else if (thing) {
-    app.toggleSelected(thing);
   }
 }
 
@@ -186,24 +180,12 @@ function onPointerMove(e: PointerEvent) {
   app.pen.moveToScreenPos(e);
   const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
-  if (
-    penDown &&
-    oldPos &&
-    !app.drawing().isEmpty() &&
-    !drawingInProgress &&
-    !drag &&
-    app.drawing().selection.size === 0
-  ) {
+  if (penDown && oldPos && !app.drawing().isEmpty() && !drawingInProgress && !drag) {
     app.panBy(pos.x - oldPos.x, pos.y - oldPos.y);
     return;
   }
 
   app.pen.snapPos(drag?.thing);
-
-  if (penDown && oldPos && app.drawing().selection.size > 0) {
-    const delta = pointDiff(pos, oldPos);
-    app.moveSelectionBy(delta.x, delta.y);
-  }
 
   if (drag) {
     const newX = pos.x - drag.offset.x;

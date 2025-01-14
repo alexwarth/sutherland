@@ -25,7 +25,7 @@ export interface Thing {
   contains(pos: Position): boolean;
   distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
-  render(selection: Set<Thing>, transform: Transform): void;
+  render(transform: Transform): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachVar(fn: (v: Var) => void): void;
@@ -72,11 +72,7 @@ export class Handle implements Thing {
     this.yVar.value += dy;
   }
 
-  render(
-    selection: Set<Thing>,
-    transform: Transform,
-    color: string = config.instanceSideAttacherColor,
-  ): void {
+  render(transform: Transform, color: string = config.instanceSideAttacherColor): void {
     if (config.debug) {
       drawText(transform(this), `(${this.x.toFixed(0)},${this.y.toFixed(0)})`);
     }
@@ -136,13 +132,11 @@ export class Line implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(selection: Set<Thing>, transform: Transform) {
+  render(transform: Transform) {
     if (this.isGuide && !config.showGuideLines) {
       return;
     }
-    const style = this.isGuide
-      ? config.guideLineColor
-      : flickeryWhite(selection.has(this) ? 'bold' : 'normal');
+    const style = this.isGuide ? config.guideLineColor : flickeryWhite();
     drawLine(this.a, this.b, style, transform);
   }
 
@@ -197,14 +191,8 @@ export class Arc implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(selection: Set<Thing>, transform: Transform) {
-    drawArc(
-      this.c,
-      this.a,
-      this.b,
-      flickeryWhite(selection.has(this) ? 'bold' : 'normal'),
-      transform,
-    );
+  render(transform: Transform) {
+    drawArc(this.c, this.a, this.b, flickeryWhite(), transform);
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
@@ -343,7 +331,7 @@ export class Instance implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(selection: Set<Thing>, transform: Transform, depth = 0) {
+  render(transform: Transform, depth = 0) {
     this.master.render((pos) => transform(this.transform(pos)), depth + 1);
     if (depth === 1) {
       this.attachers.forEach((attacher, idx) => {

@@ -230,18 +230,7 @@ function onButtonClick(b: Button) {
       move();
       break;
     case 'eq':
-      if (!line) {
-        line = app.line();
-        setStatus('selected line');
-        break;
-      }
-      const otherLine = app.line();
-      if (otherLine) {
-        app
-          .drawing()
-          .constraints.add(new EqualDistanceConstraint(line.a, line.b, otherLine.a, otherLine.b));
-        setStatus('equal length');
-      }
+      app.equalLength();
       break;
     case 'horv':
       app.horizontalOrVertical();

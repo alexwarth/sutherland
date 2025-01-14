@@ -21,13 +21,11 @@ export class Drawing {
   things: Thing[] = [];
   attachers: Handle[] = [];
   readonly constraints = new ConstraintSet();
-  readonly selection = new Set<Thing>();
 
   clear() {
     this.things = [];
     this.attachers = [];
     this.constraints.clear();
-    this.selection.clear();
   }
 
   isEmpty() {
@@ -41,15 +39,13 @@ export class Drawing {
   render(transform = scope.toScreenPosition, depth = 0) {
     this.things.forEach((t) => {
       if (t instanceof Instance) {
-        t.render(this.selection, transform, depth + 1);
+        t.render(transform, depth + 1);
       } else {
-        t.render(this.selection, transform);
+        t.render(transform);
       }
     });
     if (depth === 0) {
-      this.attachers.forEach((h) =>
-        h.render(this.selection, transform, config.masterSideAttacherColor),
-      );
+      this.attachers.forEach((h) => h.render(transform, config.masterSideAttacherColor));
       this.constraints.forEach((c) => {
         if (c instanceof FixedDistanceConstraint) {
           let e = (c.computeError() * 100).toFixed();
@@ -187,7 +183,6 @@ export class Drawing {
     }
 
     this.things = this.things.filter((thing) => !deletedThings.has(thing));
-    this.selection.clear();
     return true;
   }
 
@@ -223,25 +218,6 @@ export class Drawing {
         ans = true;
       }
     }
-    this.selection.clear();
-    return ans;
-  }
-
-  equalDistance() {
-    let ans = false;
-    let prevLine: Line | null = null;
-    for (const thing of this.selection) {
-      if (!(thing instanceof Line)) {
-        continue;
-      }
-
-      if (prevLine) {
-        this.constraints.add(new EqualDistanceConstraint(prevLine.a, prevLine.b, thing.a, thing.b));
-        ans = true;
-      }
-      prevLine = thing;
-    }
-    this.selection.clear();
     return ans;
   }
 
@@ -257,7 +233,6 @@ export class Drawing {
         ans = true;
       }
     }
-    this.selection.clear();
     return ans;
   }
 
@@ -341,7 +316,7 @@ export class Drawing {
     snappedPos.forEachVar((v) => vars.add(v));
 
     for (const thing of this.things) {
-      if (this.selection.has(thing) || thing === dragThing || !thing.contains(pos)) {
+      if (thing === dragThing || !thing.contains(pos)) {
         // ignore
       } else if (thing instanceof Line) {
         constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
@@ -394,36 +369,8 @@ export class Drawing {
     return ans;
   }
 
-  toggleSelections(pointerPos: Position) {
-    for (const thing of this.things) {
-      if (thing.contains(pointerPos)) {
-        this.toggleSelected(thing);
-      }
-    }
-  }
-
-  toggleSelected(thing: Thing) {
-    if (this.selection.has(thing)) {
-      this.selection.delete(thing);
-    } else {
-      this.selection.add(thing);
-    }
-  }
-
-  clearSelection() {
-    this.selection.clear();
-  }
-
-  moveSelectionBy(dx: number, dy: number) {
-    for (const h of this.getHandles(this.selection)) {
-      h.x += dx;
-      h.y += dy;
-    }
-  }
-
   leave() {
     this.center();
-    this.selection.clear();
   }
 
   center() {
@@ -457,13 +404,10 @@ export class Drawing {
     return Math.sqrt(size2) * 2;
   }
 
+  // TODO: simplify
   private thingsForOperation(pointerPos: Position): Set<Thing> {
     const thingAtPointer = this.thingAt(pointerPos);
-    return this.selection.size > 0
-      ? this.selection
-      : thingAtPointer
-        ? new Set([thingAtPointer])
-        : new Set();
+    return thingAtPointer ? new Set([thingAtPointer]) : new Set();
   }
 
   private getHandles(things: Iterable<Thing>) {
