@@ -8,9 +8,6 @@ import { Handle, Instance, Line, Thing } from './things';
 import { setStatus } from './canvas';
 import { EqualDistanceConstraint } from './constraints';
 
-// TODO: stop using selection to move non-instances
-// (every Thing should move the same way)
-
 // TODO: harden the notion of "capture" / "claiming" fingers,
 // the pointer, which thing is bing dragged, rotated, scaled, etc.
 // so that when things overlap, the thing that you are manipulating
@@ -131,7 +128,7 @@ function processEvents() {
 }
 
 let pencilClickInProgress = false;
-let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
+let drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
 let line: Line | null = null; // for EQ
 
 function onPencilDown(screenPos: Position, pressure: number) {
@@ -146,11 +143,6 @@ function onPencilMove(screenPos: Position, pressure: number) {
   app.pen.moveToScreenPos(screenPos);
   snap();
   const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
-
-  if (oldPos && app.drawing().selection.size > 0) {
-    const delta = pointDiff(pos, oldPos);
-    app.moveSelectionBy(delta.x, delta.y);
-  }
 
   if (drag) {
     const newX = pos.x - drag.offset.x;
@@ -184,7 +176,6 @@ function endDragEtc() {
     app.drawing().mergeAndAddImplicitConstraints(drag.thing);
   }
   drag = null;
-  app.clearSelection();
 }
 
 function onPencilClick() {
@@ -290,10 +281,8 @@ function move() {
   }
 
   const thing = app.thing();
-  if (thing instanceof Instance) {
+  if (thing) {
     drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
-  } else if (thing) {
-    app.toggleSelected(thing);
   }
 }
 
