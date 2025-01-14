@@ -332,7 +332,7 @@ export class Drawing {
     if (handle) {
       pos.x = handle.x;
       pos.y = handle.y;
-      return;
+      return 'handle';
     }
 
     const constraints = new ConstraintSet();
@@ -350,11 +350,16 @@ export class Drawing {
       }
     }
 
+    if (constraints.isEmpty()) {
+      return null;
+    }
+
     while (constraints.relax(vars)) {
       // keep going
     }
     pos.x = snappedPos.x;
     pos.y = snappedPos.y;
+    return 'constraints';
   }
 
   handleAt(pos: Position, dragThing: (Thing & Position) | null = null): Handle | null {

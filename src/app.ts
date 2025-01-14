@@ -16,9 +16,7 @@ export const pen = {
   },
 
   snapPos(dragThing?: Thing & Position) {
-    if (pos) {
-      _drawing.snap(pos, dragThing);
-    }
+    return pos ? _drawing.snap(pos, dragThing) : null;
   },
 
   moveToScreenPos(screenPos: Position) {
