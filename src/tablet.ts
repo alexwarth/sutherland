@@ -171,9 +171,7 @@ let snappedTo: Handle | string | null = null;
 
 function snap() {
   const st = app.pen.snapPos(drag?.thing);
-  if (st == null) {
-    snappedTo = null;
-  } else if (st !== snappedTo) {
+  if (st !== snappedTo) {
     snappedTo = st;
     wrapper.send('hapticImpact');
   }
