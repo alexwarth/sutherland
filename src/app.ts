@@ -15,7 +15,7 @@ export const pen = {
     return pos;
   },
 
-  snapPos(dragThing?: Thing & Position) {
+  snapPos(dragThing?: Thing) {
     return pos ? _drawing.snap(pos, dragThing) : null;
   },
 

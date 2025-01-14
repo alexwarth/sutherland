@@ -327,7 +327,7 @@ export class Drawing {
     this.things = this.things.filter((thing) => thing !== instance);
   }
 
-  snap(pos: Position, dragThing?: Thing & Position) {
+  snap(pos: Position, dragThing?: Thing) {
     const handle = this.handleAt(pos, dragThing);
     if (handle) {
       pos.x = handle.x;
@@ -362,7 +362,7 @@ export class Drawing {
     return 'constraints';
   }
 
-  handleAt(pos: Position, dragThing: (Thing & Position) | null = null): Handle | null {
+  handleAt(pos: Position, dragThing: Thing | null = null): Handle | null {
     let minDist = Infinity;
     let nearestHandle: Handle | null = null;
     for (const thing of this.things) {

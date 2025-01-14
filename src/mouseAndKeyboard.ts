@@ -8,7 +8,7 @@ import { pointDiff, Position } from './helpers';
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
 let drawingInProgress = false;
-let drag: { thing: Thing & Position; offset: { x: number; y: number } } | null = null;
+let drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
 
 export function init() {
   window.addEventListener('keydown', onKeyDown);
