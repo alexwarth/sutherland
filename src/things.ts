@@ -20,6 +20,8 @@ export class Var {
 type Transform = (pos: Position) => Position;
 
 export interface Thing {
+  get x(): number;
+  get y(): number;
   contains(pos: Position): boolean;
   distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
@@ -112,6 +114,14 @@ export class Line implements Thing {
     this.b = new Handle(bPos);
   }
 
+  get x() {
+    return (this.a.x + this.b.x) / 2;
+  }
+
+  get y() {
+    return (this.a.y + this.b.y) / 2;
+  }
+
   contains(pos: Position) {
     return (
       !this.a.contains(pos) && !this.b.contains(pos) && this.distanceTo(pos) <= config.closeEnough
@@ -164,6 +174,14 @@ export class Arc implements Thing {
     this.a = new Handle(aPos);
     this.b = new Handle(bPos);
     this.c = new Handle(cPos);
+  }
+
+  get x() {
+    return this.c.x;
+  }
+
+  get y() {
+    return this.c.y;
   }
 
   contains(pos: Position) {
