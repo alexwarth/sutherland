@@ -11,9 +11,6 @@ import { EqualDistanceConstraint } from './constraints';
 // TODO: stop using selection to move non-instances
 // (every Thing should move the same way)
 
-// TODO: figure out why the cursor is offset by a little bit in the deployed version
-// (but not when I load it from my computer!)
-
 // TODO: harden the notion of "capture" / "claiming" fingers,
 // the pointer, which thing is bing dragged, rotated, scaled, etc.
 // so that when things overlap, the thing that you are manipulating
