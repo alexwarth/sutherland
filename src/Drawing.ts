@@ -341,7 +341,7 @@ export class Drawing {
     snappedPos.forEachVar((v) => vars.add(v));
 
     for (const thing of this.things) {
-      if (this.selection.has(thing) || !thing.contains(pos)) {
+      if (this.selection.has(thing) || thing === dragThing || !thing.contains(pos)) {
         // ignore
       } else if (thing instanceof Line) {
         constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
