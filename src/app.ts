@@ -7,6 +7,11 @@ import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
+// TODO: config menu on-screen (tablet + desktop versions)
+// TODO: add margin to canvas (desktop version only, for historical reasons -- Alan asked)
+// TODO: when adding constraints, highlight points/lines/arcs/whatever they apply to
+// TODO: vcr-like undo interface (w/ worlds)
+
 // ---------- pen ----------
 
 let pos: Position | null = null;
