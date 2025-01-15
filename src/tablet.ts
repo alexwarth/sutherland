@@ -135,7 +135,7 @@ abstract class Screen {
 let screen: Screen;
 
 export function init() {
-  screen = sketchpad;
+  screen = mainScreen;
 }
 
 export function onFrame() {
@@ -147,7 +147,7 @@ export function render() {
   screen.render();
 }
 
-const sketchpad = new (class extends Screen {
+const mainScreen = new (class extends Screen {
   readonly moveButton = new Button('MOVE');
   readonly solveButton = new Button('SOLVE');
   readonly eqButton = new Button('EQ');
@@ -307,6 +307,9 @@ const sketchpad = new (class extends Screen {
       case 'reload':
         location.reload();
         break;
+      case 'config':
+        screen = configScreen;
+        break;
     }
   }
 
@@ -317,8 +320,6 @@ const sketchpad = new (class extends Screen {
   }
 
   override onFingerMove(screenPos: Position, id: number) {
-    super.onFingerMove(screenPos, id);
-
     if (app.drawing().isEmpty() || this.fingerScreenPositions.size > 2) {
       return;
     }
@@ -327,6 +328,8 @@ const sketchpad = new (class extends Screen {
     if (!oldScreenPos) {
       return;
     }
+
+    super.onFingerMove(screenPos, id);
 
     const pos = scope.fromScreenPosition(screenPos);
     const oldPos = scope.fromScreenPosition(oldScreenPos);
@@ -397,5 +400,35 @@ const sketchpad = new (class extends Screen {
 
   hapticBump() {
     wrapper.send('hapticImpact');
+  }
+})();
+
+const configScreen = new (class extends Screen {
+  readonly col1: Button[] = [new Button('back')];
+
+  constructor() {
+    super();
+    this.buttons.push(...this.col1);
+  }
+
+  layOutButtons() {
+    this.layOutButtonColumn(0, this.col1);
+  }
+
+  onFrame() {
+    // no op
+  }
+
+  onButtonDown(b: Button) {
+    const label = b.label.toLowerCase();
+    switch (label) {
+      case 'back':
+        screen = mainScreen;
+        break;
+    }
+  }
+
+  onButtonUp(b: Button) {
+    // TODO
   }
 })();
