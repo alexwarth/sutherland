@@ -159,14 +159,14 @@ function onPencilMove(screenPos: Position, pressure: number) {
   }
 }
 
-let snappedTo: Handle | string | null = null;
+let lastSnap: string | null = null;
 
 function snap() {
-  const st = app.pen.snapPos(drag?.thing);
-  if (st !== snappedTo) {
-    snappedTo = st;
+  const snap = app.pen.snapPos(drag?.thing);
+  if (snap && snap !== lastSnap) {
     hapticBump();
   }
+  lastSnap = snap;
 }
 
 function prepareHaptics() {
