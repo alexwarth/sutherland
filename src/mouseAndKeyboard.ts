@@ -2,8 +2,10 @@ import config from './config';
 import scope from './scope';
 import * as app from './app';
 import { setStatus, el as canvasEl } from './canvas';
-import { Handle, Instance, Thing } from './things';
-import { pointDiff, Position } from './helpers';
+import { Handle, Thing } from './things';
+import { pointDiff } from './helpers';
+
+// TODO: add on-screen help -- "buttons" should light up when they're pressed on the keyboard
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
