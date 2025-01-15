@@ -177,13 +177,13 @@ export class Drawing {
   }
 
   delete(pointerPos: Position) {
-    const deletedThings = this.thingsForOperation(pointerPos);
-    if (deletedThings.size === 0) {
+    const deletedThing = this.thingAt(pointerPos);
+    if (deletedThing) {
+      this.things = this.things.filter((thing) => thing !== deletedThing);
+      return true;
+    } else {
       return false;
     }
-
-    this.things = this.things.filter((thing) => !deletedThings.has(thing));
-    return true;
   }
 
   fixedPoint(pointerPos: Position) {
@@ -207,57 +207,43 @@ export class Drawing {
   }
 
   fixedDistance(pointerPos: Position) {
-    const things = this.thingsForOperation(pointerPos);
-    if (things.size === 0) {
+    const thing = this.thingAt(pointerPos);
+    if (thing instanceof Line) {
+      this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
+      return true;
+    } else {
       return false;
     }
-    let ans = false;
-    for (const thing of things) {
-      if (thing instanceof Line) {
-        this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
-        ans = true;
-      }
-    }
-    return ans;
   }
 
   horizontalOrVertical(pointerPos: Position) {
-    const things = this.thingsForOperation(pointerPos);
-    if (things.size === 0) {
+    const thing = this.thingAt(pointerPos);
+    if (thing instanceof Line) {
+      this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
+      return true;
+    } else {
       return false;
     }
-    let ans = false;
-    for (const thing of things) {
-      if (thing instanceof Line) {
-        this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
-        ans = true;
-      }
-    }
-    return ans;
   }
 
   fullSize(pointerPos: Position) {
-    let ans = false;
-    const things = this.thingsForOperation(pointerPos);
-    for (const thing of things) {
-      if (thing instanceof Instance) {
-        this.constraints.add(new SizeConstraint(thing));
-        ans = true;
-      }
+    const thing = this.thingAt(pointerPos);
+    if (thing instanceof Instance) {
+      this.constraints.add(new SizeConstraint(thing));
+      return true;
+    } else {
+      return false;
     }
-    return ans;
   }
 
   dismember(pointerPos: Position) {
-    let ans = false;
-    const things = this.thingsForOperation(pointerPos);
-    for (const thing of things) {
-      if (thing instanceof Instance) {
-        this.inline(thing);
-        ans = true;
-      }
+    const thing = this.thingAt(pointerPos);
+    if (thing instanceof Instance) {
+      this.inline(thing);
+      return true;
+    } else {
+      return false;
     }
-    return ans;
   }
 
   inline(instance: Instance) {
@@ -405,12 +391,6 @@ export class Drawing {
       size2 = Math.max(size2, Math.pow(x, 2) + Math.pow(y, 2));
     }
     return Math.sqrt(size2) * 2;
-  }
-
-  // TODO: simplify
-  private thingsForOperation(pointerPos: Position): Set<Thing> {
-    const thingAtPointer = this.thingAt(pointerPos);
-    return thingAtPointer ? new Set([thingAtPointer]) : new Set();
   }
 
   private getHandles(things: Iterable<Thing>) {
