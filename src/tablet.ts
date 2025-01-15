@@ -91,9 +91,12 @@ export function onFrame() {
 }
 
 export function render() {
-  layOutButtonColumn(0, col1);
-  layOutButtonColumn(config.tablet.buttonWidth, col2);
-  layOutButtonColumn(innerWidth - config.tablet.buttonWidth, col3);
+  layOutButtonColumn(!config.tablet.lefty ? 0 : innerWidth - config.tablet.buttonWidth, col1);
+  layOutButtonColumn(
+    !config.tablet.lefty ? config.tablet.buttonWidth : innerWidth - 2 * config.tablet.buttonWidth,
+    col2,
+  );
+  layOutButtonColumn(!config.tablet.lefty ? innerWidth - config.tablet.buttonWidth : 0, col3);
   for (const b of allButtons) {
     b.render();
   }
