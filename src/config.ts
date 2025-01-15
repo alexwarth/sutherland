@@ -12,7 +12,7 @@ const config = {
   closeEnough: 7,
   crosshairsSize: 15,
   fontScale: 10,
-  kerning: 0.5,
+  kerning: 0.75,
   showGuideLines: false,
   guideLineColor: 'rgba(255,255,255,.125)',
   statusTimeMillis: 4_000,
