@@ -6,8 +6,6 @@ import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
 
-// TODO: lefty mode!
-
 // TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
 // TODO: harden the notion of "capture" / "claiming" fingers,
@@ -49,313 +47,355 @@ class Button {
   }
 }
 
-const moveButton = new Button('MOVE');
-const solveButton = new Button('SOLVE');
-const eqButton = new Button('EQ');
-const col1 = [
-  new Button('1'),
-  new Button('2'),
-  new Button('3'),
-  new Button('LINE'),
-  moveButton,
-  new Button('HORV'),
-  new Button('SIZE'),
-  new Button('DISM'),
-  new Button('DEL'),
-  solveButton,
-];
-const col2 = [
-  new Button('4'),
-  new Button('5'),
-  new Button('6'),
-  new Button('ARC'),
-  eqButton,
-  new Button('FIX'),
-  new Button('weight'),
-  new Button('ATT'),
-  new Button('CLEAR'),
-  new Button('AUTO'),
-];
-const col3 = [new Button('reload')];
-const allButtons = [...col1, ...col2, ...col3];
+abstract class Screen {
+  readonly buttons: Button[] = [];
+  readonly fingerScreenPositions = new Map<number, Position>();
+
+  abstract layOutButtons(): void;
+  abstract onFrame(): void;
+  abstract onButtonDown(b: Button): void;
+  abstract onButtonUp(b: Button): void;
+
+  render() {
+    this.layOutButtons();
+    this.renderButtons();
+  }
+
+  renderButtons() {
+    for (const b of this.buttons) {
+      b.render();
+    }
+  }
+
+  onPencilDown(screenPos: Position, pressure: number) {}
+  onPencilMove(screenPos: Position, pressure: number) {}
+  onPencilUp(screenPos: Position) {}
+
+  onFingerDown(screenPos: Position, id: number) {
+    for (const b of this.buttons) {
+      if (b.contains(screenPos)) {
+        b.fingerId = id;
+        this.onButtonDown(b);
+        return;
+      }
+    }
+
+    this.fingerScreenPositions.set(id, screenPos);
+  }
+
+  onFingerMove(screenPos: Position, id: number) {
+    this.fingerScreenPositions.set(id, screenPos);
+  }
+
+  onFingerUp(screenPos: Position, id: number) {
+    for (const b of this.buttons) {
+      if (b.fingerId === id) {
+        this.onButtonUp(b);
+        b.fingerId = null;
+      }
+    }
+
+    this.fingerScreenPositions.delete(id);
+  }
+
+  processEvents() {
+    for (const e of NativeEvents.getQueuedEvents()) {
+      switch (e.type) {
+        case 'pencil':
+          if (e.phase === 'began') {
+            this.onPencilDown(e.position, e.pressure);
+          } else if (e.phase === 'moved') {
+            this.onPencilMove(e.position, e.pressure);
+          } else if (e.phase === 'ended') {
+            this.onPencilUp(e.position);
+          }
+          break;
+        case 'finger':
+          if (e.phase === 'began') {
+            this.onFingerDown(e.position, e.id);
+          } else if (e.phase === 'moved') {
+            this.onFingerMove(e.position, e.id);
+          } else if (e.phase === 'ended') {
+            this.onFingerUp(e.position, e.id);
+          }
+      }
+    }
+  }
+
+  layOutButtonColumn(leftX: number, buttons: Button[]) {
+    let idx = 0;
+    for (const b of buttons) {
+      b.leftX = leftX;
+      b.topY = idx * b.height;
+      idx++;
+    }
+  }
+}
+
+let screen: Screen;
 
 export function init() {
-  // no op
+  screen = sketchpad;
 }
 
 export function onFrame() {
-  processEvents();
-  if (solveButton.isDown) {
-    app.solve();
-  }
+  screen.processEvents();
+  screen.onFrame();
 }
 
 export function render() {
-  layOutButtonColumn(!config.tablet.lefty ? 0 : innerWidth - config.tablet.buttonWidth, col1);
-  layOutButtonColumn(
-    !config.tablet.lefty ? config.tablet.buttonWidth : innerWidth - 2 * config.tablet.buttonWidth,
-    col2,
-  );
-  layOutButtonColumn(!config.tablet.lefty ? innerWidth - config.tablet.buttonWidth : 0, col3);
-  for (const b of allButtons) {
-    b.render();
-  }
+  screen.render();
 }
 
-function layOutButtonColumn(leftX: number, buttons: Button[]) {
-  let idx = 0;
-  for (const b of buttons) {
-    b.leftX = leftX;
-    b.topY = idx * b.height;
-    idx++;
-  }
-}
+const sketchpad = new (class extends Screen {
+  readonly moveButton = new Button('MOVE');
+  readonly solveButton = new Button('SOLVE');
+  readonly eqButton = new Button('EQ');
+  readonly col1 = [
+    new Button('1'),
+    new Button('2'),
+    new Button('3'),
+    new Button('LINE'),
+    this.moveButton,
+    new Button('HORV'),
+    new Button('SIZE'),
+    new Button('DISM'),
+    new Button('DEL'),
+    this.solveButton,
+  ];
+  readonly col2 = [
+    new Button('4'),
+    new Button('5'),
+    new Button('6'),
+    new Button('ARC'),
+    this.eqButton,
+    new Button('FIX'),
+    new Button('weight'),
+    new Button('ATT'),
+    new Button('CLEAR'),
+    new Button('AUTO'),
+  ];
+  readonly col3 = [new Button('reload'), new Button('config')];
 
-function processEvents() {
-  for (const e of NativeEvents.getQueuedEvents()) {
-    switch (e.type) {
-      case 'pencil':
-        if (e.phase === 'began') {
-          onPencilDown(e.position, e.pressure);
-        } else if (e.phase === 'moved') {
-          onPencilMove(e.position, e.pressure);
-        } else if (e.phase === 'ended') {
-          onPencilUp(e.position);
-        }
-        break;
-      case 'finger':
-        if (e.phase === 'began') {
-          onFingerDown(e.position, e.id);
-        } else if (e.phase === 'moved') {
-          onFingerMove(e.position, e.id);
-        } else if (e.phase === 'ended') {
-          onFingerUp(e.position, e.id);
-        }
+  pencilClickInProgress = false;
+  drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
+  lastSnap: string | null = null;
+
+  constructor() {
+    super();
+    this.buttons.push(...this.col1, ...this.col2, ...this.col3);
+  }
+
+  override onFrame() {
+    if (this.solveButton.isDown) {
+      app.solve();
     }
   }
-}
 
-let pencilClickInProgress = false;
-let drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
-
-function onPencilDown(screenPos: Position, pressure: number) {
-  app.pen.moveToScreenPos(screenPos);
-  if (moveButton.isDown) {
-    move();
-  }
-  prepareHaptics();
-}
-
-function onPencilMove(screenPos: Position, pressure: number) {
-  app.pen.moveToScreenPos(screenPos);
-  snap();
-  const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
-
-  if (drag) {
-    const newX = pos.x - drag.offset.x;
-    const newY = pos.y - drag.offset.y;
-    drag.thing.moveBy(newX - drag.thing.x, newY - drag.thing.y);
+  override layOutButtons() {
+    if (!config.tablet.lefty) {
+      this.layOutButtonColumn(0, this.col1);
+      this.layOutButtonColumn(config.tablet.buttonWidth, this.col2);
+      this.layOutButtonColumn(innerWidth - config.tablet.buttonWidth, this.col3);
+    } else {
+      this.layOutButtonColumn(innerWidth - config.tablet.buttonWidth, this.col1);
+      this.layOutButtonColumn(innerWidth - 2 * config.tablet.buttonWidth, this.col2);
+      this.layOutButtonColumn(0, this.col3);
+    }
   }
 
-  if (!pencilClickInProgress && pressure > 3) {
-    pencilClickInProgress = true;
-    onPencilClick();
+  override onPencilDown(screenPos: Position, pressure: number) {
+    app.pen.moveToScreenPos(screenPos);
+    if (this.moveButton.isDown) {
+      this.move();
+    }
+    this.prepareHaptics();
   }
-  if (pencilClickInProgress && pressure < 1) {
-    endDragEtc();
+
+  override onPencilMove(screenPos: Position, pressure: number) {
+    app.pen.moveToScreenPos(screenPos);
+    this.snap();
+    const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
+
+    if (this.drag) {
+      const newX = pos.x - this.drag.offset.x;
+      const newY = pos.y - this.drag.offset.y;
+      this.drag.thing.moveBy(newX - this.drag.thing.x, newY - this.drag.thing.y);
+    }
+
+    if (!this.pencilClickInProgress && pressure > 3) {
+      this.pencilClickInProgress = true;
+      this.onPencilClick();
+    }
+    if (this.pencilClickInProgress && pressure < 1) {
+      this.endDragEtc();
+    }
   }
-}
 
-let lastSnap: string | null = null;
-
-function snap() {
-  const snap = app.pen.snapPos(drag?.thing);
-  if (snap && snap !== lastSnap) {
-    hapticBump();
+  override onPencilUp(screenPos: Position) {
+    app.pen.clearPos();
+    this.endDragEtc();
+    app.endLines();
+    app.endArc();
   }
-  lastSnap = snap;
-}
 
-function prepareHaptics() {
-  wrapper.send('prepareHaptics');
-}
-
-function hapticBump() {
-  wrapper.send('hapticImpact');
-}
-
-// TODO: come up w/ a better name for this method
-function endDragEtc() {
-  pencilClickInProgress = false;
-  if (drag?.thing instanceof Handle) {
-    app.drawing().mergeAndAddImplicitConstraints(drag.thing);
+  // TODO: come up w/ a better name for this method
+  endDragEtc() {
+    this.pencilClickInProgress = false;
+    if (this.drag?.thing instanceof Handle) {
+      app.drawing().mergeAndAddImplicitConstraints(this.drag.thing);
+    }
+    this.drag = null;
   }
-  drag = null;
-}
 
-function onPencilClick() {
-  if (eqButton.isDown) {
-    app.moreEqualLength();
+  onPencilClick() {
+    if (this.eqButton.isDown) {
+      app.moreEqualLength();
+    }
   }
-}
 
-function onPencilUp(screenPos: Position) {
-  app.pen.clearPos();
-  endDragEtc();
-  app.endLines();
-  app.endArc();
-}
-
-const fingerScreenPositions = new Map<number, Position>();
-
-function onFingerDown(screenPos: Position, id: number) {
-  for (const b of allButtons) {
-    if (b.contains(screenPos)) {
-      b.fingerId = id;
-      onButtonDown(b);
+  override onButtonDown(b: Button) {
+    const label = b.label.toLowerCase();
+    if ('1' <= label && label <= '9') {
+      if (app.pen.pos) {
+        app.instantiate(b.label);
+        this.move();
+      } else {
+        app.switchToDrawing(b.label);
+      }
       return;
     }
-  }
 
-  fingerScreenPositions.set(id, screenPos);
-}
-
-function onButtonDown(b: Button) {
-  const label = b.label.toLowerCase();
-  if ('1' <= label && label <= '9') {
-    if (app.pen.pos) {
-      app.instantiate(b.label);
-      move();
-    } else {
-      app.switchToDrawing(b.label);
-    }
-    return;
-  }
-
-  switch (label) {
-    case 'clear':
-      app.drawing().clear();
-      scope.reset();
-      break;
-    case 'line':
-      app.moreLines();
-      break;
-    case 'arc':
-      app.moreArc();
-      break;
-    case 'move':
-      move();
-      break;
-    case 'horv':
-      app.horizontalOrVertical();
-      break;
-    case 'fix':
-      app.fixedPoint() || app.fixedDistance();
-      break;
-    case 'size':
-      app.fullSize();
-      break;
-    case 'weight':
-      app.weight();
-      break;
-    case 'dism':
-      app.dismember();
-      break;
-    case 'att':
-      app.toggleAttacher();
-      break;
-    case 'del':
-      app.del();
-      break;
-    case 'auto':
-      app.toggleAutoSolve();
-      break;
-    case 'reload':
-      location.reload();
-      break;
-  }
-}
-
-function onButtonUp(b: Button) {
-  if (b === eqButton) {
-    app.endEqualLength();
-  }
-}
-
-function move() {
-  const handle = app.handle();
-  if (handle) {
-    drag = { thing: handle, offset: { x: 0, y: 0 } };
-    return;
-  }
-
-  const thing = app.thing();
-  if (thing) {
-    drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
-  }
-}
-
-function onFingerMove(screenPos: Position, id: number) {
-  if (app.drawing().isEmpty() || fingerScreenPositions.size > 2) {
-    return;
-  }
-
-  const oldScreenPos = fingerScreenPositions.get(id);
-  if (!oldScreenPos) {
-    return;
-  }
-
-  fingerScreenPositions.set(id, screenPos);
-
-  const pos = scope.fromScreenPosition(screenPos);
-  const oldPos = scope.fromScreenPosition(oldScreenPos);
-
-  if (!app.pen.pos) {
-    app.panBy(pos.x - oldPos.x, pos.y - oldPos.y);
-  }
-
-  if (fingerScreenPositions.size !== 2) {
-    return;
-  }
-
-  let otherFingerScreenPos: Position | null = null;
-  for (const [otherId, otherScreenPos] of fingerScreenPositions.entries()) {
-    if (otherId !== id) {
-      otherFingerScreenPos = otherScreenPos;
-      break;
-    }
-  }
-  if (!otherFingerScreenPos) {
-    throw new Error('bruh?!');
-  }
-
-  const otherFingerPos = scope.fromScreenPosition(otherFingerScreenPos);
-
-  const oldDist = pointDist(otherFingerPos, oldPos);
-  const newDist = pointDist(otherFingerPos, pos);
-  const m = newDist / oldDist;
-
-  const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
-  const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
-
-  if (app.instance() && !drag) {
-    move();
-  }
-
-  if (!app.scaleInstanceBy(m) && !app.pen.pos) {
-    scope.scale *= m;
-  }
-
-  app.rotateInstanceBy(newAngle - oldAngle);
-}
-
-function onFingerUp(screenPos: Position, id: number) {
-  for (const b of allButtons) {
-    if (b.fingerId === id) {
-      onButtonUp(b);
-      b.fingerId = null;
+    switch (label) {
+      case 'clear':
+        app.drawing().clear();
+        scope.reset();
+        break;
+      case 'line':
+        app.moreLines();
+        break;
+      case 'arc':
+        app.moreArc();
+        break;
+      case 'move':
+        this.move();
+        break;
+      case 'horv':
+        app.horizontalOrVertical();
+        break;
+      case 'fix':
+        app.fixedPoint() || app.fixedDistance();
+        break;
+      case 'size':
+        app.fullSize();
+        break;
+      case 'weight':
+        app.weight();
+        break;
+      case 'dism':
+        app.dismember();
+        break;
+      case 'att':
+        app.toggleAttacher();
+        break;
+      case 'del':
+        app.del();
+        break;
+      case 'auto':
+        app.toggleAutoSolve();
+        break;
+      case 'reload':
+        location.reload();
+        break;
     }
   }
 
-  fingerScreenPositions.delete(id);
-}
+  onButtonUp(b: Button) {
+    if (b === this.eqButton) {
+      app.endEqualLength();
+    }
+  }
+
+  override onFingerMove(screenPos: Position, id: number) {
+    super.onFingerMove(screenPos, id);
+
+    if (app.drawing().isEmpty() || this.fingerScreenPositions.size > 2) {
+      return;
+    }
+
+    const oldScreenPos = this.fingerScreenPositions.get(id);
+    if (!oldScreenPos) {
+      return;
+    }
+
+    const pos = scope.fromScreenPosition(screenPos);
+    const oldPos = scope.fromScreenPosition(oldScreenPos);
+
+    if (!app.pen.pos) {
+      app.panBy(pos.x - oldPos.x, pos.y - oldPos.y);
+    }
+
+    if (this.fingerScreenPositions.size !== 2) {
+      return;
+    }
+
+    let otherFingerScreenPos: Position | null = null;
+    for (const [otherId, otherScreenPos] of this.fingerScreenPositions.entries()) {
+      if (otherId !== id) {
+        otherFingerScreenPos = otherScreenPos;
+        break;
+      }
+    }
+    if (!otherFingerScreenPos) {
+      throw new Error('bruh?!');
+    }
+
+    const otherFingerPos = scope.fromScreenPosition(otherFingerScreenPos);
+
+    const oldDist = pointDist(otherFingerPos, oldPos);
+    const newDist = pointDist(otherFingerPos, pos);
+    const m = newDist / oldDist;
+
+    const oldAngle = Math.atan2(oldPos.y - otherFingerPos.y, oldPos.x - otherFingerPos.x);
+    const newAngle = Math.atan2(pos.y - otherFingerPos.y, pos.x - otherFingerPos.x);
+
+    if (app.instance() && !this.drag) {
+      this.move();
+    }
+
+    if (!app.scaleInstanceBy(m) && !app.pen.pos) {
+      scope.scale *= m;
+    }
+
+    app.rotateInstanceBy(newAngle - oldAngle);
+  }
+
+  move() {
+    const handle = app.handle();
+    if (handle) {
+      this.drag = { thing: handle, offset: { x: 0, y: 0 } };
+      return;
+    }
+
+    const thing = app.thing();
+    if (thing) {
+      this.drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
+    }
+  }
+
+  snap() {
+    const snap = app.pen.snapPos(this.drag?.thing);
+    if (snap && snap !== this.lastSnap) {
+      this.hapticBump();
+    }
+    this.lastSnap = snap;
+  }
+
+  prepareHaptics() {
+    wrapper.send('prepareHaptics');
+  }
+
+  hapticBump() {
+    wrapper.send('hapticImpact');
+  }
+})();
