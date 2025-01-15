@@ -6,12 +6,16 @@ import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
 
+// TODO: lefty mode!
+
 // TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
 // TODO: harden the notion of "capture" / "claiming" fingers,
 // the pointer, which thing is bing dragged, rotated, scaled, etc.
 // so that when things overlap, the thing that you are manipulating
 // stays the same.
+
+// TODO: add (optional) visual knobs for rotation, scale, pan-x, pan-y
 
 class Button {
   leftX = 0;
