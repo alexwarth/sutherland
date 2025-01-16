@@ -45,7 +45,7 @@ export function setStatus(newStatus: string) {
 
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
-  ctx.lineWidth = config.lineWidth;
+  ctx.lineWidth = config().lineWidth;
   ctx.lineCap = 'round';
 
   if (status.length > 0) {
@@ -53,10 +53,10 @@ export function clear() {
     ctx.font = `${fontSizeInPixels}px Monaco`;
     const width = ctx.measureText(status).width;
     const statusAgeMillis = Date.now() - statusTimeMillis;
-    if (statusAgeMillis > config.statusTimeMillis) {
+    if (statusAgeMillis > config().statusTimeMillis) {
       status = '';
     } else {
-      const alpha = 1 - easeOutQuint(statusAgeMillis / config.statusTimeMillis);
+      const alpha = 1 - easeOutQuint(statusAgeMillis / config().statusTimeMillis);
       ctx.fillStyle = `rgba(255,222,33,${alpha})`;
       ctx.fillText(status, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
     }
@@ -140,8 +140,8 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
     baseAlpha = 0.7;
     multiplier = 0.1;
   }
-  baseAlpha *= config.baseAlphaMultiplier;
-  const alpha = config.flicker
+  baseAlpha *= config().baseAlphaMultiplier;
+  const alpha = config().flicker
     ? Math.random() * multiplier + baseAlpha
     : 0.75 * multiplier + baseAlpha;
   return `rgba(255,255,255,${alpha})`;

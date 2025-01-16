@@ -150,7 +150,7 @@ function addAttacher(m: Drawing, a: Handle) {
 // ---------- work done on every frame ----------
 
 export function onFrame() {
-  if (config.autoSolve) {
+  if (config().autoSolve) {
     const t0 = performance.now();
     let n = 0;
     while (performance.now() - t0 < 20 && _drawing.relax()) {
@@ -216,26 +216,26 @@ function renderCrosshairs() {
 
   const tpen = scope.toScreenPosition(pen.pos);
   drawLine(
-    { x: tpen.x - config.crosshairsSize, y: tpen.y },
-    { x: tpen.x + config.crosshairsSize, y: tpen.y },
+    { x: tpen.x - config().crosshairsSize, y: tpen.y },
+    { x: tpen.x + config().crosshairsSize, y: tpen.y },
     flickeryWhite('bold'),
   );
   drawLine(
-    { x: tpen.x, y: tpen.y - config.crosshairsSize },
-    { x: tpen.x, y: tpen.y + config.crosshairsSize },
+    { x: tpen.x, y: tpen.y - config().crosshairsSize },
+    { x: tpen.x, y: tpen.y + config().crosshairsSize },
     flickeryWhite('bold'),
   );
 }
 
 function renderDebugInfo() {
-  if (!config.debug) {
+  if (!config().debug) {
     return;
   }
 
   // draw axes
   const origin = scope.toScreenPosition({ x: 0, y: 0 });
-  drawLine({ x: 0, y: origin.y }, { x: innerWidth, y: origin.y }, config.axisColor);
-  drawLine({ x: origin.x, y: 0 }, { x: origin.x, y: innerHeight }, config.axisColor);
+  drawLine({ x: 0, y: origin.y }, { x: innerWidth, y: origin.y }, config().axisColor);
+  drawLine({ x: origin.x, y: 0 }, { x: origin.x, y: innerHeight }, config().axisColor);
 
   // draw pointer
   const ppos = pen.pos;
@@ -272,8 +272,8 @@ export function solve() {
 }
 
 export function toggleAutoSolve() {
-  config.autoSolve = !config.autoSolve;
-  setStatus(`auto-solve ${config.autoSolve ? 'on' : 'off'}`);
+  config().autoSolve = !config().autoSolve;
+  setStatus(`auto-solve ${config().autoSolve ? 'on' : 'off'}`);
 }
 
 export function del() {

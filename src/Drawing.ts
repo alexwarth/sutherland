@@ -45,7 +45,7 @@ export class Drawing {
       }
     });
     if (depth === 0) {
-      this.attachers.forEach((h) => h.render(transform, config.masterSideAttacherColor));
+      this.attachers.forEach((h) => h.render(transform, config().masterSideAttacherColor));
       this.constraints.forEach((c) => {
         if (c instanceof FixedDistanceConstraint) {
           let e = (c.computeError() * 100).toFixed();
@@ -54,10 +54,10 @@ export class Drawing {
           }
           this.drawText(
             e,
-            config.distanceConstraintTextScale,
+            config().distanceConstraintTextScale,
             transform({
-              x: c.a.x + config.distanceConstraintLabelPct * (c.b.x - c.a.x),
-              y: c.a.y + config.distanceConstraintLabelPct * (c.b.y - c.a.y),
+              x: c.a.x + config().distanceConstraintLabelPct * (c.b.x - c.a.x),
+              y: c.a.y + config().distanceConstraintLabelPct * (c.b.y - c.a.y),
             }),
           );
         }
@@ -158,12 +158,12 @@ export class Drawing {
         // skip
       } else if (thing instanceof Line) {
         this.constraints.add(new PointOnLineConstraint(handle, thing.a, thing.b));
-        if (config.showImplicitConstraints) {
+        if (config().showImplicitConstraints) {
           canvas.setStatus('(point on line)');
         }
       } else if (thing instanceof Arc) {
         this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
-        if (config.showImplicitConstraints) {
+        if (config().showImplicitConstraints) {
           canvas.setStatus('(point on arc)');
         }
       }

@@ -1,4 +1,4 @@
-import config from './config';
+import config, { saveConfig } from './config';
 import scope from './scope';
 import * as app from './app';
 import { setStatus, el as canvasEl } from './canvas';
@@ -45,11 +45,12 @@ function onKeyDown(e: KeyboardEvent) {
 
   switch (e.key) {
     case 'f':
-      config.flicker = !config.flicker;
+      config().flicker = !config().flicker;
+      saveConfig();
       return;
     case 'd':
-      config.debug = !config.debug;
-      setStatus(`debug ${config.debug ? 'on' : 'off'}`);
+      config().debug = !config().debug;
+      setStatus(`debug ${config().debug ? 'on' : 'off'}`);
       return;
     case 'S':
       app.toggleAutoSolve();

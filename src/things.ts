@@ -61,7 +61,7 @@ export class Handle implements Thing {
   }
 
   contains(pos: Position) {
-    return pointDist(pos, this) <= config.closeEnough / scope.scale;
+    return pointDist(pos, this) <= config().closeEnough / scope.scale;
   }
 
   distanceTo(pos: Position) {
@@ -73,8 +73,8 @@ export class Handle implements Thing {
     this.yVar.value += dy;
   }
 
-  render(transform: Transform, color: string = config.instanceSideAttacherColor): void {
-    if (config.debug) {
+  render(transform: Transform, color: string = config().instanceSideAttacherColor): void {
+    if (config().debug) {
       drawText(transform(this), `(${this.x.toFixed(0)},${this.y.toFixed(0)})`);
     }
     drawPoint(this, color, transform);
@@ -123,7 +123,7 @@ export class Line implements Thing {
     return (
       !this.a.contains(pos) &&
       !this.b.contains(pos) &&
-      this.distanceTo(pos) <= config.closeEnough / scope.scale
+      this.distanceTo(pos) <= config().closeEnough / scope.scale
     );
   }
 
@@ -136,10 +136,10 @@ export class Line implements Thing {
   }
 
   render(transform: Transform) {
-    if (this.isGuide && !config.showGuideLines) {
+    if (this.isGuide && !config().showGuideLines) {
       return;
     }
-    const style = this.isGuide ? config.guideLineColor : flickeryWhite();
+    const style = this.isGuide ? config().guideLineColor : flickeryWhite();
     drawLine(this.a, this.b, style, transform);
   }
 
@@ -183,7 +183,7 @@ export class Arc implements Thing {
 
   contains(pos: Position) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return this.distanceTo(pos) <= config.closeEnough / scope.scale;
+    return this.distanceTo(pos) <= config().closeEnough / scope.scale;
   }
 
   distanceTo(pos: Position) {
@@ -342,9 +342,9 @@ export class Instance implements Thing {
         drawLine(
           transform(this.transform(this.master.attachers[idx])),
           tAttacher,
-          config.instanceSideAttacherColor,
+          config().instanceSideAttacherColor,
         );
-        drawPoint(tAttacher, config.instanceSideAttacherColor);
+        drawPoint(tAttacher, config().instanceSideAttacherColor);
       });
     }
   }

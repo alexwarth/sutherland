@@ -15,7 +15,7 @@ type Command =
       end: number;
     };
 
-export function applyTo(drawing: Drawing, commands: Command[], scale = config.fontScale) {
+export function applyTo(drawing: Drawing, commands: Command[], scale = config().fontScale) {
   for (const command of commands) {
     switch (command.command) {
       case 'line': {
@@ -49,10 +49,10 @@ const commandsByLetter = new Map<string, Command[]>(rawJson.data.values as any);
 export const letterDrawings = new Map<string, Drawing>();
 for (const [letter, commands] of commandsByLetter) {
   const drawing = new Drawing();
-  applyTo(drawing, commands, config.fontScale);
+  applyTo(drawing, commands, config().fontScale);
   const line = drawing.addLine(
-    { x: -config.kerning * config.fontScale, y: 0 },
-    { x: (4 + config.kerning) * config.fontScale, y: 0 },
+    { x: -config().kerning * config().fontScale, y: 0 },
+    { x: (4 + config().kerning) * config().fontScale, y: 0 },
     true,
   );
   drawing.attachers.push(line.a, line.b);
@@ -65,7 +65,8 @@ export function lettersDo(
   fn: (letter: Drawing, x: number, ls: number) => void,
 ) {
   const letterScale = (l: string) => scale * (l === l.toUpperCase() ? 1 : 0.75);
-  const letterWidth = (l: string) => letterScale(l) * config.fontScale * (4 + config.kerning * 2);
+  const letterWidth = (l: string) =>
+    letterScale(l) * config().fontScale * (4 + config().kerning * 2);
   let x = scope.center.x - 0.5 * [...msg].map(letterWidth).reduce((a, b) => a + b, 0);
   for (let idx = 0; idx < msg.length; idx++) {
     const l = msg[idx];

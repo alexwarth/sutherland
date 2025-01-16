@@ -42,7 +42,7 @@ export default class ConstraintSet {
   relax(vars: Set<Var>) {
     this.forEach((c) => c.preRelax());
     const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
-    const minWorthwhileErrorImprovement = config.minWorthwhileErrorImprovement * epsilon;
+    const minWorthwhileErrorImprovement = config().minWorthwhileErrorImprovement * epsilon;
     let ans = false;
     for (const v of vars) {
       ans = this.relaxWithVar(v, epsilon, minWorthwhileErrorImprovement) || ans;

@@ -328,7 +328,7 @@ export class WeightConstraint extends Constraint {
   }
 
   computeError() {
-    const wantY = this.y0 - config.weight;
+    const wantY = this.y0 - config().weight;
     return wantY - this.a.y;
   }
 }

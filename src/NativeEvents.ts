@@ -38,7 +38,7 @@ export function getQueuedEvents() {
 
 function wrapperEvents(events: NativeEvent[]) {
   for (const event of events) {
-    if (!event.predicted || config.usePredictedEvents) {
+    if (!event.predicted || config().usePredictedEvents) {
       queuedEvents.push(event);
     }
   }

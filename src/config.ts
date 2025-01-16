@@ -1,4 +1,4 @@
-const config = {
+const defaultConfig = {
   debug: false,
   flicker: true,
   baseAlphaMultiplier: 1.5,
@@ -27,6 +27,23 @@ const config = {
   },
 };
 
-(window as any).config = config;
+let _config = defaultConfig;
 
-export default config;
+export function loadConfig() {
+  _config = JSON.parse(localStorage.getItem('config') ?? JSON.stringify(defaultConfig));
+}
+
+export function saveConfig() {
+  localStorage.setItem('config', JSON.stringify(_config));
+}
+
+export function restoreDefaultConfig() {
+  _config = defaultConfig;
+  saveConfig();
+}
+
+export default function config() {
+  return _config;
+}
+
+loadConfig();
