@@ -410,7 +410,8 @@ const configScreen = new (class extends Screen {
   readonly leftyButton = new Button('lefty');
   readonly lineWidthButton = new Button('lwidth');
   readonly alphaButton = new Button('opacity');
-  readonly col1 = [this.leftyButton, this.lineWidthButton, this.alphaButton];
+  readonly flickerButton = new Button('flicker');
+  readonly col1 = [this.leftyButton, this.lineWidthButton, this.alphaButton, this.flickerButton];
   readonly col2 = [new Button('back')];
 
   constructor() {
@@ -437,6 +438,11 @@ const configScreen = new (class extends Screen {
       this.alphaButton.topY,
       0.35 * SMALL_CAPS,
     );
+    drawText(
+      config.flicker ? 'on' : 'off',
+      this.flickerButton.leftX + 2 * config.tablet.buttonWidth,
+      this.flickerButton.topY,
+    );
   }
 
   layOutButtons() {
@@ -460,6 +466,9 @@ const configScreen = new (class extends Screen {
         break;
       case 'lefty':
         config.tablet.lefty = !config.tablet.lefty;
+        break;
+      case 'flicker':
+        config.flicker = !config.flicker;
         break;
     }
   }
