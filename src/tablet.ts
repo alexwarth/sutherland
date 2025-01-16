@@ -1,4 +1,4 @@
-import config, { saveConfig } from './config';
+import config, { restoreDefaultConfig, saveConfig } from './config';
 import scope from './scope';
 import * as app from './app';
 import * as wrapper from './wrapper';
@@ -407,12 +407,20 @@ const mainScreen = new (class extends Screen {
 })();
 
 const configScreen = new (class extends Screen {
+  readonly defaultsButton = new Button('defaults');
   readonly leftyButton = new Button('lefty');
   readonly lineWidthButton = new Button('lwidth');
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
-  readonly col1 = [this.leftyButton, this.lineWidthButton, this.alphaButton, this.flickerButton];
-  readonly col2 = [new Button('back')];
+  readonly backButton = new Button('back');
+  readonly col1 = [
+    this.leftyButton,
+    this.lineWidthButton,
+    this.alphaButton,
+    this.flickerButton,
+    this.defaultsButton,
+  ];
+  readonly col2 = [this.backButton];
 
   constructor() {
     super();
@@ -459,16 +467,18 @@ const configScreen = new (class extends Screen {
   }
 
   onButtonDown(b: Button) {
-    const label = b.label.toLowerCase();
-    switch (label) {
-      case 'back':
+    switch (b) {
+      case this.defaultsButton:
+        restoreDefaultConfig();
+        break;
+      case this.backButton:
         screen = mainScreen;
         saveConfig();
         break;
-      case 'lefty':
+      case this.leftyButton:
         config().tablet.lefty = !config().tablet.lefty;
         break;
-      case 'flicker':
+      case this.flickerButton:
         config().flicker = !config().flicker;
         break;
     }
