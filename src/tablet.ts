@@ -443,7 +443,6 @@ const configScreen = new (class extends Screen {
       this.flickerButton.leftX + 2 * config().tablet.buttonWidth,
       this.flickerButton.topY,
     );
-    drawText(localStorage.getItem('ccc') ?? 'n/a', 0, 100);
   }
 
   layOutButtons() {
