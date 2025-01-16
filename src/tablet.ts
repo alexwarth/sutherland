@@ -15,31 +15,33 @@ import { Handle, Thing } from './things';
 
 // TODO: add (optional) visual knobs for rotation, scale, pan-x, pan-y
 
+const letterHeight = () => config.fontScale * 8;
+
+function drawText(text: string, x: number, y: number, scale = 0.35) {
+  app.drawing().drawText(text, scale, {
+    x: x + config.tablet.buttonWidth / 2,
+    y: y + letterHeight() / 2 + scale * config.fontScale * 3,
+  });
+}
+
 class Button {
-  leftX = 0;
   topY = 0;
-  height: number;
-  scale = 0.35;
+  leftX = 0;
   fingerId: number | null = null;
 
-  constructor(readonly label: string) {
-    this.height = config.fontScale * 8;
-  }
+  constructor(readonly label: string) {}
 
   contains({ x, y }: Position) {
     return (
       this.leftX <= x &&
       x < this.leftX + config.tablet.buttonWidth &&
       this.topY <= y &&
-      y < this.topY + this.height
+      y < this.topY + letterHeight()
     );
   }
 
   render() {
-    app.drawing().drawText(this.label, this.scale, {
-      x: this.leftX + config.tablet.buttonWidth / 2,
-      y: this.topY + this.height / 2 + this.scale * config.fontScale * 3,
-    });
+    drawText(this.label, this.leftX, this.topY);
   }
 
   get isDown() {
@@ -126,7 +128,7 @@ abstract class Screen {
     let idx = 0;
     for (const b of buttons) {
       b.leftX = leftX;
-      b.topY = idx * b.height;
+      b.topY = idx * letterHeight();
       idx++;
     }
   }
@@ -175,7 +177,7 @@ const mainScreen = new (class extends Screen {
     new Button('CLEAR'),
     new Button('AUTO'),
   ];
-  readonly col3 = [new Button('reload'), new Button('config')];
+  readonly col3 = [new Button('config'), new Button('reload')];
 
   pencilClickInProgress = false;
   drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
@@ -404,15 +406,31 @@ const mainScreen = new (class extends Screen {
 })();
 
 const configScreen = new (class extends Screen {
-  readonly col1: Button[] = [new Button('back')];
+  readonly leftyButton = new Button('lefty');
+  readonly col1 = [this.leftyButton];
+  readonly col2 = [new Button('back')];
 
   constructor() {
     super();
-    this.buttons.push(...this.col1);
+    this.buttons.push(...this.col1, ...this.col2);
+  }
+
+  render() {
+    super.render();
+    drawText(
+      config.tablet.lefty ? 'on' : 'off',
+      this.leftyButton.leftX + config.tablet.buttonWidth,
+      this.leftyButton.topY,
+    );
   }
 
   layOutButtons() {
-    this.layOutButtonColumn(0, this.col1);
+    this.layOutButtonColumn(innerWidth / 2 - config.tablet.buttonWidth / 2, this.col1);
+    if (!config.tablet.lefty) {
+      this.layOutButtonColumn(innerWidth - config.tablet.buttonWidth, this.col2);
+    } else {
+      this.layOutButtonColumn(0, this.col2);
+    }
   }
 
   onFrame() {
@@ -424,6 +442,9 @@ const configScreen = new (class extends Screen {
     switch (label) {
       case 'back':
         screen = mainScreen;
+        break;
+      case 'lefty':
+        config.tablet.lefty = !config.tablet.lefty;
         break;
     }
   }
