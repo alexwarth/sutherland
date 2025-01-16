@@ -420,8 +420,14 @@ const configScreen = new (class extends Screen {
     super.render();
     drawText(
       config.tablet.lefty ? 'on' : 'off',
-      this.leftyButton.leftX + config.tablet.buttonWidth,
+      this.leftyButton.leftX + 2 * config.tablet.buttonWidth,
       this.leftyButton.topY,
+    );
+    drawText(
+      config.lineWidth.toFixed(2),
+      this.lineWidthButton.leftX + 2 * config.tablet.buttonWidth,
+      this.lineWidthButton.topY,
+      0.35 * 0.75,
     );
   }
 
