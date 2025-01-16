@@ -27,7 +27,7 @@ const defaultConfig = {
   },
 };
 
-let _config = defaultConfig;
+let _config: typeof defaultConfig;
 
 export function loadConfig() {
   _config = JSON.parse(localStorage.getItem('config') ?? JSON.stringify(defaultConfig));
@@ -44,7 +44,7 @@ export function saveConfig() {
 }
 
 export function restoreDefaultConfig() {
-  _config = defaultConfig;
+  _config = JSON.parse(JSON.stringify(defaultConfig));
   saveConfig();
 }
 
