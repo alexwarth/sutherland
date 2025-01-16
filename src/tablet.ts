@@ -151,34 +151,47 @@ export function render() {
 }
 
 const mainScreen = new (class extends Screen {
+  readonly lineButton = new Button('LINE');
   readonly moveButton = new Button('MOVE');
+  readonly horvButton = new Button('HORV');
+  readonly sizeButton = new Button('SIZE');
+  readonly dismemberButton = new Button('DISM');
+  readonly deleteButton = new Button('DEL');
   readonly solveButton = new Button('SOLVE');
+  readonly arcButton = new Button('ARC');
   readonly eqButton = new Button('EQ');
+  readonly fixButton = new Button('FIX');
+  readonly weightButton = new Button('weight');
+  readonly attacherButton = new Button('ATT');
+  readonly clearButton = new Button('CLEAR');
+  readonly autoSolveButton = new Button('AUTO');
+  readonly configButton = new Button('config');
+  readonly reloadButton = new Button('reload');
   readonly col1 = [
     new Button('1'),
     new Button('2'),
     new Button('3'),
-    new Button('LINE'),
+    this.lineButton,
     this.moveButton,
-    new Button('HORV'),
-    new Button('SIZE'),
-    new Button('DISM'),
-    new Button('DEL'),
+    this.horvButton,
+    this.sizeButton,
+    this.dismemberButton,
+    this.deleteButton,
     this.solveButton,
   ];
   readonly col2 = [
     new Button('4'),
     new Button('5'),
     new Button('6'),
-    new Button('ARC'),
+    this.arcButton,
     this.eqButton,
-    new Button('FIX'),
-    new Button('weight'),
-    new Button('ATT'),
-    new Button('CLEAR'),
-    new Button('AUTO'),
+    this.fixButton,
+    this.weightButton,
+    this.attacherButton,
+    this.clearButton,
+    this.autoSolveButton,
   ];
-  readonly col3 = [new Button('config'), new Button('reload')];
+  readonly col3 = [this.configButton, this.reloadButton];
 
   pencilClickInProgress = false;
   drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
@@ -258,8 +271,7 @@ const mainScreen = new (class extends Screen {
   }
 
   override onButtonDown(b: Button) {
-    const label = b.label.toLowerCase();
-    if ('1' <= label && label <= '9') {
+    if ('1' <= b.label && b.label <= '9') {
       if (app.pen.pos) {
         app.instantiate(b.label);
         this.move();
@@ -269,48 +281,48 @@ const mainScreen = new (class extends Screen {
       return;
     }
 
-    switch (label) {
-      case 'clear':
+    switch (b) {
+      case this.clearButton:
         app.drawing().clear();
         scope.reset();
         break;
-      case 'line':
+      case this.lineButton:
         app.moreLines();
         break;
-      case 'arc':
+      case this.arcButton:
         app.moreArc();
         break;
-      case 'move':
+      case this.moveButton:
         this.move();
         break;
-      case 'horv':
+      case this.horvButton:
         app.horizontalOrVertical();
         break;
-      case 'fix':
+      case this.fixButton:
         app.fixedPoint() || app.fixedDistance();
         break;
-      case 'size':
+      case this.sizeButton:
         app.fullSize();
         break;
-      case 'weight':
+      case this.weightButton:
         app.weight();
         break;
-      case 'dism':
+      case this.dismemberButton:
         app.dismember();
         break;
-      case 'att':
+      case this.attacherButton:
         app.toggleAttacher();
         break;
-      case 'del':
+      case this.deleteButton:
         app.del();
         break;
-      case 'auto':
+      case this.autoSolveButton:
         app.toggleAutoSolve();
         break;
-      case 'reload':
+      case this.reloadButton:
         location.reload();
         break;
-      case 'config':
+      case this.configButton:
         screen = configScreen;
         break;
     }
@@ -485,7 +497,7 @@ const configScreen = new (class extends Screen {
   }
 
   onButtonUp(b: Button) {
-    // TODO
+    // no op
   }
 
   override onFingerMove(screenPos: Position, id: number): void {
