@@ -1,4 +1,5 @@
 import config from './config';
+import scope from './scope';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
@@ -60,7 +61,7 @@ export class Handle implements Thing {
   }
 
   contains(pos: Position) {
-    return pointDist(pos, this) <= config.closeEnough;
+    return pointDist(pos, this) <= config.closeEnough / scope.scale;
   }
 
   distanceTo(pos: Position) {
@@ -120,7 +121,9 @@ export class Line implements Thing {
 
   contains(pos: Position) {
     return (
-      !this.a.contains(pos) && !this.b.contains(pos) && this.distanceTo(pos) <= config.closeEnough
+      !this.a.contains(pos) &&
+      !this.b.contains(pos) &&
+      this.distanceTo(pos) <= config.closeEnough / scope.scale
     );
   }
 
@@ -180,7 +183,7 @@ export class Arc implements Thing {
 
   contains(pos: Position) {
     // TODO: only return `true` if p is between a and b (angle-wise)
-    return this.distanceTo(pos) <= config.closeEnough;
+    return this.distanceTo(pos) <= config.closeEnough / scope.scale;
   }
 
   distanceTo(pos: Position) {
