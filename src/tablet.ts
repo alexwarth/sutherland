@@ -407,7 +407,8 @@ const mainScreen = new (class extends Screen {
 
 const configScreen = new (class extends Screen {
   readonly leftyButton = new Button('lefty');
-  readonly col1 = [this.leftyButton];
+  readonly lineWidthButton = new Button('lwidth');
+  readonly col1 = [this.leftyButton, this.lineWidthButton];
   readonly col2 = [new Button('back')];
 
   constructor() {
@@ -451,5 +452,13 @@ const configScreen = new (class extends Screen {
 
   onButtonUp(b: Button) {
     // TODO
+  }
+
+  override onFingerMove(screenPos: Position, id: number): void {
+    super.onFingerMove(screenPos, id);
+    if (id === this.lineWidthButton.fingerId) {
+      config.lineWidth += ((screenPos.x - innerWidth / 2) / innerWidth) * 2;
+      config.lineWidth = Math.max(1, Math.min(config.lineWidth, 10));
+    }
   }
 })();
