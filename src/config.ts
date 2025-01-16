@@ -31,6 +31,12 @@ let _config = defaultConfig;
 
 export function loadConfig() {
   _config = JSON.parse(localStorage.getItem('config') ?? JSON.stringify(defaultConfig));
+  // fill in missing properties (this is important for code updates that add new properties)
+  for (const [key, value] of Object.entries(defaultConfig)) {
+    if (!Object.hasOwn(_config, key)) {
+      _config[key] = value;
+    }
+  }
 }
 
 export function saveConfig() {
