@@ -37,6 +37,10 @@ export class Drawing {
   }
 
   render(transform = scope.toScreenPosition, depth = 0) {
+    if (depth > config().maxDepth) {
+      return;
+    }
+
     this.things.forEach((t) => {
       if (t instanceof Instance) {
         t.render(transform, depth + 1);
@@ -66,11 +70,6 @@ export class Drawing {
   }
 
   addInstance(master: Drawing, { x, y }: Position, size: number, angle: number) {
-    if (master === this) {
-      // TODO: detect cycles, too!
-      return null;
-    }
-
     const instance = new Instance(master, x, y, size, angle, this);
     this.things.push(instance);
     return instance;
@@ -372,12 +371,12 @@ export class Drawing {
     }
   }
 
-  boundingBox(): { topLeft: Position; bottomRight: Position } {
+  boundingBox(stopAt: Drawing = this): { topLeft: Position; bottomRight: Position } {
     // TODO: include arcs...
     const ps = [...this.getPositions()];
     for (const thing of this.things) {
-      if (thing instanceof Instance) {
-        const bb = thing.boundingBox();
+      if (thing instanceof Instance && thing.master !== stopAt) {
+        const bb = thing.boundingBox(stopAt);
         ps.push(bb.topLeft);
         ps.push(bb.bottomRight);
       }

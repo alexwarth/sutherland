@@ -313,8 +313,8 @@ export class Instance implements Thing {
     return ans;
   }
 
-  boundingBox() {
-    const { topLeft, bottomRight } = this.master.boundingBox();
+  boundingBox(stopAt = this.master) {
+    const { topLeft, bottomRight } = this.master.boundingBox(stopAt);
     const ps = [
       topLeft,
       bottomRight,
@@ -335,8 +335,9 @@ export class Instance implements Thing {
   }
 
   render(transform: Transform, depth = 0) {
-    this.master.render((pos) => transform(this.transform(pos)), depth + 1);
+    this.master.render((pos) => transform(this.transform(pos)), depth);
     if (depth === 1) {
+      // draw instance-side attachers
       this.attachers.forEach((attacher, idx) => {
         const tAttacher = transform(attacher);
         drawLine(

@@ -21,6 +21,7 @@ const defaultConfig = {
   distanceConstraintTextScale: 0.3,
   distanceConstraintLabelPct: 0.25,
   showImplicitConstraints: false,
+  maxDepth: 10,
   tablet: {
     buttonWidth: 100,
     lefty: false,
@@ -53,3 +54,5 @@ export default function config() {
 }
 
 loadConfig();
+
+(window as any).config = config;
