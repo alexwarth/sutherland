@@ -15,6 +15,7 @@ import { Handle, Thing } from './things';
 
 // TODO: add (optional) visual knobs for rotation, scale, pan-x, pan-y
 
+const SMALL_CAPS = 0.75;
 const letterHeight = () => config.fontScale * 8;
 
 function drawText(text: string, x: number, y: number, scale = 0.35) {
@@ -408,7 +409,8 @@ const mainScreen = new (class extends Screen {
 const configScreen = new (class extends Screen {
   readonly leftyButton = new Button('lefty');
   readonly lineWidthButton = new Button('lwidth');
-  readonly col1 = [this.leftyButton, this.lineWidthButton];
+  readonly alphaButton = new Button('opacity');
+  readonly col1 = [this.leftyButton, this.lineWidthButton, this.alphaButton];
   readonly col2 = [new Button('back')];
 
   constructor() {
@@ -427,7 +429,13 @@ const configScreen = new (class extends Screen {
       config.lineWidth.toFixed(2),
       this.lineWidthButton.leftX + 2 * config.tablet.buttonWidth,
       this.lineWidthButton.topY,
-      0.35 * 0.75,
+      0.35 * SMALL_CAPS,
+    );
+    drawText(
+      config.baseAlphaMultiplier.toFixed(2),
+      this.alphaButton.leftX + 2 * config.tablet.buttonWidth,
+      this.alphaButton.topY,
+      0.35 * SMALL_CAPS,
     );
   }
 
@@ -465,6 +473,9 @@ const configScreen = new (class extends Screen {
     if (id === this.lineWidthButton.fingerId) {
       config.lineWidth += ((screenPos.x - innerWidth / 2) / innerWidth) * 2;
       config.lineWidth = Math.max(1, Math.min(config.lineWidth, 10));
+    } else if (id === this.alphaButton.fingerId) {
+      config.baseAlphaMultiplier += (screenPos.x - innerWidth / 2) / innerWidth;
+      config.baseAlphaMultiplier = Math.max(0.5, Math.min(config.baseAlphaMultiplier, 2.5));
     }
   }
 })();
