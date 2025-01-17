@@ -293,7 +293,7 @@ export class Drawing {
     }
 
     constraints.forEach((c) => {
-      this.constraints.add(c.map(thingMap, handleMap));
+      this.constraints.add(c.map(thingMap, handleMap, instance.transform));
     });
 
     this.things = this.things.filter((thing) => thing !== instance);

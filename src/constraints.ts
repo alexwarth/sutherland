@@ -19,7 +19,11 @@ export abstract class Constraint {
   // override in subclasses like weight constraint
   preRelax(): void {}
 
-  abstract map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>): Constraint;
+  abstract map(
+    thingMap: Map<Thing, Thing>,
+    handleMap: Map<Handle, Handle>,
+    transform: (pos: Position) => Position,
+  ): Constraint;
 
   abstract computeError(): number;
   abstract get signature(): string;
@@ -50,8 +54,12 @@ export class FixedPointConstraint extends Constraint {
     this.pos = { x, y };
   }
 
-  override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
-    return new FixedPointConstraint(handleMap.get(this.p)!, this.pos);
+  override map(
+    thingMap: Map<Thing, Thing>,
+    handleMap: Map<Handle, Handle>,
+    transform: (pos: Position) => Position,
+  ) {
+    return new FixedPointConstraint(handleMap.get(this.p)!, transform(this.pos));
   }
 
   private get p() {
