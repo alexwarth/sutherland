@@ -420,17 +420,19 @@ const mainScreen = new (class extends Screen {
 })();
 
 const configScreen = new (class extends Screen {
-  readonly defaultsButton = new Button('defaults');
   readonly leftyButton = new Button('lefty');
   readonly lineWidthButton = new Button('lwidth');
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
+  readonly recursionButton = new Button('recursion');
+  readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
   readonly col1 = [
     this.leftyButton,
     this.lineWidthButton,
     this.alphaButton,
     this.flickerButton,
+    this.recursionButton,
     this.defaultsButton,
   ];
   readonly col2 = [this.backButton];
@@ -464,6 +466,11 @@ const configScreen = new (class extends Screen {
       this.flickerButton.leftX + 2 * config().tabletButtonWidth,
       this.flickerButton.topY,
     );
+    drawText(
+      config().recursion ? 'on' : 'off',
+      this.recursionButton.leftX + 2 * config().tabletButtonWidth,
+      this.recursionButton.topY,
+    );
   }
 
   layOutButtons() {
@@ -485,14 +492,18 @@ const configScreen = new (class extends Screen {
         restoreDefaultConfig();
         setStatus('restored defaults!');
         break;
-      case this.backButton:
-        screen = mainScreen;
-        break;
       case this.leftyButton:
         updateConfig({ lefty: !config().lefty });
         break;
       case this.flickerButton:
-        config().flicker = !config().flicker;
+        updateConfig({ flicker: !config().flicker });
+        break;
+      case this.recursionButton:
+        updateConfig({ recursion: !config().recursion });
+        setStatus(config().recursion ? 'use at your own risk!' : 'phew');
+        break;
+      case this.backButton:
+        screen = mainScreen;
         break;
     }
   }

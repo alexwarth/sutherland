@@ -69,6 +69,18 @@ export class Drawing {
     }
   }
 
+  contains(drawing: Drawing) {
+    if (this === drawing) {
+      return true;
+    }
+    for (const thing of this.things) {
+      if (thing instanceof Instance && thing.master.contains(drawing)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   addInstance(master: Drawing, { x, y }: Position, size: number, angle: number) {
     const instance = new Instance(master, x, y, size, angle, this);
     this.things.push(instance);
