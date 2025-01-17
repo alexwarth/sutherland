@@ -1,4 +1,4 @@
-import config, { saveConfig } from './config';
+import config, { updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
 import { setStatus, el as canvasEl } from './canvas';
@@ -45,8 +45,7 @@ function onKeyDown(e: KeyboardEvent) {
 
   switch (e.key) {
     case 'f':
-      config().flicker = !config().flicker;
-      saveConfig();
+      updateConfig({ flicker: !config().flicker });
       return;
     case 'd':
       config().debug = !config().debug;

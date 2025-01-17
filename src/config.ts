@@ -22,13 +22,13 @@ const defaultConfig = {
   distanceConstraintLabelPct: 0.25,
   showImplicitConstraints: false,
   maxDepth: 10,
-  tablet: {
-    buttonWidth: 100,
-    lefty: false,
-  },
+  tabletButtonWidth: 100,
+  lefty: false,
 };
 
-let _config: typeof defaultConfig;
+export type Config = typeof defaultConfig;
+
+let _config: Config;
 
 export function loadConfig() {
   _config = JSON.parse(localStorage.getItem('config') ?? JSON.stringify(defaultConfig));
@@ -40,13 +40,17 @@ export function loadConfig() {
   }
 }
 
-export function saveConfig() {
-  localStorage.setItem('config', JSON.stringify(_config));
+export function updateConfig(updates: Partial<Config>) {
+  _config = { ..._config, ...updates };
+  localStorage.setItem(
+    'config',
+    JSON.stringify({ ...JSON.parse(localStorage.getItem('config')!), ...updates }),
+  );
 }
 
 export function restoreDefaultConfig() {
   _config = JSON.parse(JSON.stringify(defaultConfig));
-  saveConfig();
+  localStorage.setItem('config', JSON.stringify(_config));
 }
 
 export default function config() {

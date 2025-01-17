@@ -1,10 +1,11 @@
-import config, { restoreDefaultConfig, saveConfig } from './config';
+import config, { restoreDefaultConfig, updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
+import { setStatus } from './canvas';
 
 // TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
@@ -20,7 +21,7 @@ const letterHeight = () => config().fontScale * 8;
 
 function drawText(text: string, x: number, y: number, scale = 0.35) {
   app.drawing().drawText(text, scale, {
-    x: x + config().tablet.buttonWidth / 2,
+    x: x + config().tabletButtonWidth / 2,
     y: y + letterHeight() / 2 + scale * config().fontScale * 3,
   });
 }
@@ -35,7 +36,7 @@ class Button {
   contains({ x, y }: Position) {
     return (
       this.leftX <= x &&
-      x < this.leftX + config().tablet.buttonWidth &&
+      x < this.leftX + config().tabletButtonWidth &&
       this.topY <= y &&
       y < this.topY + letterHeight()
     );
@@ -209,13 +210,13 @@ const mainScreen = new (class extends Screen {
   }
 
   override layOutButtons() {
-    if (!config().tablet.lefty) {
+    if (!config().lefty) {
       this.layOutButtonColumn(0, this.col1);
-      this.layOutButtonColumn(config().tablet.buttonWidth, this.col2);
-      this.layOutButtonColumn(innerWidth - config().tablet.buttonWidth, this.col3);
+      this.layOutButtonColumn(config().tabletButtonWidth, this.col2);
+      this.layOutButtonColumn(innerWidth - config().tabletButtonWidth, this.col3);
     } else {
-      this.layOutButtonColumn(innerWidth - config().tablet.buttonWidth, this.col1);
-      this.layOutButtonColumn(innerWidth - 2 * config().tablet.buttonWidth, this.col2);
+      this.layOutButtonColumn(innerWidth - config().tabletButtonWidth, this.col1);
+      this.layOutButtonColumn(innerWidth - 2 * config().tabletButtonWidth, this.col2);
       this.layOutButtonColumn(0, this.col3);
     }
   }
@@ -442,33 +443,33 @@ const configScreen = new (class extends Screen {
   render() {
     super.render();
     drawText(
-      config().tablet.lefty ? 'on' : 'off',
-      this.leftyButton.leftX + 2 * config().tablet.buttonWidth,
+      config().lefty ? 'on' : 'off',
+      this.leftyButton.leftX + 2 * config().tabletButtonWidth,
       this.leftyButton.topY,
     );
     drawText(
       config().lineWidth.toFixed(2),
-      this.lineWidthButton.leftX + 2 * config().tablet.buttonWidth,
+      this.lineWidthButton.leftX + 2 * config().tabletButtonWidth,
       this.lineWidthButton.topY,
       0.35 * SMALL_CAPS,
     );
     drawText(
       config().baseAlphaMultiplier.toFixed(2),
-      this.alphaButton.leftX + 2 * config().tablet.buttonWidth,
+      this.alphaButton.leftX + 2 * config().tabletButtonWidth,
       this.alphaButton.topY,
       0.35 * SMALL_CAPS,
     );
     drawText(
       config().flicker ? 'on' : 'off',
-      this.flickerButton.leftX + 2 * config().tablet.buttonWidth,
+      this.flickerButton.leftX + 2 * config().tabletButtonWidth,
       this.flickerButton.topY,
     );
   }
 
   layOutButtons() {
-    this.layOutButtonColumn(innerWidth / 2 - config().tablet.buttonWidth / 2, this.col1);
-    if (!config().tablet.lefty) {
-      this.layOutButtonColumn(innerWidth - config().tablet.buttonWidth, this.col2);
+    this.layOutButtonColumn(innerWidth / 2 - config().tabletButtonWidth / 2, this.col1);
+    if (!config().lefty) {
+      this.layOutButtonColumn(innerWidth - config().tabletButtonWidth, this.col2);
     } else {
       this.layOutButtonColumn(0, this.col2);
     }
@@ -482,13 +483,13 @@ const configScreen = new (class extends Screen {
     switch (b) {
       case this.defaultsButton:
         restoreDefaultConfig();
+        setStatus('restored defaults!');
         break;
       case this.backButton:
         screen = mainScreen;
-        saveConfig();
         break;
       case this.leftyButton:
-        config().tablet.lefty = !config().tablet.lefty;
+        updateConfig({ lefty: !config().lefty });
         break;
       case this.flickerButton:
         config().flicker = !config().flicker;
@@ -503,11 +504,17 @@ const configScreen = new (class extends Screen {
   override onFingerMove(screenPos: Position, id: number): void {
     super.onFingerMove(screenPos, id);
     if (id === this.lineWidthButton.fingerId) {
-      config().lineWidth += ((screenPos.x - innerWidth / 2) / innerWidth) * 2;
-      config().lineWidth = Math.max(1, Math.min(config().lineWidth, 10));
+      const lineWidth = Math.max(
+        1,
+        Math.min(config().lineWidth + ((screenPos.x - innerWidth / 2) / innerWidth) * 2, 10),
+      );
+      updateConfig({ lineWidth });
     } else if (id === this.alphaButton.fingerId) {
-      config().baseAlphaMultiplier += (screenPos.x - innerWidth / 2) / innerWidth;
-      config().baseAlphaMultiplier = Math.max(0.5, Math.min(config().baseAlphaMultiplier, 2.5));
+      const baseAlphaMultiplier = Math.max(
+        0.5,
+        Math.min(config().baseAlphaMultiplier + (screenPos.x - innerWidth / 2) / innerWidth, 2.5),
+      );
+      updateConfig({ baseAlphaMultiplier });
     }
   }
 })();
