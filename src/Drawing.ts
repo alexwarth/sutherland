@@ -371,6 +371,9 @@ export class Drawing {
 
   leave() {
     this.center();
+    // TODO: move instances to correct for the master's re-centering?
+    // if so, this should happen every time a master changes, really
+    // (think about recursive instances, etc.)
   }
 
   center() {
