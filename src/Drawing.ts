@@ -1,6 +1,6 @@
 import config from './config';
 import scope from './scope';
-import * as canvas from './canvas';
+import * as status from './status';
 import { lettersDo } from './font';
 import {
   EqualDistanceConstraint,
@@ -170,12 +170,12 @@ export class Drawing {
       } else if (thing instanceof Line) {
         this.constraints.add(new PointOnLineConstraint(handle, thing.a, thing.b));
         if (config().showImplicitConstraints) {
-          canvas.setStatus('(point on line)');
+          status.set({ message: '(point on line)', referents: new Set([handle, thing]) });
         }
       } else if (thing instanceof Arc) {
         this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
         if (config().showImplicitConstraints) {
-          canvas.setStatus('(point on arc)');
+          status.set({ message: '(point on arc)', referents: new Set([handle, thing]) });
         }
       }
     }

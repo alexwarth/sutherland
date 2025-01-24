@@ -1,6 +1,7 @@
 import config from './config';
 import scope from './scope';
-import { drawArc, drawLine, drawText, flickeryWhite, setStatus } from './canvas';
+import * as status from './status';
+import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
 import { Position } from './helpers';
@@ -74,7 +75,7 @@ export function switchToDrawing(id: string) {
   _drawing = d;
   doWithoutMovingPointer(() => scope.reset());
   endEqualLength();
-  setStatus('drawing #' + id);
+  status.set('drawing #' + id);
 }
 
 const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
@@ -167,6 +168,7 @@ export function render() {
   renderDrawingInProgress();
   _drawing.render();
   renderCrosshairs();
+  status.render();
   renderDebugInfo();
 }
 
@@ -265,19 +267,19 @@ export function instance() {
 
 export function solve() {
   if (!_drawing.isEmpty()) {
-    setStatus('solve');
+    status.set('solve');
     _drawing.relax();
   }
 }
 
 export function toggleAutoSolve() {
   config().autoSolve = !config().autoSolve;
-  setStatus(`auto-solve ${config().autoSolve ? 'on' : 'off'}`);
+  status.set(`auto-solve ${config().autoSolve ? 'on' : 'off'}`);
 }
 
 export function del() {
   if (pen.pos && _drawing.delete(pen.pos)) {
-    setStatus('delete');
+    status.set('delete');
     cleanUp();
     if (_drawing.isEmpty()) {
       doWithoutMovingPointer(() => scope.reset());
@@ -287,13 +289,13 @@ export function del() {
 
 export function fixedDistance() {
   if (pen.pos && _drawing.fixedDistance(pen.pos)) {
-    setStatus('fixed distance');
+    status.set('fixed distance');
   }
 }
 
 export function fixedPoint() {
   if (pen.pos && _drawing.fixedPoint(pen.pos)) {
-    setStatus('fixed point');
+    status.set('fixed point');
     return true;
   } else {
     return false;
@@ -302,26 +304,26 @@ export function fixedPoint() {
 
 export function weight() {
   if (pen.pos && _drawing.weight(pen.pos)) {
-    setStatus('weight');
+    status.set('weight');
   }
 }
 
 export function horizontalOrVertical() {
   if (pen.pos && _drawing.horizontalOrVertical(pen.pos)) {
-    setStatus('HorV');
+    status.set('HorV');
   }
 }
 
 export function fullSize() {
   if (pen.pos && _drawing.fullSize(pen.pos)) {
-    setStatus('full size');
+    status.set('full size');
   }
 }
 
 export function reCenter() {
   const ppos = pen.pos;
   if (ppos) {
-    setStatus('re-center');
+    status.set('re-center');
     doWithoutMovingPointer(() => {
       scope.centerAt(ppos);
     });
@@ -334,14 +336,14 @@ export function instantiate(id: string) {
   // (adding an instance of a master after it has already been instantiated
   // can lead to mutually-recursive masters)
   if (!m.isEmpty() && pen.pos && (config().recursion || !m.contains(drawing()))) {
-    setStatus('instantiate #' + id);
+    status.set('instantiate #' + id);
     _drawing.addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
   }
 }
 
 export function dismember() {
   if (pen.pos && _drawing.dismember(pen.pos)) {
-    setStatus('dismember');
+    status.set('dismember');
     cleanUp();
   }
 }
@@ -366,10 +368,10 @@ export function toggleAttacher() {
 
   if (_drawing.attachers.includes(h)) {
     removeAttacher(_drawing, h);
-    setStatus('remove attacher');
+    status.set('remove attacher');
   } else {
     addAttacher(_drawing, h);
-    setStatus('add attacher');
+    status.set('add attacher');
   }
 }
 
@@ -378,7 +380,7 @@ let _equalLengthLine: Line | null = null;
 export function moreEqualLength() {
   if (!_equalLengthLine) {
     if ((_equalLengthLine = line())) {
-      setStatus('equal length');
+      status.set('equal length');
     }
     return;
   }
@@ -388,7 +390,7 @@ export function moreEqualLength() {
     drawing().constraints.add(
       new EqualDistanceConstraint(_equalLengthLine.a, _equalLengthLine.b, otherLine.a, otherLine.b),
     );
-    setStatus('equal length');
+    status.set('equal length');
   }
 }
 
@@ -398,7 +400,7 @@ export function endEqualLength() {
 
 export function setScale(newScale: number) {
   doWithoutMovingPointer(() => (scope.scale = newScale));
-  setStatus('scale=' + scope.scale.toFixed(1));
+  status.set('scale=' + scope.scale.toFixed(1));
 }
 
 export function panBy(dx: number, dy: number) {

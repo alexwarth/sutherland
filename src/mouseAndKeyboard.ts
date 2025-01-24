@@ -1,7 +1,8 @@
 import config, { updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
-import { setStatus, el as canvasEl } from './canvas';
+import * as status from './status';
+import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
 
@@ -49,7 +50,7 @@ function onKeyDown(e: KeyboardEvent) {
       return;
     case 'd':
       config().debug = !config().debug;
-      setStatus(`debug ${config().debug ? 'on' : 'off'}`);
+      status.set(`debug ${config().debug ? 'on' : 'off'}`);
       return;
     case 'S':
       app.toggleAutoSolve();

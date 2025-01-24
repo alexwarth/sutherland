@@ -1,11 +1,11 @@
 import config, { restoreDefaultConfig, updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
+import * as status from './status';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
-import { setStatus } from './canvas';
 
 // TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
@@ -490,7 +490,7 @@ const configScreen = new (class extends Screen {
     switch (b) {
       case this.defaultsButton:
         restoreDefaultConfig();
-        setStatus('restored defaults!');
+        status.set('restored defaults!');
         break;
       case this.leftyButton:
         updateConfig({ lefty: !config().lefty });
@@ -500,7 +500,7 @@ const configScreen = new (class extends Screen {
         break;
       case this.recursionButton:
         updateConfig({ recursion: !config().recursion });
-        setStatus(config().recursion ? 'use at your own risk!' : 'phew');
+        status.set(config().recursion ? 'use at your own risk!' : 'phew');
         break;
       case this.backButton:
         screen = mainScreen;

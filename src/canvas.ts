@@ -31,36 +31,10 @@ function updateCanvasSize() {
 
 window.addEventListener('resize', updateCanvasSize);
 
-let status = '';
-let statusTimeMillis = 0;
-
-export function setStatus(newStatus: string) {
-  if (!initialized) {
-    return;
-  }
-
-  status = newStatus;
-  statusTimeMillis = Date.now();
-}
-
 export function clear() {
   ctx.clearRect(0, 0, el.width, el.height);
   ctx.lineWidth = config().lineWidth;
   ctx.lineCap = 'round';
-
-  if (status.length > 0) {
-    const fontSizeInPixels = 40;
-    ctx.font = `${fontSizeInPixels}px Monaco`;
-    const width = ctx.measureText(status).width;
-    const statusAgeMillis = Date.now() - statusTimeMillis;
-    if (statusAgeMillis > config().statusTimeMillis) {
-      status = '';
-    } else {
-      const alpha = 1 - easeOutQuint(statusAgeMillis / config().statusTimeMillis);
-      ctx.fillStyle = `rgba(255,222,33,${alpha})`;
-      ctx.fillText(status, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
-    }
-  }
 }
 
 function identity(pos: Position) {
