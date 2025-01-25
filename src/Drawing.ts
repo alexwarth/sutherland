@@ -191,6 +191,7 @@ export class Drawing {
     const deletedThing = this.thingAt(pointerPos);
     if (deletedThing) {
       this.things = this.things.filter((thing) => thing !== deletedThing);
+      status.set({ message: 'delete', referents: new Set([deletedThing]) });
       return true;
     } else {
       return false;
@@ -201,6 +202,7 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new FixedPointConstraint(h, pointerPos));
+      status.set({ message: 'fixed point', referents: new Set([h]) });
       return true;
     } else {
       return false;
@@ -211,6 +213,7 @@ export class Drawing {
     const h = this.handleAt(pointerPos, null);
     if (h) {
       this.constraints.add(new WeightConstraint(h));
+      status.set({ message: 'weight', referents: new Set([h]) });
       return true;
     } else {
       return false;
@@ -221,6 +224,7 @@ export class Drawing {
     const thing = this.thingAt(pointerPos);
     if (thing instanceof Line) {
       this.constraints.add(new FixedDistanceConstraint(thing.a, thing.b));
+      status.set({ message: 'fixed distance', referents: new Set([thing]) });
       return true;
     } else {
       return false;
@@ -231,6 +235,7 @@ export class Drawing {
     const thing = this.thingAt(pointerPos);
     if (thing instanceof Line) {
       this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
+      status.set({ message: 'HorV', referents: new Set([thing]) });
       return true;
     } else {
       return false;
@@ -241,6 +246,7 @@ export class Drawing {
     const thing = this.thingAt(pointerPos);
     if (thing instanceof Instance) {
       this.constraints.add(new SizeConstraint(thing));
+      status.set({ message: 'full size', referents: new Set([thing]) });
       return true;
     } else {
       return false;
@@ -251,13 +257,14 @@ export class Drawing {
     const thing = this.thingAt(pointerPos);
     if (thing instanceof Instance) {
       this.inline(thing);
+      status.set({ message: 'dismember', referents: new Set([thing]) });
       return true;
     } else {
       return false;
     }
   }
 
-  inline(instance: Instance) {
+  private inline(instance: Instance) {
     const { things, constraints } = instance.master;
     const handleMap = new Map<Handle, Handle>();
     const thingMap = new Map<Thing, Thing>();

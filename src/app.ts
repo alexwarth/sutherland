@@ -8,7 +8,6 @@ import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
-// TODO: add margin to canvas (desktop version only, for historical reasons -- Alan asked)
 // TODO: when adding constraints, highlight points/lines/arcs/whatever they apply to
 // TODO: vcr-like undo interface (w/ worlds)
 
@@ -279,7 +278,6 @@ export function toggleAutoSolve() {
 
 export function del() {
   if (pen.pos && _drawing.delete(pen.pos)) {
-    status.set('delete');
     cleanUp();
     if (_drawing.isEmpty()) {
       doWithoutMovingPointer(() => scope.reset());
@@ -288,36 +286,23 @@ export function del() {
 }
 
 export function fixedDistance() {
-  if (pen.pos && _drawing.fixedDistance(pen.pos)) {
-    status.set('fixed distance');
-  }
+  return !!pen.pos && _drawing.fixedDistance(pen.pos);
 }
 
 export function fixedPoint() {
-  if (pen.pos && _drawing.fixedPoint(pen.pos)) {
-    status.set('fixed point');
-    return true;
-  } else {
-    return false;
-  }
+  return !!pen.pos && _drawing.fixedPoint(pen.pos);
 }
 
 export function weight() {
-  if (pen.pos && _drawing.weight(pen.pos)) {
-    status.set('weight');
-  }
+  return !!pen.pos && _drawing.weight(pen.pos);
 }
 
 export function horizontalOrVertical() {
-  if (pen.pos && _drawing.horizontalOrVertical(pen.pos)) {
-    status.set('HorV');
-  }
+  return !!pen.pos && _drawing.horizontalOrVertical(pen.pos);
 }
 
 export function fullSize() {
-  if (pen.pos && _drawing.fullSize(pen.pos)) {
-    status.set('full size');
-  }
+  return !!pen.pos && _drawing.fullSize(pen.pos);
 }
 
 export function reCenter() {
@@ -336,14 +321,13 @@ export function instantiate(id: string) {
   // (adding an instance of a master after it has already been instantiated
   // can lead to mutually-recursive masters)
   if (!m.isEmpty() && pen.pos && (config().recursion || !m.contains(drawing()))) {
-    status.set('instantiate #' + id);
-    _drawing.addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
+    const instance = _drawing.addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
+    status.set({ message: 'instantiate #' + id, referents: new Set([instance]) });
   }
 }
 
 export function dismember() {
   if (pen.pos && _drawing.dismember(pen.pos)) {
-    status.set('dismember');
     cleanUp();
   }
 }
@@ -380,7 +364,7 @@ let _equalLengthLine: Line | null = null;
 export function moreEqualLength() {
   if (!_equalLengthLine) {
     if ((_equalLengthLine = line())) {
-      status.set('equal length');
+      status.set({ message: 'equal length', referents: new Set([_equalLengthLine]) });
     }
     return;
   }
@@ -390,7 +374,7 @@ export function moreEqualLength() {
     drawing().constraints.add(
       new EqualDistanceConstraint(_equalLengthLine.a, _equalLengthLine.b, otherLine.a, otherLine.b),
     );
-    status.set('equal length');
+    status.set({ message: 'equal length', referents: new Set([_equalLengthLine, otherLine]) });
   }
 }
 
