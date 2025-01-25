@@ -36,7 +36,7 @@ export function render() {
     ctx.fillText(status.message, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
   }
 
-  if (status.referents) {
+  if (config().highlightReferents && status.referents) {
     for (const thing of status.referents) {
       thing.render(scope.toScreenPosition, color);
     }
