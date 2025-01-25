@@ -10,7 +10,6 @@ let status: Status | null = null;
 let statusTimeMillis = 0;
 
 export function set(newStatus: Status | string) {
-  // TODO: check canvas.initialized? (hope not!)
   status = typeof newStatus === 'string' ? { message: newStatus } : newStatus;
   statusTimeMillis = Date.now();
 }
@@ -39,10 +38,7 @@ export function render() {
 
   if (status.referents) {
     for (const thing of status.referents) {
-      // TODO: render in the same color as the status message
-      // (right now I'm only re-drawing the referents, which makes them stand out
-      // but I want the highlight to fade just like the message does)
-      thing.render(scope.toScreenPosition);
+      thing.render(scope.toScreenPosition, color);
     }
   }
 }

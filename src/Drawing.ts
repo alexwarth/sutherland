@@ -36,16 +36,16 @@ export class Drawing {
     return this.constraints.relax(this.getVars());
   }
 
-  render(transform = scope.toScreenPosition, depth = 0) {
+  render(transform = scope.toScreenPosition, color?: string, depth = 0) {
     if (depth > config().maxDepth) {
       return;
     }
 
     this.things.forEach((t) => {
       if (t instanceof Instance) {
-        t.render(transform, depth + 1);
+        t.render(transform, color, depth + 1);
       } else {
-        t.render(transform);
+        t.render(transform, color);
       }
     });
     if (depth === 0) {
@@ -492,6 +492,7 @@ export class Drawing {
           x: x * ls + x0 - scope.center.x + pos.x,
           y: -y * ls + pos.y,
         }),
+        undefined,
         1,
       ),
     );

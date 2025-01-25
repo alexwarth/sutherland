@@ -26,7 +26,7 @@ export interface Thing {
   contains(pos: Position): boolean;
   distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
-  render(transform: Transform): void;
+  render(transform: Transform, color?: string): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachVar(fn: (v: Var) => void): void;
@@ -135,11 +135,11 @@ export class Line implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(transform: Transform) {
+  render(transform: Transform, color?: string) {
     if (this.isGuide && !config().showGuideLines) {
       return;
     }
-    const style = this.isGuide ? config().guideLineColor : flickeryWhite();
+    const style = this.isGuide ? config().guideLineColor : (color ?? flickeryWhite());
     drawLine(this.a, this.b, style, transform);
   }
 
@@ -194,8 +194,8 @@ export class Arc implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(transform: Transform) {
-    drawArc(this.c, this.a, this.b, flickeryWhite(), transform);
+  render(transform: Transform, color?: string) {
+    drawArc(this.c, this.a, this.b, color ?? flickeryWhite(), transform);
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
@@ -334,8 +334,8 @@ export class Instance implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(transform: Transform, depth = 0) {
-    this.master.render((pos) => transform(this.transform(pos)), depth);
+  render(transform: Transform, color?: string, depth = 0) {
+    this.master.render((pos) => transform(this.transform(pos)), color, depth);
     if (depth === 1) {
       // draw instance-side attachers
       this.attachers.forEach((attacher, idx) => {
