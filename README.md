@@ -19,6 +19,7 @@ vite
   - To **pan**, move your finger on the background
   - To **zoom in / out**, do a pinch gesture
   - To **delete a line / arc / instance**, point at it with the pencil and tap `DEL`
+  - To **clear the current drawing / master**, tap `CLEAR`
 - Masters and instances:
   - To **switch drawings**, tap one of the number buttons (`1` through `6`)
   - To **instantiate a drawing**, tap one of the number buttons (`1` through `6`) while pointing at the desired location for that instance
@@ -34,7 +35,6 @@ vite
   - To add a **fixed position constraint to a point**, point at it with the pencil and tap `FIX`
   - To **constrain an instance to the master's full size**, tap `SIZE` while pointing at it with the pencil
   - To **attach a weight to a point**, point at it with the pencil and tap `WEIGHT`
-  - To **clear the current drawing / master**, tap `CLEAR`
   - To **run the solver**, hold down the `SOLVE` button
   - To toggle **auto-solve mode** on/off, tap `AUTO`
 
@@ -61,6 +61,8 @@ vite
   - (this constraint is also added when you draw a line that terminates on another line)
   - To **designate/undesignate a point as an attacher**, point at it and press `SHIFT` + `A`
   - To make several lines have **equal length**, click on them while pressing `E`
+  - To add a **fixed length constraint to a line**, point at it and press `.`
+  - To add a **fixed position constraint to a point**, point at it and press `.`
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`

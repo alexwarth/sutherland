@@ -66,11 +66,8 @@ function onKeyDown(e: KeyboardEvent) {
     case 'Backspace':
       app.del();
       break;
-    case 'l':
-      app.fixedDistance();
-      break;
     case '.':
-      app.fixedPoint();
+      app.fixedPoint() || app.fixedDistance();
       break;
     case 'W':
       app.weight();
