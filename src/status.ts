@@ -38,12 +38,7 @@ export function render() {
 
   if (config().highlightReferents && status.referents) {
     for (const thing of status.referents) {
-      // TODO: remove this kludge!
-      if (thing instanceof Instance || thing instanceof Arc) {
-        thing.render(scope.toScreenPosition, color, 2);
-      } else {
-        thing.render(scope.toScreenPosition, color);
-      }
+      thing.render(scope.toScreenPosition, color, 2);
     }
   }
 }

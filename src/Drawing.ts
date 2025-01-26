@@ -41,13 +41,7 @@ export class Drawing {
       return;
     }
 
-    this.things.forEach((t) => {
-      if (t instanceof Instance || t instanceof Arc) {
-        t.render(transform, color, depth + 1);
-      } else {
-        t.render(transform, color);
-      }
-    });
+    this.things.forEach((t) => t.render(transform, color, depth + 1));
     if (depth === 0) {
       this.attachers.forEach((h) => h.render(transform, config().masterSideAttacherColor));
       this.constraints.forEach((c) => {

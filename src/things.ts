@@ -26,9 +26,7 @@ export interface Thing {
   contains(pos: Position): boolean;
   distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
-  // TODO: consider adding depth as a required argument
-  // (to eliminate instanceof checks to special-case Instance and Arc)
-  render(transform: Transform, color?: string): void;
+  render(transform: Transform, color?: string, depth?: number): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachVar(fn: (v: Var) => void): void;
