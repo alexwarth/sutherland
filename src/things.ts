@@ -26,6 +26,8 @@ export interface Thing {
   contains(pos: Position): boolean;
   distanceTo(pos: Position): number;
   moveBy(dx: number, dy: number): void;
+  // TODO: consider adding depth as a required argument
+  // (to eliminate instanceof checks to special-case Instance and Arc)
   render(transform: Transform, color?: string): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
@@ -194,8 +196,13 @@ export class Arc implements Thing {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
 
-  render(transform: Transform, color?: string) {
+  render(transform: Transform, color?: string, depth = 0) {
     drawArc(this.c, this.a, this.b, color ?? flickeryWhite(), transform);
+    if (depth === 1) {
+      drawPoint(this.a, config().controlPointColor, transform);
+      drawPoint(this.b, config().controlPointColor, transform);
+      drawPoint(this.c, config().controlPointColor, transform);
+    }
   }
 
   forEachHandle(fn: (h: Handle) => void): void {

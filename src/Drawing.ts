@@ -42,7 +42,7 @@ export class Drawing {
     }
 
     this.things.forEach((t) => {
-      if (t instanceof Instance) {
+      if (t instanceof Instance || t instanceof Arc) {
         t.render(transform, color, depth + 1);
       } else {
         t.render(transform, color);

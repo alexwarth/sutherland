@@ -1,7 +1,7 @@
 import config from './config';
 import scope from './scope';
 import * as status from './status';
-import { drawArc, drawLine, drawText, flickeryWhite } from './canvas';
+import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
 import { Position } from './helpers';
@@ -196,6 +196,11 @@ function renderDrawingInProgress() {
       }
       break;
     case 'arc':
+      if (config().showControlPoints) {
+        for (const cp of drawingInProgress.positions) {
+          drawPoint(cp, config().controlPointColor, scope.toScreenPosition);
+        }
+      }
       if (drawingInProgress.positions.length > 1 && pen.pos) {
         drawArc(
           drawingInProgress.positions[0],

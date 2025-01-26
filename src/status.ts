@@ -1,4 +1,4 @@
-import { Thing } from './things';
+import { Arc, Instance, Thing } from './things';
 import { ctx } from './canvas';
 import config from './config';
 import { easeOutQuint } from './helpers';
@@ -38,7 +38,12 @@ export function render() {
 
   if (config().highlightReferents && status.referents) {
     for (const thing of status.referents) {
-      thing.render(scope.toScreenPosition, color);
+      // TODO: remove this kludge!
+      if (thing instanceof Instance || thing instanceof Arc) {
+        thing.render(scope.toScreenPosition, color, 2);
+      } else {
+        thing.render(scope.toScreenPosition, color);
+      }
     }
   }
 }
