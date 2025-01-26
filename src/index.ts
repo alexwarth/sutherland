@@ -1,6 +1,7 @@
 import * as canvas from './canvas';
 import * as app from './app';
 import * as tablet from './tablet';
+import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
@@ -24,3 +25,4 @@ function onFrame() {
 onFrame();
 
 (window as any).app = app;
+(window as any).demos = demos;

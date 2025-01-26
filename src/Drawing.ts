@@ -473,18 +473,6 @@ export class Drawing {
     });
   }
 
-  write(msg: string, scale = 1) {
-    let lastInstance: Instance | null = null;
-    lettersDo(msg, scale, (letter, x, ls) => {
-      const instance = this.addInstance(letter, { x, y: scope.center.y }, letter.size * ls, 0)!;
-      this.constraints.add(new SizeConstraint(instance, ls));
-      if (lastInstance) {
-        this.replaceHandle(instance.attachers[0], lastInstance.attachers[1]);
-      }
-      lastInstance = instance;
-    });
-  }
-
   drawText(text: string, scale: number, pos: Position) {
     lettersDo(text, scale, (letter, x0, ls) =>
       letter.render(
