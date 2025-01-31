@@ -424,6 +424,7 @@ const configScreen = new (class extends Screen {
   readonly lineWidthButton = new Button('lwidth');
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
+  readonly ctrlPtsButton = new Button('ctrl pts');
   readonly recursionButton = new Button('schachman');
   readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
@@ -432,6 +433,7 @@ const configScreen = new (class extends Screen {
     this.lineWidthButton,
     this.alphaButton,
     this.flickerButton,
+    this.ctrlPtsButton,
     this.recursionButton,
     this.defaultsButton,
   ];
@@ -467,6 +469,11 @@ const configScreen = new (class extends Screen {
       this.flickerButton.topY,
     );
     drawText(
+      config().showControlPoints ? 'on' : 'off',
+      this.ctrlPtsButton.leftX + 2 * config().tabletButtonWidth,
+      this.ctrlPtsButton.topY,
+    );
+    drawText(
       config().recursion ? 'on' : 'off',
       this.recursionButton.leftX + 2 * config().tabletButtonWidth,
       this.recursionButton.topY,
@@ -497,6 +504,9 @@ const configScreen = new (class extends Screen {
         break;
       case this.flickerButton:
         updateConfig({ flicker: !config().flicker });
+        break;
+      case this.ctrlPtsButton:
+        updateConfig({ showControlPoints: !config().showControlPoints });
         break;
       case this.recursionButton:
         updateConfig({ recursion: !config().recursion });
