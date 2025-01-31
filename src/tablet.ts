@@ -445,6 +445,11 @@ const configScreen = new (class extends Screen {
   }
 
   render() {
+    this._render();
+    this._render();
+  }
+
+  _render() {
     super.render();
     drawText(
       config().lefty ? 'on' : 'off',
