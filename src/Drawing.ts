@@ -314,7 +314,11 @@ export class Drawing {
 
     const signature: string[] = [];
     for (const thing of this.things) {
-      if (thing === dragThing || !thing.contains(pos)) {
+      if (
+        thing === dragThing ||
+        (dragThing instanceof Handle && hasHandle(thing, dragThing)) ||
+        !thing.contains(pos)
+      ) {
         // ignore
       } else if (thing instanceof Line) {
         constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
@@ -343,6 +347,16 @@ export class Drawing {
       }
       pos.x = dest.x;
       pos.y = dest.y;
+    }
+
+    function hasHandle(t: Thing, h: Handle) {
+      let ans = false;
+      t.forEachHandle((th) => {
+        if (th === h) {
+          ans = true;
+        }
+      });
+      return ans;
     }
   }
 
