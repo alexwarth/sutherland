@@ -8,7 +8,7 @@ import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
-// TODO: when adding constraints, highlight points/lines/arcs/whatever they apply to
+// TODO: refactor so that we can make more than one sketchpad
 // TODO: vcr-like undo interface (w/ worlds)
 
 // ---------- pen ----------
