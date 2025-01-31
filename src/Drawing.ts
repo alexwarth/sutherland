@@ -303,8 +303,7 @@ export class Drawing {
   snap(pos: Position, dragThing?: Thing) {
     const handle = this.handleAt(pos, dragThing);
     if (handle) {
-      pos.x = handle.x;
-      pos.y = handle.y;
+      updatePosAndDragThing(handle);
       return 'H';
     }
 
@@ -333,9 +332,18 @@ export class Drawing {
     while (constraints.relax(vars)) {
       // keep going
     }
-    pos.x = snappedPos.x;
-    pos.y = snappedPos.y;
+    updatePosAndDragThing(snappedPos);
     return signature.join();
+
+    function updatePosAndDragThing(dest: Position) {
+      if (dragThing) {
+        const dx = dest.x - dragThing.x;
+        const dy = dest.y - dragThing.y;
+        dragThing.moveBy(dx, dy);
+      }
+      pos.x = dest.x;
+      pos.y = dest.y;
+    }
   }
 
   handleAt(pos: Position, dragThing: Thing | null = null): Handle | null {

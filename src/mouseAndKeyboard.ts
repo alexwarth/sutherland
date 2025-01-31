@@ -181,18 +181,17 @@ function onPointerMove(e: PointerEvent) {
 
   const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(e);
-  const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
   if (penDown && oldPos && !app.drawing().isEmpty() && !drawingInProgress && !drag) {
-    app.panBy(pos.x - oldPos.x, pos.y - oldPos.y);
+    app.panBy(app.pen.pos!.x - oldPos.x, app.pen.pos!.y - oldPos.y);
     return;
   }
 
   app.pen.snapPos(drag?.thing);
 
   if (drag) {
-    const newX = pos.x - drag.offset.x;
-    const newY = pos.y - drag.offset.y;
+    const newX = app.pen.pos!.x - drag.offset.x;
+    const newY = app.pen.pos!.y - drag.offset.y;
     drag.thing.moveBy(newX - drag.thing.x, newY - drag.thing.y);
   }
 }
