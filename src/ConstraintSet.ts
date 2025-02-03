@@ -1,7 +1,8 @@
 import config from './config';
 import scope from './scope';
 import { Constraint } from './constraints';
-import { Handle, Var } from './things';
+import { Handle } from './things';
+import { Var } from './state';
 
 export default class ConstraintSet {
   private constraints: Constraint[] = [];

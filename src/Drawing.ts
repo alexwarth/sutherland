@@ -15,7 +15,8 @@ import {
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
-import { Arc, Handle, Instance, Line, Thing, Var } from './things';
+import { Arc, Handle, Instance, Line, Thing } from './things';
+import { Var } from './state';
 
 export class Drawing {
   things: Thing[] = [];

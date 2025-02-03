@@ -3,6 +3,7 @@ import scope from './scope';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
+import { Var } from './state';
 import {
   Position,
   pointDist,
@@ -13,10 +14,6 @@ import {
   origin,
   boundingBox,
 } from './helpers';
-
-export class Var {
-  constructor(public value: number) {}
-}
 
 type Transform = (pos: Position) => Position;
 
