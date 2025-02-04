@@ -310,7 +310,7 @@ export class Drawing {
 
     const constraints = new ConstraintSet();
     const snappedPos = new Handle(pos);
-    const vars = new Set<Var>();
+    const vars = new Set<Var<number>>();
     snappedPos.forEachVar((v) => vars.add(v));
 
     const signature: string[] = [];
@@ -463,7 +463,7 @@ export class Drawing {
   }
 
   private getVars() {
-    const vars = new Set<Var>();
+    const vars = new Set<Var<number>>();
     for (const thing of this.things) {
       thing.forEachVar((v) => vars.add(v));
     }

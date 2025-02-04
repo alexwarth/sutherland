@@ -26,15 +26,15 @@ export interface Thing {
   render(transform: Transform, color?: string, depth?: number): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
-  forEachVar(fn: (v: Var) => void): void;
+  forEachVar(fn: (v: Var<number>) => void): void;
 }
 
 export class Handle implements Thing {
   private static nextId = 0;
 
   readonly id = Handle.nextId++;
-  readonly xVar: Var;
-  readonly yVar: Var;
+  readonly xVar: Var<number>;
+  readonly yVar: Var<number>;
 
   constructor({ x, y }: Position) {
     this.xVar = new Var(x);
@@ -85,7 +85,7 @@ export class Handle implements Thing {
     throw new Error('should never call replace() on Handle');
   }
 
-  forEachVar(fn: (v: Var) => void) {
+  forEachVar(fn: (v: Var<number>) => void) {
     fn(this.xVar);
     fn(this.yVar);
   }
@@ -154,7 +154,7 @@ export class Line implements Thing {
     }
   }
 
-  forEachVar(fn: (v: Var) => void): void {
+  forEachVar(fn: (v: Var<number>) => void): void {
     this.forEachHandle((h) => h.forEachVar(fn));
   }
 }
@@ -218,7 +218,7 @@ export class Arc implements Thing {
     }
   }
 
-  forEachVar(fn: (v: Var) => void): void {
+  forEachVar(fn: (v: Var<number>) => void): void {
     this.forEachHandle((h) => h.forEachVar(fn));
   }
 }
@@ -230,10 +230,10 @@ export class Instance implements Thing {
     translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
 
   readonly id = Instance.nextId++;
-  readonly xVar: Var;
-  readonly yVar: Var;
-  readonly angleAndSizeVecX: Var;
-  readonly angleAndSizeVecY: Var;
+  readonly xVar: Var<number>;
+  readonly yVar: Var<number>;
+  readonly angleAndSizeVecX: Var<number>;
+  readonly angleAndSizeVecY: Var<number>;
   attachers: Handle[] = [];
 
   constructor(
@@ -360,7 +360,7 @@ export class Instance implements Thing {
     this.attachers = this.attachers.map((h) => (h === oldHandle ? newHandle : h));
   }
 
-  forEachVar(fn: (v: Var) => void): void {
+  forEachVar(fn: (v: Var<number>) => void): void {
     fn(this.xVar);
     fn(this.yVar);
     fn(this.angleAndSizeVecX);
