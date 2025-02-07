@@ -193,7 +193,7 @@ export class Arc implements Thing {
 
   render(transform: Transform, color?: string, depth = 0) {
     drawArc(this.c, this.a, this.b, color ?? flickeryWhite(), transform);
-    if (depth === 1) {
+    if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);
       drawPoint(this.c, config().controlPointColor, transform);
