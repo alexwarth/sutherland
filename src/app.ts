@@ -4,7 +4,7 @@ import * as status from './status';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
-import { Position, TAU } from './helpers';
+import { pointDist, Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
@@ -23,8 +23,8 @@ export const pen = {
     return pos;
   },
 
-  snapPos(dragThing?: Thing) {
-    return pos ? _drawing.snap(pos, dragThing) : null;
+  snapPos(dragThing?: Thing, snapPos?: Position) {
+    return pos ? _drawing.snap(pos, dragThing, snapPos) : null;
   },
 
   moveToScreenPos(screenPos: Position) {
@@ -132,13 +132,15 @@ function maybeUpdateArcDirection() {
     !drawingInProgress ||
     drawingInProgress.type !== 'arc' ||
     drawingInProgress.positions.length !== 2 ||
-    !pos
+    !pen.pos
   ) {
     return;
   }
 
-  const [c] = drawingInProgress.positions;
-  const angle = Math.atan2(pos.y - c.y, pos.x - c.x);
+  const [c, a] = drawingInProgress.positions;
+  pen.snapPos(undefined, a);
+
+  const angle = Math.atan2(pen.pos.y - c.y, pen.pos.x - c.x);
   if (!drawingInProgress.prevAngle) {
     drawingInProgress.prevAngle = angle;
     drawingInProgress.cummRotation = 0;

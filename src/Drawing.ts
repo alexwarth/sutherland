@@ -302,11 +302,19 @@ export class Drawing {
     this.things = this.things.filter((thing) => thing !== instance);
   }
 
-  snap(pos: Position, dragThing?: Thing) {
+  snap(pos: Position, dragThing?: Thing, snapPos?: Position) {
     const handle = this.handleAt(pos, dragThing);
     if (handle) {
       updatePosAndDragThing(handle);
       return 'H';
+    }
+
+    if (snapPos) {
+      const dist = pointDist(pos, snapPos);
+      if (dist <= config().closeEnough / scope.scale) {
+        updatePosAndDragThing(snapPos);
+        return 'H';
+      }
     }
 
     const constraints = new ConstraintSet();

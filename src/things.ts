@@ -167,7 +167,7 @@ export class Arc implements Thing {
 
   constructor(aPos: Position, bPos: Position, cPos: Position, direction: 'cw' | 'ccw') {
     this.a = new Handle(aPos);
-    this.b = new Handle(bPos);
+    this.b = pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos);
     this.c = new Handle(cPos);
     this.direction = new Var(direction);
   }
@@ -204,7 +204,9 @@ export class Arc implements Thing {
 
   forEachHandle(fn: (h: Handle) => void): void {
     fn(this.a);
-    fn(this.b);
+    if (this.a !== this.b) {
+      fn(this.b);
+    }
     fn(this.c);
   }
 

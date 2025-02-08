@@ -89,7 +89,7 @@ export function drawArc(
     tc.y,
     pointDist(tc, direction === 'cw' ? ta : tb),
     theta1,
-    theta2 !== theta1 ? theta2 : theta2 + TAU,
+    Math.abs(theta2 - theta1) > 0.05 ? theta2 : theta2 + TAU,
   );
   ctx.stroke();
 }
