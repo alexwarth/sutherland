@@ -73,17 +73,19 @@ export function drawArc(
   c: Position,
   a: Position,
   b: Position,
+  direction?: 'cw' | 'ccw',
   strokeStyle = flickeryWhite(),
   transform = identity,
 ) {
-  const ta = transform(a);
-  const tb = transform(b);
+  console.log(direction);
+  const ta = transform(direction === 'cw' ? a : b);
+  const tb = transform(direction === 'cw' ? b : a);
   const tc = transform(c);
   ctx.beginPath();
   ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
   const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
-  ctx.arc(tc.x, tc.y, pointDist(tc, ta), theta1, theta2);
+  ctx.arc(tc.x, tc.y, pointDist(tc, direction === 'cw' ? ta : tb), theta1, theta2);
   ctx.stroke();
 }
 

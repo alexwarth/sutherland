@@ -8,6 +8,8 @@ import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
+// TODO: equal length should work for lines and arcs (and combinations!) (el)
+// TODO: use hover for drawing lines, pencil down starts new segment (marcel)
 // TODO: refactor so that we can make more than one sketchpad
 // TODO: vcr-like undo interface (w/ worlds)
 
@@ -32,6 +34,7 @@ export const pen = {
       pos.x = p.x;
       pos.y = p.y;
     }
+    maybeUpdateArcDirection();
   },
 
   clearPos() {
@@ -83,7 +86,7 @@ const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
 
 let drawingInProgress:
   | { type: 'line'; start: Position }
-  | { type: 'arc'; positions: Position[] }
+  | { type: 'arc'; positions: Position[]; prevAngle?: number; direction?: 'cw' | 'ccw' }
   | null = null;
 
 export function moreLines() {
@@ -118,9 +121,36 @@ export function moreArc() {
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    _drawing.addArc(a, b, c);
+    _drawing.addArc(a, b, c, drawingInProgress.direction ?? 'ccw');
     drawingInProgress = null;
   }
+}
+
+function maybeUpdateArcDirection() {
+  if (
+    !drawingInProgress ||
+    drawingInProgress.type !== 'arc' ||
+    drawingInProgress.positions.length !== 2 ||
+    !pos
+  ) {
+    return;
+  }
+
+  const [c, p1] = drawingInProgress.positions;
+  const angle1 = Math.atan2(p1.y - c.y, p1.x - c.x);
+  const angle2 = Math.atan2(pos.y - c.y, pos.x - c.x);
+  const diff = angle2 - angle1;
+  const epsilon = 0.01;
+  if (Math.abs(diff) < epsilon) {
+    return;
+  } else if (!drawingInProgress.direction) {
+    drawingInProgress.direction = diff > 0 ? 'ccw' : 'cw';
+  } else if (drawingInProgress.direction === 'cw' && diff > 0) {
+    drawingInProgress.direction = 'ccw';
+  } else if (drawingInProgress.direction === 'ccw' && diff < 0) {
+    drawingInProgress.direction = 'cw';
+  }
+  // console.log('direction', drawingInProgress.direction);
 }
 
 export function endArc() {
@@ -201,11 +231,12 @@ function renderDrawingInProgress() {
           drawPoint(cp, config().controlPointColor, scope.toScreenPosition);
         }
       }
-      if (drawingInProgress.positions.length > 1 && pen.pos) {
+      if (drawingInProgress.positions.length > 1 && pen.pos && drawingInProgress.direction) {
         drawArc(
           drawingInProgress.positions[0],
           drawingInProgress.positions[1],
           pen.pos,
+          drawingInProgress.direction,
           flickeryWhite(),
           scope.toScreenPosition,
         );
