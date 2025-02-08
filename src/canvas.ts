@@ -84,7 +84,13 @@ export function drawArc(
   ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
   const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
-  ctx.arc(tc.x, tc.y, pointDist(tc, direction === 'cw' ? ta : tb), theta1, theta2);
+  ctx.arc(
+    tc.x,
+    tc.y,
+    pointDist(tc, direction === 'cw' ? ta : tb),
+    theta1,
+    theta2 !== theta1 ? theta2 : theta2 + TAU,
+  );
   ctx.stroke();
 }
 
