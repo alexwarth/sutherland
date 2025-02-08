@@ -4,7 +4,7 @@ import * as status from './status';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
-import { Position } from './helpers';
+import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
@@ -87,7 +87,7 @@ const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
 
 let drawingInProgress:
   | { type: 'line'; start: Position }
-  | { type: 'arc'; positions: Position[]; prevAngle?: number; direction?: 'cw' | 'ccw' }
+  | { type: 'arc'; positions: Position[]; prevAngle?: number; cummRotation?: number }
   | null = null;
 
 export function moreLines() {
@@ -117,12 +117,12 @@ export function moreArc() {
   }
 
   if (drawingInProgress?.type !== 'arc') {
-    drawingInProgress = { type: 'arc', positions: [] };
+    drawingInProgress = { type: 'arc', positions: [], cummRotation: 0 };
   }
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    _drawing.addArc(a, b, c, drawingInProgress.direction ?? 'ccw');
+    _drawing.addArc(a, b, c, drawingInProgress.cummRotation! > 0 ? 'ccw' : 'cw');
     drawingInProgress = null;
   }
 }
@@ -137,23 +137,26 @@ function maybeUpdateArcDirection() {
     return;
   }
 
-  const c = drawingInProgress.positions[0];
+  const [c] = drawingInProgress.positions;
   const angle = Math.atan2(pos.y - c.y, pos.x - c.x);
   if (!drawingInProgress.prevAngle) {
     drawingInProgress.prevAngle = angle;
+    drawingInProgress.cummRotation = 0;
     return;
   }
 
-  const diff = drawingInProgress.prevAngle - angle;
-  const epsilon = 0.01;
-  if (Math.abs(diff) < epsilon) {
-    return;
+  // prevAngle = pi - .0001
+  // angle = -pi + .0001
+  // naive diff = -2pi + .0002
+  // want diff to be .0002
+  let diff = angle - drawingInProgress.prevAngle;
+  if (diff > Math.PI) {
+    diff -= TAU;
+  } else if (diff < -Math.PI) {
+    diff += TAU;
   }
-
-  if (!drawingInProgress.direction) {
-    drawingInProgress.direction = diff > 0 ? 'cw' : 'ccw';
-  }
-  // console.log('direction', drawingInProgress.direction);
+  drawingInProgress.cummRotation! += diff;
+  drawingInProgress.prevAngle = angle;
 }
 
 export function endArc() {
@@ -234,12 +237,17 @@ function renderDrawingInProgress() {
           drawPoint(cp, config().controlPointColor, scope.toScreenPosition);
         }
       }
-      if (drawingInProgress.positions.length > 1 && pen.pos && drawingInProgress.direction) {
+      if (
+        drawingInProgress.positions.length == 2 &&
+        pen.pos &&
+        drawingInProgress.cummRotation !== undefined &&
+        Math.abs(drawingInProgress.cummRotation) > 0.05
+      ) {
         drawArc(
           drawingInProgress.positions[0],
           drawingInProgress.positions[1],
           pen.pos,
-          drawingInProgress.direction,
+          drawingInProgress.cummRotation > 0 ? 'ccw' : 'cw',
           flickeryWhite(),
           scope.toScreenPosition,
         );
