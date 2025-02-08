@@ -77,7 +77,6 @@ export function drawArc(
   strokeStyle = flickeryWhite(),
   transform = identity,
 ) {
-  console.log(direction);
   const ta = transform(direction === 'cw' ? a : b);
   const tb = transform(direction === 'cw' ? b : a);
   const tc = transform(c);

@@ -8,6 +8,7 @@ import { Position } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 
+// TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
 // TODO: use hover for drawing lines, pencil down starts new segment (marcel)
 // TODO: refactor so that we can make more than one sketchpad
@@ -136,19 +137,21 @@ function maybeUpdateArcDirection() {
     return;
   }
 
-  const [c, p1] = drawingInProgress.positions;
-  const angle1 = Math.atan2(p1.y - c.y, p1.x - c.x);
-  const angle2 = Math.atan2(pos.y - c.y, pos.x - c.x);
-  const diff = angle2 - angle1;
+  const c = drawingInProgress.positions[0];
+  const angle = Math.atan2(pos.y - c.y, pos.x - c.x);
+  if (!drawingInProgress.prevAngle) {
+    drawingInProgress.prevAngle = angle;
+    return;
+  }
+
+  const diff = drawingInProgress.prevAngle - angle;
   const epsilon = 0.01;
   if (Math.abs(diff) < epsilon) {
     return;
-  } else if (!drawingInProgress.direction) {
-    drawingInProgress.direction = diff > 0 ? 'ccw' : 'cw';
-  } else if (drawingInProgress.direction === 'cw' && diff > 0) {
-    drawingInProgress.direction = 'ccw';
-  } else if (drawingInProgress.direction === 'ccw' && diff < 0) {
-    drawingInProgress.direction = 'cw';
+  }
+
+  if (!drawingInProgress.direction) {
+    drawingInProgress.direction = diff > 0 ? 'cw' : 'ccw';
   }
   // console.log('direction', drawingInProgress.direction);
 }
