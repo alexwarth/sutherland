@@ -122,7 +122,7 @@ export function moreArc() {
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    _drawing.addArc(a, b, c, drawingInProgress.cummRotation! > 0 ? 'ccw' : 'cw');
+    _drawing.addArc(a, b, c, drawingInProgress.cummRotation!);
     drawingInProgress = null;
   }
 }
@@ -159,6 +159,7 @@ function maybeUpdateArcDirection() {
   }
   drawingInProgress.cummRotation! += diff;
   drawingInProgress.prevAngle = angle;
+  // console.log('cr', drawingInProgress.cummRotation);
 }
 
 export function endArc() {
@@ -249,7 +250,7 @@ function renderDrawingInProgress() {
           drawingInProgress.positions[0],
           drawingInProgress.positions[1],
           pen.pos,
-          drawingInProgress.cummRotation > 0 ? 'ccw' : 'cw',
+          drawingInProgress.cummRotation,
           flickeryWhite(),
           scope.toScreenPosition,
         );

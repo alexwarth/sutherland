@@ -73,24 +73,26 @@ export function drawArc(
   c: Position,
   a: Position,
   b: Position,
-  direction?: 'cw' | 'ccw',
+  cummRotation: number,
   strokeStyle = flickeryWhite(),
   transform = identity,
 ) {
-  const ta = transform(direction === 'cw' ? a : b);
-  const tb = transform(direction === 'cw' ? b : a);
+  const ta = transform(cummRotation < 0 ? a : b);
+  const tb = transform(cummRotation < 0 ? b : a);
   const tc = transform(c);
-  ctx.beginPath();
-  ctx.strokeStyle = strokeStyle;
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
   const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
-  ctx.arc(
-    tc.x,
-    tc.y,
-    pointDist(tc, direction === 'cw' ? ta : tb),
-    theta1,
-    Math.abs(theta2 - theta1) > 0.05 ? theta2 : theta2 + TAU,
-  );
+  const radius = pointDist(tc, cummRotation < 0 ? ta : tb);
+  const numFullTurns = Math.floor(Math.abs(cummRotation) / TAU);
+  console.log('nft', numFullTurns);
+  ctx.strokeStyle = strokeStyle;
+  for (let idx = 0; idx < numFullTurns; idx++) {
+    ctx.beginPath();
+    ctx.arc(tc.x, tc.y, radius, theta1, theta1 + TAU);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.arc(tc.x, tc.y, radius, theta1, theta2 + (Math.abs(theta2 - theta1) < 0.05 ? TAU : 0));
   ctx.stroke();
 }
 

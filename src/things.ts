@@ -163,13 +163,13 @@ export class Arc implements Thing {
   a: Handle;
   b: Handle;
   c: Handle;
-  readonly direction: Var<'cw' | 'ccw'>;
+  readonly cummRotation: Var<number>;
 
-  constructor(aPos: Position, bPos: Position, cPos: Position, direction: 'cw' | 'ccw') {
+  constructor(aPos: Position, bPos: Position, cPos: Position, cummRotation: number) {
     this.a = new Handle(aPos);
     this.b = pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos);
     this.c = new Handle(cPos);
-    this.direction = new Var(direction);
+    this.cummRotation = new Var(cummRotation);
   }
 
   get x() {
@@ -194,7 +194,7 @@ export class Arc implements Thing {
   }
 
   render(transform: Transform, color?: string, depth = 0) {
-    drawArc(this.c, this.a, this.b, this.direction.value, color ?? flickeryWhite(), transform);
+    drawArc(this.c, this.a, this.b, this.cummRotation.value, color ?? flickeryWhite(), transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);
