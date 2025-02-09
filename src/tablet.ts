@@ -44,6 +44,10 @@ class Button {
 
   render() {
     drawText(this.label, this.leftX, this.topY);
+    if (this.isDown) {
+      drawText(this.label, this.leftX, this.topY);
+      drawText(this.label, this.leftX, this.topY);
+    }
   }
 
   get isDown() {
