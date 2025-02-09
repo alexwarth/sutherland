@@ -421,7 +421,7 @@ export class Drawing {
 
   boundingBox(stopAt: Drawing = this): { topLeft: Position; bottomRight: Position } {
     // TODO: include arcs...
-    const ps = [...this.getPositions()];
+    const ps = [...this.getPositions(false)];
     for (const thing of this.things) {
       if (thing instanceof Instance && thing.master !== stopAt) {
         const bb = thing.boundingBox(stopAt);
@@ -440,14 +440,6 @@ export class Drawing {
     return Math.sqrt(size2) * 2;
   }
 
-  private getHandles(things: Iterable<Thing>) {
-    const handles = new Set<Handle>();
-    for (const thing of things) {
-      thing.forEachHandle((h) => handles.add(h));
-    }
-    return handles;
-  }
-
   getHandle(handleIdx: number) {
     let handle: Handle;
     let idx = 0;
@@ -461,12 +453,17 @@ export class Drawing {
     return handle!;
   }
 
-  private getPositions() {
-    const ps: Set<Position> = this.getHandles(this.things);
+  private getPositions(includeArcCenters = true) {
+    const ps = new Set<Position>();
     for (const thing of this.things) {
       if (thing instanceof Instance) {
         ps.add(thing);
       }
+      thing.forEachHandle((h) => {
+        if (!(thing instanceof Arc) || includeArcCenters || h !== thing.c) {
+          ps.add(h);
+        }
+      });
     }
     return ps;
   }
