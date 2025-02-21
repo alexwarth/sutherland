@@ -139,7 +139,7 @@ function maybeUpdateArcDirection() {
   }
 
   const [c, a] = drawingInProgress.positions;
-  pen.snapPos(undefined, a);
+  pen.snapPos(undefined, a); // TODO: haptic feedback! (needs refactoring?)
 
   const angle = Math.atan2(pen.pos.y - c.y, pen.pos.x - c.x);
   if (!drawingInProgress.prevAngle) {
