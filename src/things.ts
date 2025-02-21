@@ -3,7 +3,7 @@ import scope from './scope';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
-import { Var } from './state';
+import { List, Var } from './state';
 import {
   Position,
   pointDist,
@@ -163,7 +163,7 @@ export class Arc implements Thing {
   a: Handle;
   b: Handle;
   c: Handle;
-  readonly cummRotation: Var<number>;
+  readonly cummRotation: Var<number>; // TODO: update this while moving handles
 
   constructor(aPos: Position, bPos: Position, cPos: Position, cummRotation: number) {
     this.a = new Handle(aPos);
@@ -238,7 +238,15 @@ export class Instance implements Thing {
   readonly yVar: Var<number>;
   readonly angleAndSizeVecX: Var<number>;
   readonly angleAndSizeVecY: Var<number>;
-  attachers: Handle[] = [];
+  readonly _attachers = new Var(new List<Handle>());
+
+  get attachers() {
+    return this._attachers.value;
+  }
+
+  set attachers(newAttachers: List<Handle>) {
+    this._attachers.value = newAttachers;
+  }
 
   constructor(
     readonly master: Drawing,
@@ -256,14 +264,12 @@ export class Instance implements Thing {
   }
 
   private addAttachers(master: Drawing, parent: Drawing) {
-    for (const masterSideAttacher of master.attachers) {
-      this.addAttacher(masterSideAttacher, parent);
-    }
+    master.attachers.forEach((masterSideAttacher) => this.addAttacher(masterSideAttacher, parent));
   }
 
   addAttacher(masterSideAttacher: Handle, parent: Drawing) {
     const attacher = new Handle(this.transform(masterSideAttacher));
-    this.attachers.push(attacher);
+    this.attachers.unshift(attacher);
     parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
   }
 
@@ -344,10 +350,10 @@ export class Instance implements Thing {
     this.master.render((pos) => transform(this.transform(pos)), color, depth);
     if (depth === 1) {
       // draw instance-side attachers
-      this.attachers.forEach((attacher, idx) => {
+      this.attachers.withDo(this.master.attachers, (attacher, mAttacher) => {
         const tAttacher = transform(attacher);
         drawLine(
-          transform(this.transform(this.master.attachers[idx])),
+          transform(this.transform(mAttacher)),
           tAttacher,
           config().instanceSideAttacherColor,
         );

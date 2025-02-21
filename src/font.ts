@@ -31,7 +31,7 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config().
           pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
           center,
-          false,
+          0,
         );
         break;
       }
@@ -55,7 +55,8 @@ for (const [letter, commands] of commandsByLetter) {
     { x: (4 + config().kerning) * config().fontScale, y: 0 },
     true,
   );
-  drawing.attachers.push(line.a, line.b);
+  drawing.attachers.unshift(line.a);
+  drawing.attachers.unshift(line.b);
   letterDrawings.set(letter, drawing);
 }
 

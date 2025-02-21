@@ -16,21 +16,39 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing } from './things';
-import { Var } from './state';
+import { List, Var } from './state';
 
 export class Drawing {
-  things: Thing[] = [];
-  attachers: Handle[] = [];
+  private readonly _things = new Var(new List<Thing>());
+
+  get things() {
+    return this._things.value;
+  }
+
+  set things(newThings: List<Thing>) {
+    this._things.value = newThings;
+  }
+
+  private readonly _attachers = new Var(new List<Handle>());
+
+  get attachers() {
+    return this._attachers.value;
+  }
+
+  set attachers(newAttachers: List<Handle>) {
+    this._attachers.value = newAttachers;
+  }
+
   readonly constraints = new ConstraintSet();
 
   clear() {
-    this.things = [];
-    this.attachers = [];
+    this.things = new List();
+    this.attachers = new List();
     this.constraints.clear();
   }
 
   isEmpty() {
-    return this.things.length === 0;
+    return this.things.isEmpty();
   }
 
   relax() {
@@ -78,7 +96,7 @@ export class Drawing {
 
   addInstance(master: Drawing, { x, y }: Position, size: number, angle: number) {
     const instance = new Instance(master, x, y, size, angle, this);
-    this.things.push(instance);
+    this.things.unshift(instance);
     return instance;
   }
 
@@ -125,7 +143,7 @@ export class Drawing {
         }
       });
     }
-    this.things.push(line);
+    this.things.unshift(line);
     return line;
   }
 
@@ -144,7 +162,7 @@ export class Drawing {
         }
       });
     }
-    this.things.push(arc);
+    this.things.unshift(arc);
     return arc;
   }
 

@@ -2,16 +2,24 @@ import config from './config';
 import scope from './scope';
 import { Constraint } from './constraints';
 import { Handle } from './things';
-import { Var } from './state';
+import { List, Var } from './state';
 
 export default class ConstraintSet {
-  private constraints: Constraint[] = [];
+  private readonly _constraints = new Var(new List<Constraint>());
+
+  get constraints() {
+    return this._constraints.value;
+  }
+
+  set constraints(newConstraints: List<Constraint>) {
+    this._constraints.value = newConstraints;
+  }
 
   add(constraint: Constraint) {
     const sig = constraint.signature;
     if (!this.constraints.find((c) => c.signature === sig)) {
       // only add if it's not a duplicate
-      this.constraints.push(constraint);
+      this.constraints.unshift(constraint);
     }
   }
 
@@ -20,16 +28,16 @@ export default class ConstraintSet {
   }
 
   clear() {
-    this.constraints = [];
+    this.constraints = new List();
   }
 
   isEmpty() {
-    return this.constraints.length === 0;
+    return this.constraints.isEmpty();
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
     const constraints = this.constraints;
-    this.constraints = [];
+    this.constraints = new List();
     constraints.forEach((constraint) => {
       constraint.replaceHandle(oldHandle, newHandle);
       this.add(constraint);
@@ -74,8 +82,10 @@ export default class ConstraintSet {
   }
 
   private computeError() {
-    return this.constraints
-      .map((c) => Math.pow(c.computeError(), 2))
-      .reduce((e1, e2) => e1 + e2, 0);
+    let e = 0;
+    this.constraints.forEach((c) => {
+      e += c.computeError() ** 2;
+    });
+    return e;
   }
 }

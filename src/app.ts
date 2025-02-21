@@ -171,15 +171,14 @@ export function endArc() {
 // ---------- attachers ----------
 
 function removeAttacher(m: Drawing, a: Handle) {
-  const idx = m.attachers.indexOf(a);
-  _drawing.attachers.splice(idx, 1);
+  _drawing.attachers.removeAll((attacher) => attacher === a);
   for (const d of Object.values(drawings)) {
     d.onAttacherRemoved(m, a);
   }
 }
 
 function addAttacher(m: Drawing, a: Handle) {
-  m.attachers.push(a);
+  m.attachers.unshift(a);
   for (const d of Object.values(drawings)) {
     d.onAttacherAdded(m, a);
   }
