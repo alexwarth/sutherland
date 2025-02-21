@@ -370,7 +370,7 @@ export function instantiate(id: string) {
   // TODO: this check for recursion is not sufficient
   // (adding an instance of a master after it has already been instantiated
   // can lead to mutually-recursive masters)
-  if (!m.isEmpty() && pen.pos && (config().recursion || !m.contains(drawing()))) {
+  if (!m.isEmpty() && pen.pos && !m.contains(drawing())) {
     const instance = _drawing.addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
     status.set({ message: 'instantiate #' + id, referents: new Set([instance]) });
   }

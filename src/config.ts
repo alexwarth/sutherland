@@ -24,7 +24,6 @@ const defaultConfig = {
   distanceConstraintLabelPct: 0.25,
   showImplicitConstraints: false,
   highlightReferents: true,
-  recursion: false,
   maxDepth: 10,
   tabletButtonWidth: 100,
   lefty: false,

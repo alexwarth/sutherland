@@ -440,7 +440,6 @@ const configScreen = new (class extends Screen {
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
   readonly ctrlPtsButton = new Button('ctrl pts');
-  readonly recursionButton = new Button('schachman');
   readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
   readonly col1 = [
@@ -449,7 +448,6 @@ const configScreen = new (class extends Screen {
     this.alphaButton,
     this.flickerButton,
     this.ctrlPtsButton,
-    this.recursionButton,
     this.defaultsButton,
   ];
   readonly col2 = [this.backButton];
@@ -488,11 +486,6 @@ const configScreen = new (class extends Screen {
       this.ctrlPtsButton.leftX + 2 * config().tabletButtonWidth,
       this.ctrlPtsButton.topY,
     );
-    drawText(
-      config().recursion ? 'on' : 'off',
-      this.recursionButton.leftX + 2 * config().tabletButtonWidth,
-      this.recursionButton.topY,
-    );
   }
 
   layOutButtons() {
@@ -522,10 +515,6 @@ const configScreen = new (class extends Screen {
         break;
       case this.ctrlPtsButton:
         updateConfig({ showControlPoints: !config().showControlPoints });
-        break;
-      case this.recursionButton:
-        updateConfig({ recursion: !config().recursion });
-        status.set(config().recursion ? 'use at your own risk!' : 'phew');
         break;
       case this.backButton:
         switchTo(mainScreen);
