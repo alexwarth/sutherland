@@ -238,12 +238,11 @@ export class Instance implements Thing {
   readonly yVar: Var<number>;
   readonly angleAndSizeVecX: Var<number>;
   readonly angleAndSizeVecY: Var<number>;
-  readonly _attachers = new Var(new List<Handle>());
 
+  readonly _attachers: Var<List<Handle>>;
   get attachers() {
     return this._attachers.value;
   }
-
   set attachers(newAttachers: List<Handle>) {
     this._attachers.value = newAttachers;
   }
@@ -260,17 +259,19 @@ export class Instance implements Thing {
     this.yVar = new Var(y);
     this.angleAndSizeVecX = new Var(size * Math.cos(angle));
     this.angleAndSizeVecY = new Var(size * Math.sin(angle));
-    this.addAttachers(master, parent);
+    this._attachers = new Var(
+      master.attachers.map((masterSideAttacher) => this.createAttacher(masterSideAttacher, parent)),
+    );
   }
 
-  private addAttachers(master: Drawing, parent: Drawing) {
-    master.attachers.forEach((masterSideAttacher) => this.addAttacher(masterSideAttacher, parent));
+  private createAttacher(masterSideAttacher: Handle, parent: Drawing) {
+    const attacher = new Handle(this.transform(masterSideAttacher));
+    parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
+    return attacher;
   }
 
   addAttacher(masterSideAttacher: Handle, parent: Drawing) {
-    const attacher = new Handle(this.transform(masterSideAttacher));
-    this.attachers.unshift(attacher);
-    parent.constraints.add(new PointInstanceConstraint(attacher, this, masterSideAttacher));
+    this.attachers.unshift(this.createAttacher(masterSideAttacher, parent));
   }
 
   get x() {
