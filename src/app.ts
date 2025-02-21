@@ -7,6 +7,7 @@ import { Drawing } from './Drawing';
 import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
+import { Var } from './state';
 
 // TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
@@ -24,7 +25,7 @@ export const pen = {
   },
 
   snapPos(dragThing?: Thing, snapPos?: Position) {
-    return pos ? _drawing.snap(pos, dragThing, snapPos) : null;
+    return pos ? drawing().snap(pos, dragThing, snapPos) : null;
   },
 
   moveToScreenPos(screenPos: Position) {
@@ -61,21 +62,21 @@ for (let idx = 1; idx < 10; idx++) {
   drawings['' + idx] = new Drawing();
 }
 
-let _drawing = drawings['1'];
+let _drawing = new Var(drawings['1']);
 (window as any).drawing = _drawing;
 
 export function drawing(id?: string) {
-  return id ? (drawings[id] ?? letterDrawings.get(id)) : _drawing;
+  return id ? (drawings[id] ?? letterDrawings.get(id)) : _drawing.value;
 }
 
 export function switchToDrawing(id: string) {
   const d = drawing(id);
-  if (!d || d === _drawing) {
+  if (!d || d === drawing()) {
     return;
   }
 
-  _drawing.leave();
-  _drawing = d;
+  drawing().leave();
+  _drawing.value = d;
   doWithoutMovingPointer(() => scope.reset());
   endEqualLength();
   status.set('drawing #' + id);
@@ -97,7 +98,7 @@ export function moreLines() {
 
   const pos = { x: pen.pos.x, y: pen.pos.y };
   if (drawingInProgress?.type === 'line') {
-    _drawing.addLine(drawingInProgress.start, pos);
+    drawing().addLine(drawingInProgress.start, pos);
   }
   drawingInProgress = {
     type: 'line',
@@ -122,7 +123,7 @@ export function moreArc() {
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    _drawing.addArc(a, b, c, drawingInProgress.cummRotation!);
+    drawing().addArc(a, b, c, drawingInProgress.cummRotation!);
     drawingInProgress = null;
   }
 }
@@ -171,7 +172,7 @@ export function endArc() {
 // ---------- attachers ----------
 
 function removeAttacher(m: Drawing, a: Handle) {
-  _drawing.attachers.removeAll((attacher) => attacher === a);
+  drawing().attachers.removeAll((attacher) => attacher === a);
   for (const d of Object.values(drawings)) {
     d.onAttacherRemoved(m, a);
   }
@@ -190,7 +191,7 @@ export function onFrame() {
   if (config().autoSolve) {
     const t0 = performance.now();
     let n = 0;
-    while (performance.now() - t0 < 20 && _drawing.relax()) {
+    while (performance.now() - t0 < 20 && drawing().relax()) {
       n++;
     }
   }
@@ -199,11 +200,11 @@ export function onFrame() {
 // ---------- rendering ----------
 
 export function render() {
-  if (!drawingInProgress && _drawing.isEmpty()) {
+  if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
   }
   renderDrawingInProgress();
-  _drawing.render();
+  drawing().render();
   renderCrosshairs();
   status.render();
   renderDebugInfo();
@@ -296,11 +297,11 @@ function renderDebugInfo() {
 // ---------- actions triggered by the controller ----------
 
 export function handle() {
-  return pen.pos ? _drawing.handleAt(pen.pos) : null;
+  return pen.pos ? drawing().handleAt(pen.pos) : null;
 }
 
 export function thing() {
-  return pen.pos ? _drawing.thingAt(pen.pos) : null;
+  return pen.pos ? drawing().thingAt(pen.pos) : null;
 }
 
 export function line() {
@@ -314,9 +315,9 @@ export function instance() {
 }
 
 export function solve() {
-  if (!_drawing.isEmpty()) {
+  if (!drawing().isEmpty()) {
     status.set('solve');
-    _drawing.relax();
+    drawing().relax();
   }
 }
 
@@ -326,32 +327,32 @@ export function toggleAutoSolve() {
 }
 
 export function del() {
-  if (pen.pos && _drawing.delete(pen.pos)) {
+  if (pen.pos && drawing().delete(pen.pos)) {
     cleanUp();
-    if (_drawing.isEmpty()) {
+    if (drawing().isEmpty()) {
       doWithoutMovingPointer(() => scope.reset());
     }
   }
 }
 
 export function fixedDistance() {
-  return !!pen.pos && _drawing.fixedDistance(pen.pos);
+  return !!pen.pos && drawing().fixedDistance(pen.pos);
 }
 
 export function fixedPoint() {
-  return !!pen.pos && _drawing.fixedPoint(pen.pos);
+  return !!pen.pos && drawing().fixedPoint(pen.pos);
 }
 
 export function weight() {
-  return !!pen.pos && _drawing.weight(pen.pos);
+  return !!pen.pos && drawing().weight(pen.pos);
 }
 
 export function horizontalOrVertical() {
-  return !!pen.pos && _drawing.horizontalOrVertical(pen.pos);
+  return !!pen.pos && drawing().horizontalOrVertical(pen.pos);
 }
 
 export function fullSize() {
-  return !!pen.pos && _drawing.fullSize(pen.pos);
+  return !!pen.pos && drawing().fullSize(pen.pos);
 }
 
 export function reCenter() {
@@ -370,23 +371,23 @@ export function instantiate(id: string) {
   // (adding an instance of a master after it has already been instantiated
   // can lead to mutually-recursive masters)
   if (!m.isEmpty() && pen.pos && !m.contains(drawing())) {
-    const instance = _drawing.addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
+    const instance = drawing().addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
     status.set({ message: 'instantiate #' + id, referents: new Set([instance]) });
   }
 }
 
 export function dismember() {
-  if (pen.pos && _drawing.dismember(pen.pos)) {
+  if (pen.pos && drawing().dismember(pen.pos)) {
     cleanUp();
   }
 }
 
 export function rotateInstanceBy(dTheta: number) {
-  return !!pen.pos && _drawing.rotateInstanceAt(pen.pos, dTheta);
+  return !!pen.pos && drawing().rotateInstanceAt(pen.pos, dTheta);
 }
 
 export function scaleInstanceBy(scaleMultiplier: number) {
-  return !!pen.pos && _drawing.resizeInstanceAt(pen.pos, scaleMultiplier);
+  return !!pen.pos && drawing().resizeInstanceAt(pen.pos, scaleMultiplier);
 }
 
 export function toggleAttacher() {
@@ -394,16 +395,16 @@ export function toggleAttacher() {
     return;
   }
 
-  const h = _drawing.handleAt(pen.pos);
+  const h = drawing().handleAt(pen.pos);
   if (!h) {
     return;
   }
 
-  if (_drawing.attachers.includes(h)) {
-    removeAttacher(_drawing, h);
+  if (drawing().attachers.includes(h)) {
+    removeAttacher(drawing(), h);
     status.set('remove attacher');
   } else {
-    addAttacher(_drawing, h);
+    addAttacher(drawing(), h);
     status.set('add attacher');
   }
 }
