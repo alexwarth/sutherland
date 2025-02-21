@@ -51,6 +51,10 @@ class Button {
   get isDown() {
     return this.fingerId != null;
   }
+
+  clearState() {
+    this.fingerId = null;
+  }
 }
 
 abstract class Screen {
@@ -136,12 +140,21 @@ abstract class Screen {
       idx++;
     }
   }
+
+  clearButtonState() {
+    this.buttons.forEach((b) => b.clearState());
+  }
 }
 
 let screen: Screen;
 
+function switchTo(s: Screen) {
+  screen?.clearButtonState();
+  screen = s;
+}
+
 export function init() {
-  screen = mainScreen;
+  switchTo(mainScreen);
 }
 
 export function onFrame() {
@@ -326,7 +339,7 @@ const mainScreen = new (class extends Screen {
         location.reload();
         break;
       case this.configButton:
-        screen = configScreen;
+        switchTo(configScreen);
         break;
     }
   }
@@ -515,7 +528,7 @@ const configScreen = new (class extends Screen {
         status.set(config().recursion ? 'use at your own risk!' : 'phew');
         break;
       case this.backButton:
-        screen = mainScreen;
+        switchTo(mainScreen);
         break;
     }
   }
