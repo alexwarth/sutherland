@@ -4,7 +4,7 @@
 
 class World {
   private readonly values = new WeakMap<Var<any>, any>();
-  private readonly parentValueCache = new WeakMap<Var<any>, any>();
+  private parentValueCache = new WeakRef(new WeakMap<Var<any>, any>());
   readonly children = new Set<World>();
   private sealed = false;
 
@@ -27,13 +27,20 @@ class World {
   get<T>(v: Var<T>): T {
     if (this.values.has(v)) {
       return this.values.get(v);
-    } else if (this.parentValueCache.has(v)) {
-      return this.parentValueCache.get(v);
-    } else {
-      const value = this.parent?.get(v);
-      this.parentValueCache.set(v, value);
-      return value!;
     }
+
+    let cache = this.parentValueCache.deref();
+    if (cache?.has(v)) {
+      return this.parentValueCache.deref()!.get(v);
+    }
+
+    const value = this.parent?.get(v);
+    if (!cache) {
+      cache = new WeakMap();
+      this.parentValueCache = new WeakRef(cache);
+    }
+    cache.set(v, value);
+    return value!;
   }
 
   private sprout() {
@@ -78,6 +85,12 @@ export class List<T> {
 
   set first(newFirst: ListNode<T> | null) {
     this._first.value = newFirst;
+  }
+
+  constructor(...xs: T[]) {
+    for (let idx = xs.length - 1; idx >= 0; idx--) {
+      this.unshift(xs[idx]);
+    }
   }
 
   clear() {
@@ -145,6 +158,16 @@ export class List<T> {
     return ans;
   }
 
+  replace(oldValue: T, newValue: T) {
+    let curr = this.first;
+    while (curr) {
+      if (curr.value === oldValue) {
+        curr.value = newValue;
+      }
+      curr = curr.next;
+    }
+  }
+
   removeAll(pred: (x: T) => boolean) {
     let last: ListNode<T> | null = null;
     let curr = this.first;
@@ -193,6 +216,32 @@ export class List<T> {
       curr = curr.next;
     }
   }
+
+  // every(pred: (x: T) => boolean) {
+  //   for (const x of this) {
+  //     if (!pred(x)) {
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // }
+
+  // some(pred: (x: T) => boolean) {
+  //   for (const x of this) {
+  //     if (pred(x)) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
+  // reduce<S>(fn: (prev: S, next: T) => S, z: S) {
+  //   let ans = z;
+  //   for (const x of this) {
+  //     ans = fn(ans, x);
+  //   }
+  //   return ans;
+  // }
 
   toArray() {
     const ans: T[] = [];
