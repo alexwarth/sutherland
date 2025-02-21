@@ -563,8 +563,6 @@ export class WeightConstraint extends Constraint {
     this._a.value = newA;
   }
 
-  private y0: number;
-
   constructor(a: Handle) {
     super();
     this._a = new Var(a);
@@ -573,6 +571,8 @@ export class WeightConstraint extends Constraint {
   override get signature() {
     return `W(${this.a.id})`;
   }
+
+  private y0: number;
 
   override preRelax() {
     this.y0 = this.a.y;
