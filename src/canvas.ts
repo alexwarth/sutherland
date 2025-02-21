@@ -13,6 +13,16 @@ export function init(_el: HTMLCanvasElement) {
   initialized = true;
 }
 
+export function withGlobalAlpha(alpha: number, fn: () => void) {
+  const oldAlpha = ctx.globalAlpha;
+  ctx.globalAlpha = alpha;
+  try {
+    fn();
+  } finally {
+    ctx.globalAlpha = oldAlpha;
+  }
+}
+
 function updateCanvasSize() {
   el.width = innerWidth;
   el.height = innerHeight;
