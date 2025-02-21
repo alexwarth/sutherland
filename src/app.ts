@@ -56,7 +56,7 @@ function doWithoutMovingPointer(fn: () => void) {
 
 // ---------- drawings ----------
 
-const drawings: { [key: string]: Drawing } = {};
+export const drawings: { [key: string]: Drawing } = {};
 for (let idx = 1; idx < 10; idx++) {
   drawings['' + idx] = new Drawing();
 }

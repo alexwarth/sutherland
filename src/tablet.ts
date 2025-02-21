@@ -29,7 +29,10 @@ class Button {
   leftX = 0;
   fingerId: number | null = null;
 
-  constructor(readonly label: string) {}
+  constructor(
+    readonly label: string,
+    readonly highlightPred?: () => boolean,
+  ) {}
 
   contains({ x, y }: Position) {
     return (
@@ -42,7 +45,7 @@ class Button {
 
   render() {
     drawText(this.label, this.leftX, this.topY);
-    if (this.isDown) {
+    if (this.isDown || (this.highlightPred && this.highlightPred())) {
       drawText(this.label, this.leftX, this.topY);
       drawText(this.label, this.leftX, this.topY);
     }
@@ -166,6 +169,14 @@ export function render() {
   screen.render();
 }
 
+function makeDrawingButton(name: string) {
+  return new Button(name, () => app.drawing() === app.drawings[name]);
+}
+
+function isDrawingButton(b: Button) {
+  return '1' <= b.label && b.label <= '9';
+}
+
 const mainScreen = new (class extends Screen {
   readonly lineButton = new Button('LINE');
   readonly moveButton = new Button('MOVE');
@@ -184,9 +195,9 @@ const mainScreen = new (class extends Screen {
   readonly configButton = new Button('config');
   readonly reloadButton = new Button('reload');
   readonly col1 = [
-    new Button('1'),
-    new Button('2'),
-    new Button('3'),
+    makeDrawingButton('1'),
+    makeDrawingButton('2'),
+    makeDrawingButton('3'),
     this.lineButton,
     this.moveButton,
     this.horvButton,
@@ -196,9 +207,9 @@ const mainScreen = new (class extends Screen {
     this.solveButton,
   ];
   readonly col2 = [
-    new Button('4'),
-    new Button('5'),
-    new Button('6'),
+    makeDrawingButton('4'),
+    makeDrawingButton('5'),
+    makeDrawingButton('6'),
     this.arcButton,
     this.eqButton,
     this.fixButton,
@@ -287,7 +298,7 @@ const mainScreen = new (class extends Screen {
   }
 
   override onButtonDown(b: Button) {
-    if ('1' <= b.label && b.label <= '9') {
+    if (isDrawingButton(b)) {
       if (app.pen.pos) {
         app.instantiate(b.label);
         this.move();
