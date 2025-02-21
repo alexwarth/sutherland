@@ -4,7 +4,7 @@ import * as status from './status';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
-import { pointDist, Position, TAU } from './helpers';
+import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 

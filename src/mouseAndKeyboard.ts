@@ -6,8 +6,6 @@ import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
 
-// TODO: add on-screen help -- "buttons" should light up when they're pressed on the keyboard
-
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
 let drawingInProgress = false;

@@ -1,5 +1,5 @@
 import config from './config';
-import { easeOutQuint, pointDist, Position, TAU } from './helpers';
+import { pointDist, Position, TAU } from './helpers';
 
 export let el: HTMLCanvasElement;
 export let ctx: CanvasRenderingContext2D;
