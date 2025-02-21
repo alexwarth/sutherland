@@ -341,3 +341,12 @@ class ListNode<T> {
     return false;
   }
 };
+
+(window as any).ff = () => {
+  if (thisWorld.children.size > 0) {
+    [thisWorld] = thisWorld.children;
+    return true;
+  } else {
+    return false;
+  }
+};
