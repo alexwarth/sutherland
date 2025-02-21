@@ -295,7 +295,7 @@ export class Drawing {
           instance.transform(thing.a),
           instance.transform(thing.b),
           instance.transform(thing.c),
-          thing.cummRotation.value,
+          thing.cummRotation,
         );
         handleMap.set(thing.a, arc.a);
         handleMap.set(thing.b, arc.b);

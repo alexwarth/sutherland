@@ -33,28 +33,26 @@ export class Handle implements Thing {
   private static nextId = 0;
 
   readonly id = Handle.nextId++;
-  readonly xVar: Var<number>;
-  readonly yVar: Var<number>;
+
+  private readonly _x: Var<number>;
+  get x() {
+    return this._x.value;
+  }
+  set x(newX: number) {
+    this._x.value = newX;
+  }
+
+  private readonly _y: Var<number>;
+  get y() {
+    return this._y.value;
+  }
+  set y(newY: number) {
+    this._y.value = newY;
+  }
 
   constructor({ x, y }: Position) {
-    this.xVar = new Var(x);
-    this.yVar = new Var(y);
-  }
-
-  get x() {
-    return this.xVar.value;
-  }
-
-  set x(newX: number) {
-    this.xVar.value = newX;
-  }
-
-  get y() {
-    return this.yVar.value;
-  }
-
-  set y(newY: number) {
-    this.yVar.value = newY;
+    this._x = new Var(x);
+    this._y = new Var(y);
   }
 
   contains(pos: Position) {
@@ -66,8 +64,8 @@ export class Handle implements Thing {
   }
 
   moveBy(dx: number, dy: number) {
-    this.xVar.value += dx;
-    this.yVar.value += dy;
+    this.x += dx;
+    this.y += dy;
   }
 
   render(transform: Transform, color: string = config().instanceSideAttacherColor): void {
@@ -86,8 +84,8 @@ export class Handle implements Thing {
   }
 
   forEachVar(fn: (v: Var<number>) => void) {
-    fn(this.xVar);
-    fn(this.yVar);
+    fn(this._x);
+    fn(this._y);
   }
 
   toString() {
@@ -96,16 +94,29 @@ export class Handle implements Thing {
 }
 
 export class Line implements Thing {
-  a: Handle;
-  b: Handle;
+  private readonly _a: Var<Handle>;
+  get a() {
+    return this._a.value;
+  }
+  set a(a: Handle) {
+    this._a.value = a;
+  }
+
+  private readonly _b: Var<Handle>;
+  get b() {
+    return this._b.value;
+  }
+  set b(b: Handle) {
+    this._b.value = b;
+  }
 
   constructor(
     aPos: Position,
     bPos: Position,
     readonly isGuide: boolean,
   ) {
-    this.a = new Handle(aPos);
-    this.b = new Handle(bPos);
+    this._a = new Var(new Handle(aPos));
+    this._b = new Var(new Handle(bPos));
   }
 
   get x() {
@@ -146,10 +157,10 @@ export class Line implements Thing {
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
-    if (this.a == oldHandle) {
+    if (this.a === oldHandle) {
       this.a = newHandle;
     }
-    if (this.b == oldHandle) {
+    if (this.b === oldHandle) {
       this.b = newHandle;
     }
   }
@@ -160,16 +171,43 @@ export class Line implements Thing {
 }
 
 export class Arc implements Thing {
-  a: Handle;
-  b: Handle;
-  c: Handle;
-  readonly cummRotation: Var<number>; // TODO: update this while moving handles
+  private readonly _a: Var<Handle>;
+  get a() {
+    return this._a.value;
+  }
+  set a(a: Handle) {
+    this._a.value = a;
+  }
+
+  private readonly _b: Var<Handle>;
+  get b() {
+    return this._b.value;
+  }
+  set b(b: Handle) {
+    this._b.value = b;
+  }
+
+  private readonly _c: Var<Handle>;
+  get c() {
+    return this._c.value;
+  }
+  set c(c: Handle) {
+    this._c.value = c;
+  }
+
+  private readonly _cummRotation: Var<number>; // TODO: update this while moving handles
+  get cummRotation() {
+    return this._cummRotation.value;
+  }
+  set cummRotation(cummRotation: number) {
+    this._cummRotation.value = cummRotation;
+  }
 
   constructor(aPos: Position, bPos: Position, cPos: Position, cummRotation: number) {
-    this.a = new Handle(aPos);
-    this.b = pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos);
-    this.c = new Handle(cPos);
-    this.cummRotation = new Var(cummRotation);
+    this._a = new Var(new Handle(aPos));
+    this._b = new Var(pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos));
+    this._c = new Var(new Handle(cPos));
+    this._cummRotation = new Var(cummRotation);
   }
 
   get x() {
@@ -194,7 +232,7 @@ export class Arc implements Thing {
   }
 
   render(transform: Transform, color?: string, depth = 0) {
-    drawArc(this.c, this.a, this.b, this.cummRotation.value, color ?? flickeryWhite(), transform);
+    drawArc(this.c, this.a, this.b, this.cummRotation, color ?? flickeryWhite(), transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);
@@ -211,13 +249,13 @@ export class Arc implements Thing {
   }
 
   replaceHandle(oldHandle: Handle, newHandle: Handle) {
-    if (this.a == oldHandle) {
+    if (this.a === oldHandle) {
       this.a = newHandle;
     }
-    if (this.b == oldHandle) {
+    if (this.b === oldHandle) {
       this.b = newHandle;
     }
-    if (this.c == oldHandle) {
+    if (this.c === oldHandle) {
       this.c = newHandle;
     }
   }
@@ -234,12 +272,27 @@ export class Instance implements Thing {
     translate(scaleAround(rotateAround(p, origin, this.angle), origin, this.scale), this);
 
   readonly id = Instance.nextId++;
-  readonly xVar: Var<number>;
-  readonly yVar: Var<number>;
-  readonly angleAndSizeVecX: Var<number>;
-  readonly angleAndSizeVecY: Var<number>;
 
-  readonly _attachers: Var<List<Handle>>;
+  private readonly _x: Var<number>;
+  get x() {
+    return this._x.value;
+  }
+  set x(x: number) {
+    this._x.value = x;
+  }
+
+  private readonly _y: Var<number>;
+  get y() {
+    return this._y.value;
+  }
+  set y(y: number) {
+    this._y.value = y;
+  }
+
+  private readonly _angleAndSizeVecX: Var<number>;
+  private readonly _angleAndSizeVecY: Var<number>;
+
+  private readonly _attachers: Var<List<Handle>>;
   get attachers() {
     return this._attachers.value;
   }
@@ -255,10 +308,10 @@ export class Instance implements Thing {
     angle: number,
     parent: Drawing,
   ) {
-    this.xVar = new Var(x);
-    this.yVar = new Var(y);
-    this.angleAndSizeVecX = new Var(size * Math.cos(angle));
-    this.angleAndSizeVecY = new Var(size * Math.sin(angle));
+    this._x = new Var(x);
+    this._y = new Var(y);
+    this._angleAndSizeVecX = new Var(size * Math.cos(angle));
+    this._angleAndSizeVecY = new Var(size * Math.sin(angle));
     this._attachers = new Var(
       master.attachers.map((masterSideAttacher) => this.createAttacher(masterSideAttacher, parent)),
     );
@@ -274,42 +327,26 @@ export class Instance implements Thing {
     this.attachers.unshift(this.createAttacher(masterSideAttacher, parent));
   }
 
-  get x() {
-    return this.xVar.value;
-  }
-
-  set x(x: number) {
-    this.xVar.value = x;
-  }
-
-  get y() {
-    return this.yVar.value;
-  }
-
-  set y(y: number) {
-    this.yVar.value = y;
-  }
-
   get size() {
     return Math.sqrt(
-      Math.pow(this.angleAndSizeVecX.value, 2) + Math.pow(this.angleAndSizeVecY.value, 2),
+      Math.pow(this._angleAndSizeVecX.value, 2) + Math.pow(this._angleAndSizeVecY.value, 2),
     );
   }
 
   set size(newSize: number) {
     const angle = this.angle;
-    this.angleAndSizeVecX.value = newSize * Math.cos(angle);
-    this.angleAndSizeVecY.value = newSize * Math.sin(angle);
+    this._angleAndSizeVecX.value = newSize * Math.cos(angle);
+    this._angleAndSizeVecY.value = newSize * Math.sin(angle);
   }
 
   get angle() {
-    return Math.atan2(this.angleAndSizeVecY.value, this.angleAndSizeVecX.value);
+    return Math.atan2(this._angleAndSizeVecY.value, this._angleAndSizeVecX.value);
   }
 
   set angle(newAngle: number) {
     const size = this.size;
-    this.angleAndSizeVecX.value = size * Math.cos(newAngle);
-    this.angleAndSizeVecY.value = size * Math.sin(newAngle);
+    this._angleAndSizeVecX.value = size * Math.cos(newAngle);
+    this._angleAndSizeVecY.value = size * Math.sin(newAngle);
   }
 
   get scale() {
@@ -372,10 +409,10 @@ export class Instance implements Thing {
   }
 
   forEachVar(fn: (v: Var<number>) => void): void {
-    fn(this.xVar);
-    fn(this.yVar);
-    fn(this.angleAndSizeVecX);
-    fn(this.angleAndSizeVecY);
+    fn(this._x);
+    fn(this._y);
+    fn(this._angleAndSizeVecX);
+    fn(this._angleAndSizeVecY);
     this.forEachHandle((h) => h.forEachVar(fn));
   }
 }
