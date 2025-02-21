@@ -14,8 +14,6 @@ import { Handle, Thing } from './things';
 // so that when things overlap, the thing that you are manipulating
 // stays the same.
 
-// TODO: add (optional) visual knobs for rotation, scale, pan-x, pan-y
-
 const SMALL_CAPS = 0.75;
 const letterHeight = () => config().fontScale * 8;
 
@@ -449,11 +447,6 @@ const configScreen = new (class extends Screen {
   }
 
   render() {
-    this._render();
-    this._render();
-  }
-
-  _render() {
     super.render();
     drawText(
       config().lefty ? 'on' : 'off',
@@ -548,3 +541,5 @@ const configScreen = new (class extends Screen {
     }
   }
 })();
+
+export const isInConfigScreen = () => screen === configScreen;

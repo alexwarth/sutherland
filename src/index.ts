@@ -17,7 +17,11 @@ function onFrame() {
 
   canvas.clear();
   controller.render();
-  app.render();
+  if (controller.isInConfigScreen()) {
+    canvas.withGlobalAlpha(0.25, () => app.render());
+  } else {
+    app.render();
+  }
 
   requestAnimationFrame(onFrame);
 }

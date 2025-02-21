@@ -208,3 +208,5 @@ function onPointerUp(e: PointerEvent) {
 
   drag = null;
 }
+
+export const isInConfigScreen = () => false;
