@@ -101,11 +101,12 @@ export function updateWorldRenderingInfo() {
 }
 
 export function renderWorlds() {
-  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 40);
+  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 30);
   canvas.drawCircle(thisWorld.x, thisWorld.y, 4, 'yellow');
 }
 
 export function maybeTimeTravelToWorldAt(p: Position) {
+  canvas.drawCircle(p.x, p.y, 2, 'yellow');
   let bestWorld: World | null = null;
   let bestDist = Infinity;
   const tooFar = 20;
