@@ -107,6 +107,13 @@ export function drawArc(
   ctx.stroke();
 }
 
+export function drawCircle(x: number, y: number, radius: number, color: string) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, TAU);
+  ctx.fill();
+}
+
 export function drawText(
   pos: Position,
   text: string,
