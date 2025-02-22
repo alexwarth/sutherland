@@ -63,6 +63,7 @@ class World {
   y = -100;
   depth = 0;
   breadth = 0;
+  rand = Math.random() * 100;
 
   updateRenderingInfo() {
     if (this.children.size === 0) {
@@ -82,10 +83,14 @@ class World {
     let y = y0;
     for (const w of this.children) {
       w.render(x0 + xStep, y, xStep, yStep);
-      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
+      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'yellow');
       y += w.breadth * yStep;
     }
-    canvas.drawCircle(x0, y0, 4, 'cornflowerblue');
+    this.renderCircle('cornflowerblue');
+  }
+
+  renderCircle(color: string) {
+    canvas.drawCircle(this.x, this.y, 6 + 0.5 * Math.sin(Date.now() / 300 + this.rand), color);
   }
 }
 
@@ -101,8 +106,8 @@ export function updateWorldRenderingInfo() {
 }
 
 export function renderWorlds() {
-  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 30);
-  canvas.drawCircle(thisWorld.x, thisWorld.y, 4, 'yellow');
+  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 20);
+  thisWorld.renderCircle('yellow');
 }
 
 export function maybeTimeTravelToWorldAt(p: Position) {
