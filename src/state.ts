@@ -1,3 +1,6 @@
+import * as canvas from './canvas';
+import { pointDist, Position } from './helpers';
+
 // TODO: make this work when auto-solve is on
 // right now it's creating too many worlds b/c we always tweak every variable's value +/- 1,
 // most of the time only to change it back to the orig. value.
@@ -53,6 +56,37 @@ class World {
   seal() {
     this.sealed = true;
   }
+
+  // for rendering
+
+  x = -100;
+  y = -100;
+  depth = 0;
+  breadth = 0;
+
+  updateRenderingInfo() {
+    if (this.children.size === 0) {
+      this.depth = 1;
+      this.breadth = 1;
+    } else {
+      [...this.children].forEach((c) => c.updateRenderingInfo());
+      this.breadth = [...this.children].map((c) => c.breadth).reduce((b1, b2) => b1 + b2, 0);
+      this.depth =
+        1 + [...this.children].map((c) => c.depth).reduce((d1, d2) => Math.max(d1, d2), 0);
+    }
+  }
+
+  render(x0: number, y0: number, xStep: number, yStep: number) {
+    this.x = x0;
+    this.y = y0;
+    let y = y0;
+    for (const w of this.children) {
+      w.render(x0 + xStep, y, xStep, yStep);
+      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
+      y += w.breadth * yStep;
+    }
+    canvas.drawCircle(x0, y0, 4, 'cornflowerblue');
+  }
 }
 
 const topLevelWorld = new World();
@@ -60,6 +94,33 @@ let thisWorld = topLevelWorld;
 
 export function sealThisWorld() {
   thisWorld.seal();
+}
+
+export function updateWorldRenderingInfo() {
+  topLevelWorld.updateRenderingInfo();
+}
+
+export function renderWorlds() {
+  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 40);
+  canvas.drawCircle(thisWorld.x, thisWorld.y, 4, 'yellow');
+}
+
+export function maybeTimeTravelToWorldAt(p: Position) {
+  let bestWorld: World | null = null;
+  let bestDist = Infinity;
+  const tooFar = 20;
+  visit(topLevelWorld);
+  if (bestWorld) {
+    thisWorld = bestWorld;
+  }
+
+  function visit(w: World) {
+    const d = pointDist(p, w);
+    if (d < tooFar && d < bestDist) {
+      bestWorld = w;
+    }
+    w.children.forEach(visit);
+  }
 }
 
 export class Var<T> {

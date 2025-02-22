@@ -5,6 +5,7 @@ import * as status from './status';
 import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
+import { maybeTimeTravelToWorldAt, renderWorlds, updateWorldRenderingInfo } from './state';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -19,14 +20,29 @@ export function init() {
   canvasEl.addEventListener('pointerup', onPointerUp);
 }
 
+let timeTravelling = false;
+
 export function onFrame() {
+  if (keysDown['t']) {
+    if (!timeTravelling) {
+      updateWorldRenderingInfo();
+      timeTravelling = true;
+      document.getElementById('canvas')!.style.cursor = 'pointer';
+    }
+  } else {
+    timeTravelling = false;
+    document.getElementById('canvas')!.style.cursor = 'none';
+  }
+
   if (keysDown[' ']) {
     app.solve();
   }
 }
 
 export function render() {
-  // no op
+  if (timeTravelling) {
+    renderWorlds();
+  }
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -169,6 +185,11 @@ function onPointerDown(e: PointerEvent) {
 }
 
 function onPointerMove(e: PointerEvent) {
+  if (timeTravelling) {
+    maybeTimeTravelToWorldAt(e);
+    return;
+  }
+
   if (!e.metaKey) {
     delete keysDown['Meta'];
   }
