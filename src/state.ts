@@ -144,6 +144,20 @@ export class Var<T> {
   }
 }
 
+export class WorldlessVar<T> extends Var<T> {
+  constructor(private _value: T) {
+    super(_value);
+  }
+
+  override get value() {
+    return this._value;
+  }
+
+  override set value(newValue: T) {
+    this._value = newValue;
+  }
+}
+
 export class List<T> {
   private readonly _first = new Var<ListNode<T> | null>(null);
 

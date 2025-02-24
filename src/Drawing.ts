@@ -336,7 +336,7 @@ export class Drawing {
     }
 
     const constraints = new ConstraintSet();
-    const snappedPos = new Handle(pos);
+    const snappedPos = new Handle(pos, true);
     const vars = new Set<Var<number>>();
     snappedPos.forEachVar((v) => vars.add(v));
 

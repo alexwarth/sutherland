@@ -3,7 +3,7 @@ import scope from './scope';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
-import { List, Var } from './state';
+import { List, Var, WorldlessVar } from './state';
 import {
   Position,
   pointDist,
@@ -50,9 +50,9 @@ export class Handle implements Thing {
     this._y.value = newY;
   }
 
-  constructor({ x, y }: Position) {
-    this._x = new Var(x);
-    this._y = new Var(y);
+  constructor({ x, y }: Position, worldless = false) {
+    this._x = new (worldless ? WorldlessVar : Var)(x);
+    this._y = new (worldless ? WorldlessVar : Var)(y);
   }
 
   contains(pos: Position) {
