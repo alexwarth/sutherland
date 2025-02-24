@@ -6,7 +6,7 @@ import { pointDist, Position } from './helpers';
 // most of the time only to change it back to the orig. value.
 
 class World {
-  private readonly values = new WeakMap<Var<any>, any>();
+  private writes = new WeakMap<Var<any>, any>();
   private parentValueCache = new WeakRef(new WeakMap<Var<any>, any>());
   readonly children = new Set<World>();
   private sealed = false;
@@ -17,19 +17,20 @@ class World {
     const oldValue = this.get(v);
     if (oldValue === newValue) {
       // no op
-    } else if (this.sealed && this.values.has(v)) {
-      // TODO: think about this
-      // debugger;
+    } else if (this.sealed && this.writes.has(v)) {
+      if (newValue === null) {
+        debugger;
+      }
       thisWorld = this.sprout();
       thisWorld.set(v, newValue);
     } else {
-      this.values.set(v, newValue);
+      this.writes.set(v, newValue);
     }
   }
 
   get<T>(v: Var<T>): T {
-    if (this.values.has(v)) {
-      return this.values.get(v);
+    if (this.writes.has(v)) {
+      return this.writes.get(v);
     }
 
     let cache = this.parentValueCache.deref();
@@ -83,7 +84,7 @@ class World {
     let y = y0;
     for (const w of this.children) {
       w.render(x0 + xStep, y, xStep, yStep);
-      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'yellow');
+      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
       y += w.breadth * yStep;
     }
     this.renderCircle('cornflowerblue');
@@ -106,18 +107,18 @@ export function updateWorldRenderingInfo() {
 }
 
 export function renderWorlds() {
-  topLevelWorld.render(20, 20, (innerWidth - 40) / topLevelWorld.depth, 20);
+  topLevelWorld.render(20, 20, (innerWidth - 40) / (topLevelWorld.depth - 1), 20);
   thisWorld.renderCircle('yellow');
 }
 
 export function maybeTimeTravelToWorldAt(p: Position) {
-  canvas.drawCircle(p.x, p.y, 2, 'yellow');
   let bestWorld: World | null = null;
   let bestDist = Infinity;
   const tooFar = 20;
   visit(topLevelWorld);
   if (bestWorld) {
     thisWorld = bestWorld;
+    // console.log(thisWorld);
   }
 
   function visit(w: World) {
