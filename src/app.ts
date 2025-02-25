@@ -7,7 +7,7 @@ import { Drawing } from './Drawing';
 import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
-import { thisWorld, Var } from './state';
+import { Var } from './state';
 
 // TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)

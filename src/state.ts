@@ -138,7 +138,7 @@ export function maybeTimeTravelToWorldAt(p: Position) {
   visit(_topLevelWorld);
   if (bestWorld) {
     _thisWorld = bestWorld;
-    console.log(_thisWorld);
+    // console.log(_thisWorld);
   }
 
   function visit(w: World) {
