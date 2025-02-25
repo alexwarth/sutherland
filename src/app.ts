@@ -189,27 +189,11 @@ function addAttacher(m: Drawing, a: Handle) {
 
 export function onFrame() {
   if (config().autoSolve) {
-    autoSolve();
-  }
-}
-
-function autoSolve() {
-  const t0 = performance.now();
-
-  // Thinking about this...
-  // (Also need a solution for manual solve)
-
-  // let shouldRelax = false;
-  // thisWorld().doInTempChild(() => {
-  //   shouldRelax = drawing().relax();
-  // });
-  // if (!shouldRelax) {
-  //   return;
-  // }
-
-  let n = 0;
-  while (performance.now() - t0 < 20 && drawing().relax()) {
-    n++;
+    const t0 = performance.now();
+    let n = 0;
+    while (performance.now() - t0 < 20 && drawing().relax()) {
+      n++;
+    }
   }
 }
 
