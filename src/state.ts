@@ -125,6 +125,7 @@ export function maybeTimeTravelToWorldAt(p: Position) {
     const d = pointDist(p, w);
     if (d < tooFar && d < bestDist) {
       bestWorld = w;
+      bestDist = d;
     }
     w.children.forEach(visit);
   }
