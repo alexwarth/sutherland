@@ -18,8 +18,13 @@ class World {
     if (oldValue === newValue) {
       // no op
     } else if (this.sealed && this.writes.has(v)) {
-      thisWorld = this.sprout();
-      thisWorld.set(v, newValue);
+      // console.log('sprouting at', new Error().stack);
+      _thisWorld = this.sprout();
+      _thisWorld.set(v, newValue);
+    } else if (this.sealed) {
+      this.writes.set(v, newValue);
+    } else if (this.parent?.get(v) === newValue) {
+      this.writes.delete(v);
     } else {
       this.writes.set(v, newValue);
     }
@@ -44,11 +49,21 @@ class World {
     return value!;
   }
 
-  private sprout() {
-    this.seal(); // don't want any more changes here after we have children
+  sprout() {
     const child = new World(this);
     this.children.add(child);
     return child;
+  }
+
+  doInTempChild(fn: () => void) {
+    let origWorld = _thisWorld;
+    _thisWorld = this.sprout();
+    try {
+      fn();
+    } finally {
+      this.children.delete(_thisWorld);
+      _thisWorld = origWorld;
+    }
   }
 
   seal() {
@@ -75,12 +90,17 @@ class World {
     }
   }
 
-  render(x0: number, y0: number, xStep: number, yStep: number) {
+  render() {
+    this._render(20, 20, (innerWidth - 40) / (_topLevelWorld.depth - 1), 20);
+    _thisWorld.renderCircle('yellow');
+  }
+
+  _render(x0: number, y0: number, xStep: number, yStep: number) {
     this.x = x0;
     this.y = y0;
     let y = y0;
     for (const w of this.children) {
-      w.render(x0 + xStep, y, xStep, yStep);
+      w._render(x0 + xStep, y, xStep, yStep);
       canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
       y += w.breadth * yStep;
     }
@@ -92,30 +112,20 @@ class World {
   }
 }
 
-const topLevelWorld = new World();
-let thisWorld = topLevelWorld;
+const _topLevelWorld = new World();
+let _thisWorld = _topLevelWorld;
 
-export function sealThisWorld() {
-  thisWorld.seal();
-}
-
-export function updateWorldRenderingInfo() {
-  topLevelWorld.updateRenderingInfo();
-}
-
-export function renderWorlds() {
-  topLevelWorld.render(20, 20, (innerWidth - 40) / (topLevelWorld.depth - 1), 20);
-  thisWorld.renderCircle('yellow');
-}
+export const thisWorld = () => _thisWorld;
+export const topLevelWorld = () => _topLevelWorld;
 
 export function maybeTimeTravelToWorldAt(p: Position) {
   let bestWorld: World | null = null;
   let bestDist = Infinity;
   const tooFar = 20;
-  visit(topLevelWorld);
+  visit(_topLevelWorld);
   if (bestWorld) {
-    thisWorld = bestWorld;
-    // console.log(thisWorld);
+    _thisWorld = bestWorld;
+    console.log(_thisWorld);
   }
 
   function visit(w: World) {
@@ -129,30 +139,19 @@ export function maybeTimeTravelToWorldAt(p: Position) {
 }
 
 export class Var<T> {
+  readonly origin: World;
+
   constructor(value: T) {
+    this.origin = _thisWorld;
     this.value = value;
   }
 
   get value(): T {
-    return thisWorld.get(this);
+    return _thisWorld.get(this);
   }
 
   set value(newValue: T) {
-    thisWorld.set(this, newValue);
-  }
-}
-
-export class WorldlessVar<T> extends Var<T> {
-  constructor(private _value: T) {
-    super(_value);
-  }
-
-  override get value() {
-    return this._value;
-  }
-
-  override set value(newValue: T) {
-    this._value = newValue;
+    _thisWorld.set(this, newValue);
   }
 }
 
@@ -400,33 +399,3 @@ class ListNode<T> {
 // for (const x of l) {
 //   console.log(x);
 // }
-
-(window as any).tlw = topLevelWorld;
-(window as any).nws = () => {
-  return f(topLevelWorld);
-  function f(w: World) {
-    let n = 1;
-    for (const child of w.children) {
-      n += f(child);
-    }
-    return n;
-  }
-};
-
-(window as any).rew = () => {
-  if (thisWorld.parent) {
-    thisWorld = thisWorld.parent;
-    return true;
-  } else {
-    return false;
-  }
-};
-
-(window as any).ff = () => {
-  if (thisWorld.children.size > 0) {
-    [thisWorld] = thisWorld.children;
-    return true;
-  } else {
-    return false;
-  }
-};

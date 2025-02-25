@@ -16,7 +16,7 @@ import {
 import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing } from './things';
-import { List, Var } from './state';
+import { thisWorld, List, Var } from './state';
 
 export class Drawing {
   private readonly _things = new Var(new List<Thing>());
@@ -335,36 +335,42 @@ export class Drawing {
       }
     }
 
-    const constraints = new ConstraintSet();
-    const snappedPos = new Handle(pos, true);
-    const vars = new Set<Var<number>>();
-    snappedPos.forEachVar((v) => vars.add(v));
-
+    let dest: Position | null = null;
     const signature: string[] = [];
-    for (const thing of this.things) {
-      if (
-        thing === dragThing ||
-        (dragThing instanceof Handle && hasHandle(thing, dragThing)) ||
-        !thing.contains(pos)
-      ) {
-        // ignore
-      } else if (thing instanceof Line) {
-        constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
-        signature.push('L');
-      } else if (thing instanceof Arc) {
-        constraints.add(new PointOnArcConstraint(snappedPos, thing.a, thing.b, thing.c));
-        signature.push('A');
+    thisWorld().doInTempChild(() => {
+      const constraints = new ConstraintSet();
+      const snappedPos = new Handle(pos);
+      const vars = new Set<Var<number>>();
+      snappedPos.forEachVar((v) => vars.add(v));
+
+      for (const thing of this.things) {
+        if (
+          thing === dragThing ||
+          (dragThing instanceof Handle && hasHandle(thing, dragThing)) ||
+          !thing.contains(pos)
+        ) {
+          // ignore
+        } else if (thing instanceof Line) {
+          constraints.add(new PointOnLineConstraint(snappedPos, thing.a, thing.b));
+          signature.push('L');
+        } else if (thing instanceof Arc) {
+          constraints.add(new PointOnArcConstraint(snappedPos, thing.a, thing.b, thing.c));
+          signature.push('A');
+        }
       }
-    }
 
-    if (constraints.isEmpty()) {
-      return null;
-    }
+      if (constraints.isEmpty()) {
+        return;
+      }
 
-    while (constraints.relax(vars)) {
-      // keep going
+      while (constraints.relax(vars)) {
+        // keep going
+      }
+      dest = { x: snappedPos.x, y: snappedPos.y };
+    });
+    if (dest) {
+      updatePosAndDragThing(dest);
     }
-    updatePosAndDragThing(snappedPos);
     return signature.join();
 
     function updatePosAndDragThing(dest: Position) {

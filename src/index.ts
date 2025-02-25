@@ -1,4 +1,4 @@
-import { sealThisWorld } from './state';
+import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
 import * as tablet from './tablet';
@@ -14,7 +14,7 @@ controller.init();
 
 function onFrame() {
   // TODO: consider only calling this when config().undo is true
-  sealThisWorld();
+  thisWorld().seal();
 
   controller.onFrame();
   app.onFrame();

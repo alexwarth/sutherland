@@ -5,7 +5,7 @@ import * as status from './status';
 import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
-import { maybeTimeTravelToWorldAt, renderWorlds, updateWorldRenderingInfo } from './state';
+import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -25,8 +25,8 @@ let timeTravelling = false;
 export function onFrame() {
   if (keysDown['t']) {
     if (!timeTravelling) {
-      updateWorldRenderingInfo();
       timeTravelling = true;
+      topLevelWorld().updateRenderingInfo();
       document.getElementById('canvas')!.style.cursor = 'pointer';
     }
   } else {
@@ -41,7 +41,7 @@ export function onFrame() {
 
 export function render() {
   if (timeTravelling) {
-    renderWorlds();
+    topLevelWorld().render();
   }
 }
 
