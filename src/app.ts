@@ -7,7 +7,7 @@ import { Drawing } from './Drawing';
 import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
-import { Var } from './state';
+import { thisWorld, Var } from './state';
 
 // TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
@@ -189,11 +189,27 @@ function addAttacher(m: Drawing, a: Handle) {
 
 export function onFrame() {
   if (config().autoSolve) {
-    const t0 = performance.now();
-    let n = 0;
-    while (performance.now() - t0 < 20 && drawing().relax()) {
-      n++;
-    }
+    autoSolve();
+  }
+}
+
+function autoSolve() {
+  const t0 = performance.now();
+
+  // Thinking about this...
+  // (Also need a solution for manual solve)
+
+  // let shouldRelax = false;
+  // thisWorld().doInTempChild(() => {
+  //   shouldRelax = drawing().relax();
+  // });
+  // if (!shouldRelax) {
+  //   return;
+  // }
+
+  let n = 0;
+  while (performance.now() - t0 < 20 && drawing().relax()) {
+    n++;
   }
 }
 
