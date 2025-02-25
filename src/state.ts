@@ -18,9 +18,6 @@ class World {
     if (oldValue === newValue) {
       // no op
     } else if (this.sealed && this.writes.has(v)) {
-      if (newValue === null) {
-        debugger;
-      }
       thisWorld = this.sprout();
       thisWorld.set(v, newValue);
     } else {
