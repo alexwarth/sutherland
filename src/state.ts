@@ -9,22 +9,23 @@ class World {
   private writes = new WeakMap<Var<any>, any>();
   private parentValueCache = new WeakRef(new WeakMap<Var<any>, any>());
   readonly children = new Set<World>();
+  private numWrites = 0;
   private sealed = false;
 
   constructor(readonly parent?: World) {}
 
   set<T>(v: Var<T>, newValue: T) {
-    const oldValue = this.get(v);
-    if (oldValue === newValue) {
+    if (newValue === this.get(v)) {
       // no op
-    } else if (this.sealed && this.writes.has(v)) {
-      // console.log('sprouting at', new Error().stack);
+    } else if (this.sealed) {
       _thisWorld = this.sprout();
       _thisWorld.set(v, newValue);
-    } else if (this.sealed) {
+    } else if (!this.writes.has(v)) {
       this.writes.set(v, newValue);
-    } else if (this.parent?.get(v) === newValue) {
+      this.numWrites++;
+    } else if (newValue === this.parent?.get(v)) {
       this.writes.delete(v);
+      this.numWrites--;
     } else {
       this.writes.set(v, newValue);
     }
@@ -55,6 +56,14 @@ class World {
     return child;
   }
 
+  disown(child: World) {
+    this.children.delete(child);
+  }
+
+  goInto() {
+    _thisWorld = this;
+  }
+
   doInTempChild(fn: () => void) {
     let origWorld = _thisWorld;
     _thisWorld = this.sprout();
@@ -64,6 +73,10 @@ class World {
       this.children.delete(_thisWorld);
       _thisWorld = origWorld;
     }
+  }
+
+  hasWrites() {
+    return this.numWrites > 0;
   }
 
   seal() {

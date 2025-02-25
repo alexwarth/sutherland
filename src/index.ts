@@ -14,7 +14,8 @@ controller.init();
 
 function onFrame() {
   // TODO: consider only calling this when config().undo is true
-  thisWorld().seal();
+  const origWorld = thisWorld();
+  origWorld.seal();
 
   controller.onFrame();
   app.onFrame();
@@ -25,6 +26,12 @@ function onFrame() {
     canvas.withGlobalAlpha(0.25, () => app.render());
   } else {
     app.render();
+  }
+
+  const newWorld = thisWorld();
+  if (newWorld !== origWorld && !newWorld.hasWrites()) {
+    origWorld.disown(newWorld);
+    origWorld.goInto();
   }
 
   requestAnimationFrame(onFrame);
