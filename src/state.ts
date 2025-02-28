@@ -151,11 +151,12 @@ export function maybeTimeTravelToWorldAt(p: Position) {
   }
 }
 
-export class Var<T> {
-  readonly origin: World;
+// export class Var<T> {
+//   constructor(public value: T) {}
+// }
 
+export class Var<T> {
   constructor(value: T) {
-    this.origin = _thisWorld;
     this.value = value;
   }
 

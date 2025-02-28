@@ -37,8 +37,15 @@ export function render() {
   if (config().highlightReferents && status.referents) {
     const alpha = 1 - easeOutQuint(statusAgeMillis / (0.5 * config().statusTimeMillis));
     const color = `rgba(255,222,33,${alpha})`;
-    for (const thing of status.referents) {
-      thing.render(scope.toScreenPosition, color, 2);
+    // TODO: figure out why sometimes one of the referents (a Line) has an x that's undefined
+    // which leads to an exception below.
+    try {
+      for (const thing of status.referents) {
+        thing.render(scope.toScreenPosition, color, 2);
+      }
+    } catch (e) {
+      console.error(e);
+      console.error(e.stack);
     }
   }
 }
