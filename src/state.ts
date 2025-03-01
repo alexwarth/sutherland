@@ -1,4 +1,5 @@
 import * as canvas from './canvas';
+import config from './config';
 import { pointDist, Position } from './helpers';
 
 // TODO: make this work when auto-solve is on
@@ -64,6 +65,16 @@ class World {
     _thisWorld = this;
   }
 
+  do(fn: () => void) {
+    const origWorld = _thisWorld;
+    _thisWorld = this;
+    try {
+      fn();
+    } finally {
+      _thisWorld = origWorld;
+    }
+  }
+
   doInTempChild(fn: () => void) {
     let origWorld = _thisWorld;
     _thisWorld = this.sprout();
@@ -106,6 +117,43 @@ class World {
   render() {
     this._render(20, 20, (innerWidth - 40) / (_topLevelWorld.depth - 1), 20);
     _thisWorld.renderCircle('yellow');
+
+    const d = (window as any).drawing();
+    let w = _thisWorld.parent;
+    let alpha = config().onionSkinAlpha;
+    while (w) {
+      let keepGoing = true;
+      w.do(() => {
+        if ((window as any).drawing() !== d) {
+          keepGoing = false;
+        } else {
+          canvas.withGlobalAlpha(alpha, () => d.render());
+        }
+      });
+      if (!keepGoing) {
+        break;
+      }
+      alpha *= config().onionSkinAlpha;
+      w = w.parent;
+    }
+
+    alpha = config().onionSkinAlpha;
+    let ws = [..._thisWorld.children];
+    while (ws.length > 0) {
+      const nextWs: World[] = [];
+      for (const w of ws) {
+        w.do(() => {
+          if ((window as any).drawing() !== d) {
+            return;
+          } else {
+            canvas.withGlobalAlpha(alpha, () => d.render());
+            nextWs.push(...w.children);
+          }
+        });
+      }
+      alpha *= config().onionSkinAlpha;
+      ws = nextWs;
+    }
   }
 
   _render(x0: number, y0: number, xStep: number, yStep: number) {

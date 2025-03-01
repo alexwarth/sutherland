@@ -68,6 +68,7 @@ let _drawing = new Var(drawings['1']);
 export function drawing(id?: string) {
   return id ? (drawings[id] ?? letterDrawings.get(id)) : _drawing.value;
 }
+(window as any).drawing = drawing;
 
 export function switchToDrawing(id: string) {
   const d = drawing(id);

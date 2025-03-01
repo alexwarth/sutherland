@@ -27,6 +27,7 @@ const defaultConfig = {
   maxDepth: 10,
   tabletButtonWidth: 100,
   lefty: false,
+  onionSkinAlpha: 0.5,
 };
 
 export type Config = typeof defaultConfig;
