@@ -195,19 +195,15 @@ export class Arc implements Thing {
     this._c.value = c;
   }
 
-  private readonly _cummRotation: Var<number>; // TODO: update this while moving handles
-  get cummRotation() {
-    return this._cummRotation.value;
-  }
-  set cummRotation(cummRotation: number) {
-    this._cummRotation.value = cummRotation;
-  }
-
-  constructor(aPos: Position, bPos: Position, cPos: Position, cummRotation: number) {
+  constructor(
+    aPos: Position,
+    bPos: Position,
+    cPos: Position,
+    readonly direction: 'cw' | 'ccw',
+  ) {
     this._a = new Var(new Handle(aPos));
     this._b = new Var(pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos));
     this._c = new Var(new Handle(cPos));
-    this._cummRotation = new Var(cummRotation);
   }
 
   get x() {
@@ -232,7 +228,7 @@ export class Arc implements Thing {
   }
 
   render(transform: Transform, color?: string, depth = 0) {
-    drawArc(this.c, this.a, this.b, this.cummRotation, color ?? flickeryWhite(), transform);
+    drawArc(this.c, this.a, this.b, this.direction, color ?? flickeryWhite(), transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);

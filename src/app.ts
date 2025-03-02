@@ -124,7 +124,7 @@ export function moreArc() {
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
     const [c, a, b] = drawingInProgress.positions;
-    drawing().addArc(a, b, c, drawingInProgress.cummRotation!);
+    drawing().addArc(a, b, c, drawingInProgress.cummRotation! < 0 ? 'cw' : 'ccw');
     drawingInProgress = null;
   }
 }
@@ -251,7 +251,7 @@ function renderDrawingInProgress() {
           drawingInProgress.positions[0],
           drawingInProgress.positions[1],
           pen.pos,
-          drawingInProgress.cummRotation,
+          drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
           flickeryWhite(),
           scope.toScreenPosition,
         );
