@@ -1,51 +1,39 @@
-import { Arc, Instance, Thing } from './things';
+import { Thing } from './things';
 import { ctx } from './canvas';
 import config from './config';
-import { easeInCirc, easeOutQuint } from './helpers';
+import { easeOutQuint } from './helpers';
 import scope from './scope';
+import { Var } from './state';
 
-export type Status = { message?: string; referents?: Set<Thing> };
+const message = new Var<string>('');
+const referents = new Var<WeakRef<Thing>[]>([]);
+const statusTimeMillis = new Var<number>(0);
 
-let status: Status | null = null;
-let statusTimeMillis = 0;
-
-export function set(newStatus: Status | string) {
-  status = typeof newStatus === 'string' ? { message: newStatus } : newStatus;
-  statusTimeMillis = Date.now();
+export function set(msg: string, ...things: Thing[]) {
+  message.value = msg;
+  referents.value = things.map((t) => new WeakRef(t));
+  statusTimeMillis.value = Date.now();
 }
 
 export function render() {
-  if (status === null) {
-    return;
-  }
-
-  const statusAgeMillis = Date.now() - statusTimeMillis;
+  const statusAgeMillis = Date.now() - statusTimeMillis.value;
   if (statusAgeMillis > config().statusTimeMillis) {
-    status = null;
     return;
   }
 
-  if (status.message) {
-    const fontSizeInPixels = 40;
-    ctx.font = `${fontSizeInPixels}px Monaco`;
-    const width = ctx.measureText(status.message).width;
-    const alpha = 1 - easeOutQuint(statusAgeMillis / config().statusTimeMillis);
-    ctx.fillStyle = `rgba(255,222,33,${alpha})`;
-    ctx.fillText(status.message, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
-  }
+  const fontSizeInPixels = 40;
+  ctx.font = `${fontSizeInPixels}px Monaco`;
+  const width = ctx.measureText(message.value).width;
+  const alpha = 1 - easeOutQuint(statusAgeMillis / config().statusTimeMillis);
+  ctx.fillStyle = `rgba(255,222,33,${alpha})`;
+  ctx.fillText(message.value, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
 
-  if (config().highlightReferents && status.referents) {
+  if (config().highlightReferents) {
     const alpha = 1 - easeOutQuint(statusAgeMillis / (0.5 * config().statusTimeMillis));
     const color = `rgba(255,222,33,${alpha})`;
-    // TODO: figure out why sometimes one of the referents (a Line) has an x that's undefined
-    // which leads to an exception below.
-    try {
-      for (const thing of status.referents) {
-        thing.render(scope.toScreenPosition, color, 2);
-      }
-    } catch (e) {
-      console.error(e);
-      console.error(e.stack);
+    for (const thingRef of referents.value) {
+      const thing = thingRef.deref();
+      thing?.render(scope.toScreenPosition, color, 2);
     }
   }
 }

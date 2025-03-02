@@ -373,7 +373,7 @@ export function instantiate(id: string) {
   // can lead to mutually-recursive masters)
   if (!m.isEmpty() && pen.pos && !m.contains(drawing())) {
     const instance = drawing().addInstance(m, pen.pos, (0.5 * m.size) / scope.scale, 0);
-    status.set({ message: 'instantiate #' + id, referents: new Set([instance]) });
+    status.set('instantiate #' + id, instance);
   }
 }
 
@@ -415,7 +415,7 @@ let _equalLengthLine: Line | null = null;
 export function moreEqualLength() {
   if (!_equalLengthLine) {
     if ((_equalLengthLine = line())) {
-      status.set({ message: 'equal length', referents: new Set([_equalLengthLine]) });
+      status.set('equal length', _equalLengthLine);
     }
     return;
   }
@@ -425,7 +425,7 @@ export function moreEqualLength() {
     drawing().constraints.add(
       new EqualDistanceConstraint(_equalLengthLine.a, _equalLengthLine.b, otherLine.a, otherLine.b),
     );
-    status.set({ message: 'equal length', referents: new Set([_equalLengthLine, otherLine]) });
+    status.set('equal length', _equalLengthLine, otherLine);
   }
 }
 
