@@ -121,6 +121,11 @@ class World {
     const oldFlicker = config().flicker;
     config().flicker = false;
 
+    if (config().onionSkinAlpha === 0) {
+      return;
+    }
+
+    // canvas.ctx.filter = 'hue-rotate(-0.25turn)';
     const d = (window as any).drawing();
     let w = _thisWorld.parent;
     let alpha = config().onionSkinAlpha;
