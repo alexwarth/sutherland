@@ -1,22 +1,40 @@
 import { Thing } from './things';
 import { ctx } from './canvas';
-import config from './config';
 import { easeOutQuint } from './helpers';
-import scope from './scope';
 import { Var } from './state';
+import scope from './scope';
+import config from './config';
 
 const message = new Var<string>('');
-const referents = new Var<WeakRef<Thing>[]>([]);
-const statusTimeMillis = new Var<number>(0);
+const referents = new Var<WeakRef<Thing>[] | null>(null);
+
+let numSets = 0;
 
 export function set(msg: string, ...things: Thing[]) {
   message.value = msg;
-  referents.value = things.map((t) => new WeakRef(t));
-  statusTimeMillis.value = Date.now();
+  referents.value = things.length === 0 ? null : things.map((t) => new WeakRef(t));
+  numSets++;
 }
 
+let lastNumSets = 0;
+let lastMessage = message.value;
+let lastReferents = referents.value;
+let lastStatusTimeMillis = 0;
+
 export function render() {
-  const statusAgeMillis = Date.now() - statusTimeMillis.value;
+  const now = Date.now();
+  if (
+    numSets !== lastNumSets ||
+    message.value !== lastMessage ||
+    referents.value !== lastReferents
+  ) {
+    lastNumSets = numSets;
+    lastMessage = message.value;
+    lastReferents = referents.value;
+    lastStatusTimeMillis = now;
+  }
+
+  const statusAgeMillis = now - lastStatusTimeMillis;
   if (statusAgeMillis > config().statusTimeMillis) {
     return;
   }
@@ -28,7 +46,7 @@ export function render() {
   ctx.fillStyle = `rgba(255,222,33,${alpha})`;
   ctx.fillText(message.value, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
 
-  if (config().highlightReferents) {
+  if (config().highlightReferents && referents.value) {
     const alpha = 1 - easeOutQuint(statusAgeMillis / (0.5 * config().statusTimeMillis));
     const color = `rgba(255,222,33,${alpha})`;
     for (const thingRef of referents.value) {
