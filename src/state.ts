@@ -118,6 +118,9 @@ class World {
     this._render(20, 20, (innerWidth - 40) / (_topLevelWorld.depth - 1), 20);
     _thisWorld.renderCircle('yellow');
 
+    const oldFlicker = config().flicker;
+    config().flicker = false;
+
     const d = (window as any).drawing();
     let w = _thisWorld.parent;
     let alpha = config().onionSkinAlpha;
@@ -154,6 +157,8 @@ class World {
       alpha *= config().onionSkinAlpha;
       ws = nextWs;
     }
+
+    config().flicker = oldFlicker;
   }
 
   _render(x0: number, y0: number, xStep: number, yStep: number) {
@@ -177,6 +182,7 @@ const _topLevelWorld = new World();
 let _thisWorld = _topLevelWorld;
 
 export const thisWorld = () => _thisWorld;
+(window as any).thisWorld = thisWorld;
 export const topLevelWorld = () => _topLevelWorld;
 
 export function maybeTimeTravelToWorldAt(p: Position) {
