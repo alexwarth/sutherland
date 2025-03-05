@@ -21,6 +21,12 @@ let lastMessage = message.value;
 let lastReferents = referents.value;
 let lastStatusTimeMillis = 0;
 
+let pos: 'top' | 'bottom' = 'bottom';
+
+export function setPos(newPos: 'top' | 'bottom') {
+  pos = newPos;
+}
+
 export function render() {
   const now = Date.now();
   if (
@@ -44,7 +50,11 @@ export function render() {
   const width = ctx.measureText(message.value).width;
   const alpha = 1 - easeOutQuint(statusAgeMillis / config().statusTimeMillis);
   ctx.fillStyle = `rgba(255,222,33,${alpha})`;
-  ctx.fillText(message.value, (innerWidth - width) / 2, innerHeight - fontSizeInPixels);
+  ctx.fillText(
+    message.value,
+    (innerWidth - width) / 2,
+    pos === 'top' ? 1.2 * fontSizeInPixels : innerHeight - fontSizeInPixels,
+  );
 
   if (config().highlightReferents && referents.value) {
     const alpha = 1 - easeOutQuint(statusAgeMillis / (0.5 * config().statusTimeMillis));
