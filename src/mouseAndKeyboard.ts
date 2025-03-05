@@ -28,10 +28,12 @@ export function onFrame() {
       timeTravelling = true;
       topLevelWorld().updateRenderingInfo();
       document.getElementById('canvas')!.style.cursor = 'pointer';
+      status.setPos('top');
     }
   } else {
     timeTravelling = false;
     document.getElementById('canvas')!.style.cursor = 'none';
+    status.setPos('bottom');
   }
 
   if (keysDown[' ']) {

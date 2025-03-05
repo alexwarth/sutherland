@@ -369,6 +369,7 @@ const mainScreen = new (class extends Screen {
         break;
       case this.timeButton:
         topLevelWorld().updateRenderingInfo();
+        status.setPos('top');
         break;
       case this.reloadButton:
         location.reload();
@@ -380,8 +381,13 @@ const mainScreen = new (class extends Screen {
   }
 
   onButtonUp(b: Button) {
-    if (b === this.eqButton) {
-      app.endEqualLength();
+    switch (b) {
+      case this.eqButton:
+        app.endEqualLength();
+        break;
+      case this.timeButton:
+        status.setPos('bottom');
+        break;
     }
   }
 
