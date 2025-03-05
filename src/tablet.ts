@@ -6,6 +6,7 @@ import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
+import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
 
 // TODO: why is there no haptic bump on snaps, etc. when I'm holding down a button??
 
@@ -191,6 +192,7 @@ const mainScreen = new (class extends Screen {
   readonly weightButton = new Button('weight');
   readonly attacherButton = new Button('ATT');
   readonly clearButton = new Button('CLEAR');
+  readonly timeButton = new Button('TIME');
   readonly autoSolveButton = new Button('AUTO');
   readonly configButton = new Button('config');
   readonly reloadButton = new Button('reload');
@@ -216,7 +218,7 @@ const mainScreen = new (class extends Screen {
     this.weightButton,
     this.attacherButton,
     this.clearButton,
-    this.autoSolveButton,
+    this.timeButton,
   ];
   readonly col3 = [this.configButton, this.reloadButton];
 
@@ -230,7 +232,7 @@ const mainScreen = new (class extends Screen {
   }
 
   override onFrame() {
-    if (this.solveButton.isDown) {
+    if (!this.timeButton.isDown && this.solveButton.isDown) {
       app.solve();
     }
   }
@@ -248,6 +250,11 @@ const mainScreen = new (class extends Screen {
   }
 
   override onPencilDown(screenPos: Position, pressure: number) {
+    if (this.timeButton.isDown) {
+      this.timeTravelTo(screenPos, pressure);
+      return;
+    }
+
     app.pen.moveToScreenPos(screenPos);
     if (this.moveButton.isDown) {
       this.move();
@@ -256,6 +263,11 @@ const mainScreen = new (class extends Screen {
   }
 
   override onPencilMove(screenPos: Position, pressure: number) {
+    if (this.timeButton.isDown) {
+      this.timeTravelTo(screenPos, pressure);
+      return;
+    }
+
     app.pen.moveToScreenPos(screenPos);
     this.snap();
     const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
@@ -276,10 +288,19 @@ const mainScreen = new (class extends Screen {
   }
 
   override onPencilUp(screenPos: Position) {
+    if (this.timeButton.isDown) {
+      return;
+    }
+
     app.pen.clearPos();
     this.endDragEtc();
     app.endLines();
     app.endArc();
+  }
+
+  timeTravelTo(screenPos: Position, pressure: number) {
+    maybeTimeTravelToWorldAt(screenPos);
+    config().onionSkinAlpha = (Math.min(pressure, 4) / 4) * 0.9;
   }
 
   // TODO: come up w/ a better name for this method
@@ -345,6 +366,9 @@ const mainScreen = new (class extends Screen {
         break;
       case this.autoSolveButton:
         app.toggleAutoSolve();
+        break;
+      case this.timeButton:
+        topLevelWorld().updateRenderingInfo();
         break;
       case this.reloadButton:
         location.reload();
@@ -442,6 +466,13 @@ const mainScreen = new (class extends Screen {
 
   hapticBump() {
     wrapper.send('hapticImpact');
+  }
+
+  render() {
+    super.render();
+    if (this.timeButton.isDown) {
+      topLevelWorld().render();
+    }
   }
 })();
 

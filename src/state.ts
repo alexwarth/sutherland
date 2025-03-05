@@ -1,10 +1,13 @@
 import * as canvas from './canvas';
 import config from './config';
-import { pointDist, Position } from './helpers';
+import { isTablet, pointDist, Position } from './helpers';
 
 // TODO: make this work when auto-solve is on
 // right now it's creating too many worlds b/c we always tweak every variable's value +/- 1,
 // most of the time only to change it back to the orig. value.
+
+const circleSize = isTablet() ? 12 : 6;
+const addlXPaddingForWorlds = isTablet() ? 190 : 0;
 
 class World {
   private writes = new WeakMap<Var<any>, any>();
@@ -115,7 +118,13 @@ class World {
   }
 
   render() {
-    this._render(20, 20, (innerWidth - 40) / (_topLevelWorld.depth - 1), 20);
+    const yStep = circleSize * 3;
+    this._render(
+      20 + addlXPaddingForWorlds,
+      innerHeight - 20 - yStep * this.breadth,
+      (innerWidth - 40 - addlXPaddingForWorlds) / (_topLevelWorld.depth - 1),
+      yStep,
+    );
     _thisWorld.renderCircle('yellow');
 
     const oldFlicker = config().flicker;
@@ -179,7 +188,12 @@ class World {
   }
 
   renderCircle(color: string) {
-    canvas.drawCircle(this.x, this.y, 6 + 0.5 * Math.sin(Date.now() / 300 + this.rand), color);
+    canvas.drawCircle(
+      this.x,
+      this.y,
+      circleSize + (circleSize / 10) * Math.sin(Date.now() / 300 + this.rand),
+      color,
+    );
   }
 }
 
@@ -193,7 +207,7 @@ export const topLevelWorld = () => _topLevelWorld;
 export function maybeTimeTravelToWorldAt(p: Position) {
   let bestWorld: World | null = null;
   let bestDist = Infinity;
-  const tooFar = 20;
+  const tooFar = 3 * circleSize;
   visit(_topLevelWorld);
   if (bestWorld) {
     _thisWorld = bestWorld;
