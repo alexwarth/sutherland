@@ -319,6 +319,8 @@ const mainScreen = new (class extends Screen {
     }
   }
 
+  private oldAutoSolveSetting: boolean;
+
   override onButtonDown(b: Button) {
     if (isDrawingButton(b)) {
       if (app.pen.pos) {
@@ -373,6 +375,8 @@ const mainScreen = new (class extends Screen {
       case this.timeButton:
         topLevelWorld().updateRenderingInfo();
         status.setPos('top');
+        this.oldAutoSolveSetting = config().autoSolve;
+        config().autoSolve = false;
         break;
       case this.reloadButton:
         location.reload();
@@ -390,6 +394,7 @@ const mainScreen = new (class extends Screen {
         break;
       case this.timeButton:
         status.setPos('bottom');
+        config().autoSolve = this.oldAutoSolveSetting;
         break;
     }
   }
