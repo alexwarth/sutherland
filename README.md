@@ -36,7 +36,7 @@ vite
   - To **constrain an instance to the master's full size**, tap `SIZE` while pointing at it with the pencil
   - To **attach a weight to a point**, point at it with the pencil and tap `WEIGHT`
   - To **run the solver**, hold down the `SOLVE` button
-  - To toggle **auto-solve mode** on/off, tap `AUTO`
+  - To toggle **auto-solve mode** on/off, double-tap `SOLVE`
 
 # Controls for Desktop:
 

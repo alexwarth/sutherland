@@ -28,6 +28,7 @@ function drawText(text: string, x: number, y: number, scale = 0.35) {
 class Button {
   topY = 0;
   leftX = 0;
+  lastDownTime = 0;
   fingerId: number | null = null;
 
   constructor(
@@ -90,6 +91,7 @@ abstract class Screen {
       if (b.contains(screenPos)) {
         b.fingerId = id;
         this.onButtonDown(b);
+        b.lastDownTime = Date.now();
         return;
       }
     }
@@ -185,7 +187,7 @@ const mainScreen = new (class extends Screen {
   readonly sizeButton = new Button('SIZE');
   readonly dismemberButton = new Button('DISM');
   readonly deleteButton = new Button('DEL');
-  readonly solveButton = new Button('SOLVE');
+  readonly solveButton = new Button('SOLVE', () => config().autoSolve);
   readonly arcButton = new Button('ARC');
   readonly eqButton = new Button('EQ');
   readonly fixButton = new Button('FIX');
@@ -193,7 +195,6 @@ const mainScreen = new (class extends Screen {
   readonly attacherButton = new Button('ATT');
   readonly clearButton = new Button('CLEAR');
   readonly timeButton = new Button('TIME');
-  readonly autoSolveButton = new Button('AUTO');
   readonly configButton = new Button('config');
   readonly reloadButton = new Button('reload');
   readonly col1 = [
@@ -364,8 +365,10 @@ const mainScreen = new (class extends Screen {
       case this.deleteButton:
         app.del();
         break;
-      case this.autoSolveButton:
-        app.toggleAutoSolve();
+      case this.solveButton:
+        if (Date.now() - b.lastDownTime < 150) {
+          app.toggleAutoSolve();
+        }
         break;
       case this.timeButton:
         topLevelWorld().updateRenderingInfo();
