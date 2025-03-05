@@ -366,7 +366,7 @@ const mainScreen = new (class extends Screen {
         app.del();
         break;
       case this.solveButton:
-        if (Date.now() - b.lastDownTime < 150) {
+        if (Date.now() - b.lastDownTime < 200) {
           app.toggleAutoSolve();
         }
         break;
