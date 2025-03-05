@@ -298,7 +298,7 @@ const mainScreen = new (class extends Screen {
     app.endArc();
   }
 
-  timeTravelTo(screenPos: Position, pressure: number) {
+  timeTravelTo(screenPos: Position, pressure = 0) {
     maybeTimeTravelToWorldAt(screenPos);
     config().onionSkinAlpha = (Math.min(pressure, 4) / 4) * 0.9;
   }
@@ -391,7 +391,28 @@ const mainScreen = new (class extends Screen {
     }
   }
 
+  onFingerDown(screenPos: Position, id: number) {
+    super.onFingerDown(screenPos, id);
+    if (this.timeButton.isDown && id !== this.timeButton.fingerId) {
+      this.timeTravelTo(screenPos);
+    }
+  }
+
+  onFingerUp(screenPos: Position, id: number) {
+    if (this.timeButton.isDown && id !== this.timeButton.fingerId) {
+      this.timeTravelTo(screenPos);
+    }
+    super.onFingerUp(screenPos, id);
+  }
+
   override onFingerMove(screenPos: Position, id: number) {
+    if (this.timeButton.isDown) {
+      if (id !== this.timeButton.fingerId) {
+        this.timeTravelTo(screenPos);
+      }
+      return;
+    }
+
     if (app.drawing().isEmpty() || this.fingerScreenPositions.size > 2) {
       return;
     }
