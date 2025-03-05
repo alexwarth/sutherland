@@ -121,7 +121,7 @@ class World {
     const yStep = circleSize * 3;
     this._render(
       20 + addlXPaddingForWorlds,
-      innerHeight - 20 - yStep * this.breadth,
+      innerHeight - 20 - yStep,
       (innerWidth - 40 - addlXPaddingForWorlds) / (_topLevelWorld.depth - 1),
       yStep,
     );
@@ -182,7 +182,7 @@ class World {
     for (const w of this.children) {
       w._render(x0 + xStep, y, xStep, yStep);
       canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
-      y += w.breadth * yStep;
+      y -= w.breadth * yStep;
     }
     this.renderCircle('cornflowerblue');
   }
