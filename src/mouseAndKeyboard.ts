@@ -21,6 +21,7 @@ export function init() {
 }
 
 let timeTravelling = false;
+let oldAutoSolveSetting: boolean;
 
 export function onFrame() {
   if (keysDown['t']) {
@@ -29,11 +30,14 @@ export function onFrame() {
       topLevelWorld().updateRenderingInfo();
       document.getElementById('canvas')!.style.cursor = 'pointer';
       status.setPos('top');
+      oldAutoSolveSetting = config().autoSolve;
+      config().autoSolve = false;
     }
-  } else {
+  } else if (timeTravelling) {
     timeTravelling = false;
     document.getElementById('canvas')!.style.cursor = 'none';
     status.setPos('bottom');
+    config().autoSolve = oldAutoSolveSetting;
   }
 
   if (keysDown[' ']) {
