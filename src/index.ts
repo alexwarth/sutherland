@@ -4,12 +4,11 @@ import * as app from './app';
 import * as tablet from './tablet';
 import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
+import { isTablet } from './helpers';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 
-const controller = new URLSearchParams(window.location.search).get('tablet')
-  ? tablet
-  : mouseAndKeyboard;
+const controller = isTablet() ? tablet : mouseAndKeyboard;
 controller.init();
 
 function onFrame() {
