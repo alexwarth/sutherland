@@ -6,6 +6,7 @@ import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
 import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
+import { showConsole } from './console';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -75,6 +76,11 @@ function onKeyDown(e: KeyboardEvent) {
     case 'S':
       app.toggleAutoSolve();
       return;
+    case 'C':
+      config().console = !config().console;
+      showConsole();
+      return
+
   }
 
   if (app.drawing().isEmpty()) {

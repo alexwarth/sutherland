@@ -1,10 +1,13 @@
 import { thisWorld } from './state';
+import * as console from './console';
 import * as canvas from './canvas';
 import * as app from './app';
 import * as tablet from './tablet';
 import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
 import { isTablet } from './helpers';
+
+console.showConsole();
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
 

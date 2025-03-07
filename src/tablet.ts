@@ -3,6 +3,7 @@ import scope from './scope';
 import * as app from './app';
 import * as status from './status';
 import * as wrapper from './wrapper';
+import * as console from './console';
 import * as NativeEvents from './NativeEvents';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
@@ -517,6 +518,7 @@ const configScreen = new (class extends Screen {
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
   readonly ctrlPtsButton = new Button('ctrl pts');
+  readonly consoleButton = new Button('console');
   readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
   readonly col1 = [
@@ -525,6 +527,7 @@ const configScreen = new (class extends Screen {
     this.alphaButton,
     this.flickerButton,
     this.ctrlPtsButton,
+    this.consoleButton,
     this.defaultsButton,
   ];
   readonly col2 = [this.backButton];
@@ -563,6 +566,11 @@ const configScreen = new (class extends Screen {
       this.ctrlPtsButton.leftX + 2 * config().tabletButtonWidth,
       this.ctrlPtsButton.topY,
     );
+    drawText(
+      config().console ? 'on' : 'off',
+      this.consoleButton.leftX + 2 * config().tabletButtonWidth,
+      this.consoleButton.topY,
+    );
   }
 
   layOutButtons() {
@@ -595,6 +603,10 @@ const configScreen = new (class extends Screen {
         break;
       case this.backButton:
         switchTo(mainScreen);
+        break;
+      case this.consoleButton:
+        updateConfig({ console: !config().console });
+        console.showConsole();
         break;
     }
   }
