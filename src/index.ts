@@ -1,3 +1,4 @@
+import './console';
 import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
