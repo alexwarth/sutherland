@@ -291,7 +291,9 @@ function renderDebugInfo() {
   // draw pointer
   const ppos = pen.pos;
   if (ppos) {
-    drawText(scope.toScreenPosition(ppos), `(${ppos.x.toFixed()}, ${ppos.y.toFixed()})`);
+    const screenPos = scope.toScreenPosition(ppos);
+    screenPos.y -= 25;
+    drawText(screenPos, `(${ppos.x.toFixed()}, ${ppos.y.toFixed()})`);
   }
 }
 

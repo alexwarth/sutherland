@@ -4,6 +4,7 @@ import * as app from './app';
 import * as status from './status';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
+import { showHideConsole } from './console';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
 import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
@@ -257,6 +258,7 @@ const mainScreen = new (class extends Screen {
     }
 
     app.pen.moveToScreenPos(screenPos);
+    if (config().debug) console.log(`pen down ${app.pen.pos!.x|0}, ${app.pen.pos!.y|0}`);
     if (this.moveButton.isDown) {
       this.move();
     }
@@ -517,6 +519,8 @@ const configScreen = new (class extends Screen {
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
   readonly ctrlPtsButton = new Button('ctrl pts');
+  readonly debugButton = new Button('debug');
+  readonly consoleButton = new Button('console');
   readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
   readonly col1 = [
@@ -525,6 +529,8 @@ const configScreen = new (class extends Screen {
     this.alphaButton,
     this.flickerButton,
     this.ctrlPtsButton,
+    this.debugButton,
+    this.consoleButton,
     this.defaultsButton,
   ];
   readonly col2 = [this.backButton];
@@ -563,6 +569,16 @@ const configScreen = new (class extends Screen {
       this.ctrlPtsButton.leftX + 2 * config().tabletButtonWidth,
       this.ctrlPtsButton.topY,
     );
+    drawText(
+      config().debug ? 'on' : 'off',
+      this.debugButton.leftX + 2 * config().tabletButtonWidth,
+      this.debugButton.topY,
+    );
+    drawText(
+      config().console ? 'on' : 'off',
+      this.consoleButton.leftX + 2 * config().tabletButtonWidth,
+      this.consoleButton.topY,
+    );
   }
 
   layOutButtons() {
@@ -592,6 +608,13 @@ const configScreen = new (class extends Screen {
         break;
       case this.ctrlPtsButton:
         updateConfig({ showControlPoints: !config().showControlPoints });
+        break;
+      case this.debugButton:
+        updateConfig({ debug: !config().debug });
+        break;
+      case this.consoleButton:
+        updateConfig({ console: !config().console });
+        showHideConsole();
         break;
       case this.backButton:
         switchTo(mainScreen);

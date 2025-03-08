@@ -5,6 +5,7 @@ import * as status from './status';
 import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
+import { showHideConsole } from './console';
 import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
 
 const keysDown: { [key: string]: boolean } = {};
@@ -74,6 +75,10 @@ function onKeyDown(e: KeyboardEvent) {
       return;
     case 'S':
       app.toggleAutoSolve();
+      return;
+    case 'C':
+      updateConfig( { console: !config().console });
+      showHideConsole();
       return;
   }
 

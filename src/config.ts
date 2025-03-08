@@ -1,5 +1,6 @@
 const defaultConfig = {
   debug: false,
+  console: false,
   flicker: true,
   baseAlphaMultiplier: 1.5,
   lineWidth: 3.5,
