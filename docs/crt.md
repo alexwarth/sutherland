@@ -21,17 +21,13 @@ Based on this video here's a few estimates:
 
 * In both cases the distance between spots is about 1.2 mm.
 
-* 1024 positions on a 7" wide screen gives a precision of about 0.17 mm,
+* 1024 positions on a 7" wide screen gives a precision of about 0.17 mm.
 
 * that's about 7x the spot distance, making the animation of the spots along the lines plausible
 
 * the spot size appears to be 1/3rd of the distance between spots, making it about 0.4 mm, or 1/400th of the screen width, or 2 display units. This ensures spots "bleed" into each other to form contiuous lines.
 
-* assuming the point density is the same for the whole drawing, there's about 1,500 spots on the screen. Knowing that
-
-# Pen Tracker
-
-The Light Pen required a tracking pattern to determine which way the pen moved. Figure 4.4 of the thesis shows several patterns. Sutherland writes "I use the logarithmic scan with 4 arms." The middle of the pattern is left empty. This is used to show a "pseudo pen location" as a "bright dot" that jumps away from the pattern when snapping to a point or line (pg. 66).
+* assuming the point density is the same for the whole drawing, there's about 1,500 spots on the screen. Knowing that this uses 1:8 interlaced spot rendering there's a total of 12,000 spots which is in line with the 16,000 max spot number.
 
 # Display
 
@@ -40,4 +36,8 @@ The display system, or "scope" on the TX-2 is able to draw up to 100,000 spots p
 The system displayed dots either consecutively, or "interlaced" showing every 8th spot. This reduced flicker at the expense of a crawling pattern and can be switched on by the user (pg. 68).
 
 Another display mode is "twinkling", using a random order which is "pleasing to the eye" (pg. 68). This, too, could be enabled by the user.
+
+# Pen Tracker
+
+The Light Pen required a tracking pattern to determine which way the pen moved. Figure 4.4 of the thesis shows several patterns. Sutherland writes "I use the logarithmic scan with 4 arms." The middle of the pattern is left empty. This is used to show a "pseudo pen location" as a "bright dot" that jumps away from the pattern when snapping to a point or line (pg. 66).
 
