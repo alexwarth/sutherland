@@ -32,6 +32,25 @@ const MAX_SPOTS = 16348;     // TX-2 used 32K for display table with double buff
 
 // we will use 10 bits out of the two half-words in a 32 bit word for x and y
 const displayTable = new Int16Array(MAX_SPOTS*2);
+let numSpots = 0;
+
+///////// PUBLIC API //////////
+
+export function init(canvas: HTMLCanvasElement) {
+    startup(canvas);
+}
+
+export function clearSpots() {
+    numSpots = 0;
+}
+
+export function addSpot(x: number, y: number) {
+    displayTable[2*numSpots] = x;
+    displayTable[2*numSpots+1] = y;
+    numSpots++;
+}
+
+///////// IMPLEMENTATION //////////
 
 const VERT_SHADER = `
 attribute vec2 position;        // position of spot
@@ -75,7 +94,7 @@ const params = {
     fullscreen: false,
 }
 
-export function init(canvas: HTMLCanvasElement) {
+function startup(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
     if (!gl) throw new Error('No WebGL2 context found');
 
@@ -99,8 +118,15 @@ export function init(canvas: HTMLCanvasElement) {
     gui.add(uniforms, 'fadeAmount', 0, 1);
     gui.add(params, 'spots', 1, MAX_SPOTS);
     gui.add(params, 'speed', 0, 100);
+    gui.add(params, 'penTracker').onChange((on: boolean) => {
+        canvas.style.cursor = on ? 'none' : 'default';
+    });
+    gui.add(params, 'fullscreen').onChange((on: boolean) => {
+        if (on) document.body.requestFullscreen();
+        else document.exitFullscreen();
+    });
 
-    let penLoc = { x: 0, y: 0 };
+    const penLoc = { x: 0, y: 0 };
     canvas.onpointerdown = (e) => e.preventDefault();
     canvas.onpointermove = (e) => {
         const b = canvas.getBoundingClientRect();
@@ -135,9 +161,12 @@ export function init(canvas: HTMLCanvasElement) {
         prevTime = time;
 
         // start add spots
-        let numSpots = 0;
-        numSpots = penTracker(displayTable, numSpots, penLoc.x, penLoc.y);
-        numSpots = lissajous(displayTable, numSpots, 400, 400, phase, 3, 4, params.spots);
+        clearSpots();
+        if (params.penTracker) penTracker(penLoc.x, penLoc.y);
+        lissajous(400, 400, phase, 3, 4, params.spots);
+        // end add spots
+
+        // update spots buffer
         twgl.setAttribInfoBufferFromArray(gl,
             spotsBuffers.attribs.position,
             new Int16Array(displayTable.buffer, 0, numSpots*2));
@@ -163,7 +192,7 @@ export function init(canvas: HTMLCanvasElement) {
     requestAnimationFrame(render);
 }
 
-function penTracker(spots: Int16Array, offset: number, x: number, y: number) {
+function penTracker(x: number, y: number) {
     // log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
     const count = 6;          // number of spots per arm
     const start = 1.8;        // inner opening
@@ -172,21 +201,19 @@ function penTracker(spots: Int16Array, offset: number, x: number, y: number) {
     for (let i = 0; i < count; i++) {
         const r = Math.log(start + i) / density;
         for (const [ox, oy] of [[-1,0], [1,0], [0,-1], [0,1]]) {
-            spots[2*offset] = x + ox * scale * r;
-            spots[2*offset+1] = y + oy * scale * r;
-            offset++;
+            addSpot(
+                x + ox * scale * r,
+                y + oy * scale * r,
+            );
         }
     }
-    return offset;
 }
 
-function lissajous(spots: Int16Array, offset: number, w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
+function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
     for (let i = 0, angle = 0; i < nSpots; i++, angle += Math.PI * 2 / nSpots) {
-        const x = Math.sin(a * angle + phase) * w;
-        const y = Math.cos(b * angle + phase) * h;
-        spots[2*offset] = x;
-        spots[2*offset+1] = y;
-        offset++;
+        addSpot(
+            Math.sin(a * angle + phase) * w,
+            Math.cos(b * angle + phase) * h,
+        );
     }
-    return offset;
 }
