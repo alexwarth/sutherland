@@ -20,7 +20,7 @@ import * as dat from 'dat.gui';
 
 // TODO
 // [x] Gaussian deposition of photons
-// [ ] UI for experimenting with parameters
+// [x] UI for experimenting with parameters
 // [ ] use for Sketchpad drawing
 // [ ] use >8bit textures for higher dynamic range
 
@@ -53,23 +53,43 @@ void main() {
 }`;
 
 const uniforms = {
-    screenScale: [1024/2, 1024/2],
     spotSize: 20,
+    screenScale: [512, 512],
 };
 
 const params = {
-    spots: 1000,
+    spots: 4000,
     speed: 10,
+    penTracker: true,
+    fullscreen: false,
 }
 
 export function init(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2')!;
     if (!gl) throw new Error('No WebGL2 context found');
 
+    function resize() {
+        twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        const scale = Math.min(canvas.width/512, canvas.height/512);
+        uniforms.screenScale = [canvas.width/scale, canvas.height/scale];
+    }
+    onresize = () => resize();
+    resize();
+
     const gui = new dat.GUI();
-    gui.add(uniforms, 'spotSize', 1, 64);
-    gui.add(params, 'spots', 256, MAX_SPOTS);
+    gui.add(uniforms, 'spotSize', 1, 512);
+    gui.add(params, 'spots', 1, MAX_SPOTS);
     gui.add(params, 'speed', 0, 100);
+
+    let penLoc = { x: 0, y: 0 };
+    canvas.onpointerdown = (e) => e.preventDefault();
+    canvas.onpointermove = (e) => {
+        const b = canvas.getBoundingClientRect();
+        penLoc.x = (e.clientX - b.left - b.width/2) / b.width * 2 * uniforms.screenScale[0] | 0;
+        penLoc.y = (e.clientY - b.top - b.height/2) / b.height * -2 * uniforms.screenScale[1] | 0;
+    };
+    canvas.focus();
 
     const spotsProg = twgl.createProgramInfo(gl, [VERT_SHADER, SPOT_SHADER]);
     const spotsArrays: twgl.Arrays = {
@@ -87,14 +107,10 @@ export function init(canvas: HTMLCanvasElement) {
         phase += (time - prevTime) * params.speed / 10000;
         prevTime = time;
 
-        twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        const scale = Math.min(canvas.width/1024, canvas.height/1024);
-        uniforms.screenScale = [canvas.width/2/scale, canvas.height/2/scale];
-
         // start add spots
         let numSpots = 0;
-        numSpots = lissajous(displayTable, numSpots, 500, 500, phase, 3, 4, params.spots);
+        numSpots = penTracker(displayTable, numSpots, penLoc.x, penLoc.y);
+        numSpots = lissajous(displayTable, numSpots, 400, 400, phase, 3, 4, params.spots);
         twgl.setAttribInfoBufferFromArray(gl,
             spotsBuffers.attribs.position,
             new Int16Array(displayTable.buffer, 0, numSpots*2));
@@ -112,6 +128,23 @@ export function init(canvas: HTMLCanvasElement) {
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
+}
+
+function penTracker(spots: Int16Array, offset: number, x: number, y: number) {
+    // log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
+    const count = 6;          // number of spots per arm
+    const start = 1.8;        // inner opening
+    const density = 1.3;      // density of spots
+    const scale = Math.max(20, uniforms.spotSize);
+    for (let i = 0; i < count; i++) {
+        const r = Math.log(start + i) / density;
+        for (const [ox, oy] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+            spots[2*offset] = x + ox * scale * r;
+            spots[2*offset+1] = y + oy * scale * r;
+            offset++;
+        }
+    }
+    return offset;
 }
 
 function lissajous(spots: Int16Array, offset: number, w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
