@@ -49,12 +49,23 @@ void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     float gauss = exp(-dist * 10.0);
     if (gauss < 0.01) discard;
+    // src+dst blending to accumulate photons
     gl_FragColor = gauss * vec4(1.0);
 }`;
 
+const FADE_SHADER = `
+precision mediump float;
+uniform float fadeAmount;
+void main() {
+    vec4 color = vec4(0.0, 0.0, 0.0, fadeAmount);
+    // dst*(1-src.a)) blending to fade out
+    gl_FragColor = color;
+}`;
+
 const uniforms = {
-    spotSize: 20,
+    spotSize: 15,
     screenScale: [512, 512],
+    fadeAmount: 0.2,
 };
 
 const params = {
@@ -65,7 +76,7 @@ const params = {
 }
 
 export function init(canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl2')!;
+    const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
     if (!gl) throw new Error('No WebGL2 context found');
 
     function resize() {
@@ -73,12 +84,19 @@ export function init(canvas: HTMLCanvasElement) {
         gl.viewport(0, 0, canvas.width, canvas.height);
         const scale = Math.min(canvas.width/512, canvas.height/512);
         uniforms.screenScale = [canvas.width/scale, canvas.height/scale];
+        // only draw inner square
+        const ratio = canvas.width / canvas.height;
+        const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
+        const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor( left, top, canvas.width - 2*left, canvas.height - 2*top);
     }
     onresize = () => resize();
     resize();
 
     const gui = new dat.GUI();
     gui.add(uniforms, 'spotSize', 1, 512);
+    gui.add(uniforms, 'fadeAmount', 0, 1);
     gui.add(params, 'spots', 1, MAX_SPOTS);
     gui.add(params, 'speed', 0, 100);
 
@@ -90,6 +108,15 @@ export function init(canvas: HTMLCanvasElement) {
         penLoc.y = (e.clientY - b.top - b.height/2) / b.height * -2 * uniforms.screenScale[1] | 0;
     };
     canvas.focus();
+
+    const fadeProg = twgl.createProgramInfo(gl, [VERT_SHADER, FADE_SHADER]);
+    const fadeArrays: twgl.Arrays = {
+        position: {
+            numComponents: 2,
+            data: [-512, -512, 512, -512, 512, 512, -512, 512],
+        },
+    };
+    const fadeBuffers = twgl.createBufferInfoFromArrays(gl, fadeArrays);
 
     const spotsProg = twgl.createProgramInfo(gl, [VERT_SHADER, SPOT_SHADER]);
     const spotsArrays: twgl.Arrays = {
@@ -114,12 +141,18 @@ export function init(canvas: HTMLCanvasElement) {
         twgl.setAttribInfoBufferFromArray(gl,
             spotsBuffers.attribs.position,
             new Int16Array(displayTable.buffer, 0, numSpots*2));
-        // end add spots
 
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ONE);
+        // render phosphor fade
         gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(fadeProg.program);
+        twgl.setBuffersAndAttributes(gl, fadeProg, fadeBuffers);
+        twgl.setUniforms(fadeProg, uniforms);
+        twgl.drawBufferInfo(gl, fadeBuffers, gl.TRIANGLE_FAN);
 
+        // render ray spots
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
         gl.useProgram(spotsProg.program);
         twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffers);
         twgl.setUniforms(spotsProg, uniforms);
