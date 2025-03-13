@@ -25,5 +25,9 @@
     "trailingComma": "es5"
   },
   "dependencies": {
+    "@types/dat.gui": "^0.7.13",
+    "dat.gui": "^0.7.9",
+    "twgl.js": "^5.5.4",
+    "webgl-lint": "^1.11.3"
   }
 }

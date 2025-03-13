@@ -1,4 +1,9 @@
 import './console';
+import * as display from './display';
+
+display.init(document.getElementById('canvas') as HTMLCanvasElement);
+
+/*
 import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
@@ -41,3 +46,4 @@ onFrame();
 
 (window as any).app = app;
 (window as any).demos = demos;
+*/
