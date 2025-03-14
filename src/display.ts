@@ -79,6 +79,7 @@ const params = {
     demoSpeed: 10,
     twinkle: false,     // scramble spots for less flicker
     interlace: false,   // draw every 8th spot
+    penTracker: true,  // draw pen tracker
     fullscreen: false,
 }
 
@@ -164,6 +165,10 @@ function startup(canvas: HTMLCanvasElement) {
     gui.add(uniforms, 'fadeAmount', 0, 1);
     gui.add(params, 'twinkle');
     gui.add(params, 'interlace');
+    gui.add(params, 'penTracker').onChange((on: boolean) => {
+        canvas.style.cursor = on ? 'none' : 'default';
+        if (!on) clearPenSpots();
+    });
     gui.add(params, 'demoSpots', 1, MAX_SPOTS-348); // leave room for penTracker
     gui.add(params, 'demoSpeed', 0, 100);
     gui.add(params, 'fullscreen').onChange((on: boolean) => {
@@ -212,7 +217,7 @@ function startup(canvas: HTMLCanvasElement) {
 
         processNativeEvents();
 
-        penTracker(penLoc);
+        if (params.penTracker) penTracker(penLoc);
 
         // update spots buffer
         if (spotsChanged) {
