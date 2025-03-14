@@ -33,6 +33,7 @@ showHideConsole();
 // [ ] use >8bit textures for higher dynamic range
 
 const MAX_SPOTS = 16348;     // TX-2 used 32K for display table with double buffering
+const SPOTS_PER_MS = 50;     // TX-2 had 50K spots/sec
 
 // Sketchpad used 36 bit words for spot locations in the display table:
 // 10 bits from each of the two half-words for x and y,
@@ -40,7 +41,9 @@ const MAX_SPOTS = 16348;     // TX-2 used 32K for display table with double buff
 
 // we will use 10 bits out of the two half-words in a 32 bit word for x and y
 const displayTable = new Int16Array(MAX_SPOTS*2);
-let numSpots = 0;
+let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
+let spotCount = 0;         // number of spots in display table
+let spotsChanged = false;  // true if spots have changed since last frame
 
 ///////// PUBLIC API //////////
 
@@ -49,13 +52,45 @@ export function init(canvas: HTMLCanvasElement) {
 }
 
 export function clearSpots() {
-    numSpots = 0;
+    spotCount = 0;
+    spotsChanged = true;
 }
 
 export function addSpot(x: number, y: number) {
     displayTable[2*numSpots] = x;
     displayTable[2*numSpots+1] = y;
-    numSpots++;
+    spotCount++;
+    spotsChanged = true;
+}
+
+///////// DEMO //////////
+
+const params = {
+    demoSpots: 4000,
+    demoSpeed: 10,
+    interlace: false,   // draw every 8th spot
+    fullscreen: false,
+}
+
+let prev = 0;
+let phase = 0;
+function step() {
+    const now = Date.now();
+    phase += (now - prev) * params.demoSpeed / 10000;
+    prev = now;
+    clearSpots();
+    lissajous(400, 400, phase, 3, 4, params.demoSpots);
+};
+step();
+setInterval(step, 50);
+
+function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
+    for (let i = 0, angle = 0; i < nSpots; i++, angle += Math.PI * 2 / nSpots) {
+        addSpot(
+            Math.sin(a * angle + phase) * w,
+            Math.cos(b * angle + phase) * h,
+        );
+    }
 }
 
 ///////// IMPLEMENTATION //////////
@@ -94,13 +129,6 @@ const uniforms = {
     screenScale: [512, 512],
     fadeAmount: 0.2,
 };
-
-const params = {
-    demoSpots: 4000,
-    demoSpeed: 10,
-    penTracker: true,
-    fullscreen: false,
-}
 
 function startup(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
@@ -164,24 +192,20 @@ function startup(canvas: HTMLCanvasElement) {
     };
     const spotsBuffers = twgl.createBufferInfoFromArrays(gl, spotsArrays);
 
-    let phase = 0;
     let prevTime = 0;
     function render(time: number) {
-        phase += (time - prevTime) * params.demoSpeed / 10000;
+        const delta = time - prevTime;
         prevTime = time;
+        let spotsThisFrame = Math.min(delta, 30) * SPOTS_PER_MS | 0;
 
         processNativeEvents();
 
-        // start add spots
-        clearSpots();
-        lissajous(400, 400, phase, 3, 4, params.demoSpots);
-        penTracker(penLoc); // after all other spots
-        // end add spots
+        // penTracker(penLoc);
 
         // update spots buffer
         twgl.setAttribInfoBufferFromArray(gl,
             spotsBuffers.attribs!.position,
-            new Int16Array(displayTable.buffer, 0, numSpots*2));
+            new Int16Array(displayTable.buffer, 0, spotCount*2));
 
         // render phosphor fade
         gl.enable(gl.BLEND);
@@ -197,7 +221,22 @@ function startup(canvas: HTMLCanvasElement) {
         gl.useProgram(spotsProg.program);
         twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffers);
         twgl.setUniforms(spotsProg, uniforms);
-        twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, numSpots);
+
+        // draw up to end of display table
+        if (startSpot >= spotCount) startSpot = 0;
+        const segEnd = Math.min(startSpot + spotsThisFrame, spotCount);
+        const segSize = segEnd - startSpot;
+        twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, segSize, startSpot);
+        spotsThisFrame -= segSize;
+        startSpot = segEnd;
+        // draw from start of display table to frame end
+        if (startSpot === spotCount && spotsThisFrame > 0) {
+            const remaining = Math.min(spotsThisFrame, spotCount - segSize);
+            if (remaining > 0) {
+                twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, remaining);
+                startSpot = remaining;
+            }
+        }
 
         requestAnimationFrame(render);
     }
@@ -216,7 +255,7 @@ function penTracker({ x, y}) {
     const pseudoRange = scale * PSEUDO;  // snap to spot this close
     // find closest spot, make it the pseudo pen location
     let pseudoX = x, pseudoY = y, dist = Infinity;
-    for (let i = 0; i < numSpots; i++) {
+    for (let i = 0; i < spotCount; i++) {
         const dx = x - displayTable[2*i];
         if (dx > pseudoRange || dx < -pseudoRange) continue;
         const dy = y - displayTable[2*i+1];
@@ -248,14 +287,5 @@ function penTracker({ x, y}) {
         for (const [ox, oy] of [[-1,0], [1,0], [0,-1], [0,1]]) {
             addSpot(x + ox * r, y + oy * r);
         }
-    }
-}
-
-function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
-    for (let i = 0, angle = 0; i < nSpots; i++, angle += Math.PI * 2 / nSpots) {
-        addSpot(
-            Math.sin(a * angle + phase) * w,
-            Math.cos(b * angle + phase) * h,
-        );
     }
 }
