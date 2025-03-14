@@ -181,7 +181,7 @@ class World {
     let y = y0;
     for (const w of this.children) {
       w._render(x0 + xStep, y, xStep, yStep);
-      canvas.drawLine({ x: x0, y: y0 }, { x: x0 + xStep, y }, 'cornflowerblue');
+      canvas.drawDancingLine(this, { x: x0 + xStep, y }, w.rand, 'cornflowerblue');
       y -= w.breadth * yStep;
     }
     this.renderCircle('cornflowerblue');
@@ -211,7 +211,6 @@ export function maybeTimeTravelToWorldAt(p: Position) {
   visit(_topLevelWorld);
   if (bestWorld) {
     _thisWorld = bestWorld;
-    // console.log(_thisWorld);
   }
 
   function visit(w: World) {

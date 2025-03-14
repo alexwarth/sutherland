@@ -79,6 +79,37 @@ export function drawLine(
   ctx.lineWidth = oldLineWidth;
 }
 
+export function drawDancingLine(
+  a: Position,
+  b: Position,
+  rand: number,
+  strokeStyle = flickeryWhite(),
+  transform = identity,
+) {
+  a = transform(a);
+  b = transform(b);
+
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const angle = Math.atan2(dy, dx) + Math.PI / 2;
+  const sin = Math.sin(angle);
+  const cos = Math.cos(angle);
+  const dist = Math.sqrt(dx ** 2 + dy ** 2);
+  const mag = (dist * Math.sin(rand + Date.now() / 300)) / 20;
+  ctx.strokeStyle = strokeStyle;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.bezierCurveTo(
+    a.x + dx / 3 + mag * cos,
+    a.y + dy / 3 + mag * sin,
+    b.x - dx / 3 - mag * cos,
+    b.y - dy / 3 - mag * sin,
+    b.x,
+    b.y,
+  );
+  ctx.stroke();
+}
+
 export function drawArc(
   c: Position,
   a: Position,
