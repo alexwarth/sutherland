@@ -24,7 +24,7 @@ export function showHideConsole() {
 
 function createConsole() {
     const builder = document.createElement('div');
-    builder.innerHTML = `<div style="position: absolute; right: 0; bottom: 0; padding: 5px; width: fit-content; white-space: pre; font-family: monospace; background: rgba(0,0,0,0.5)"></div>`;
+    builder.innerHTML = `<div style="position: absolute; right: 0; bottom: 0; padding: 5px; width: fit-content; white-space: pre; font-family: monospace; background: rgba(0,0,0,0.5); pointer-events: none"></div>`;
     const el = builder.children[0] as HTMLElement;
     document.body.appendChild(el);
     return el;
@@ -56,5 +56,8 @@ function showLine(el: HTMLElement) {
 console.log = intercept('log');
 console.warn = intercept('warn');
 console.error = intercept('error');
-console.log('Hi Ivan!');
+addEventListener("error", (event) => console.error('Error:', event.error.message || event.error));
+addEventListener("unhandledrejection", (event) => console.error('Unhandled Rejection:', event.reason.message || event.reason));
+
+console.log('Back to 1963!');
 showHideConsole();
