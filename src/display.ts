@@ -40,7 +40,7 @@ const SPOTS_PER_MS = 50;     // TX-2 had 50K spots/sec
 // plus the remaining 16 bits as ID for lightpen
 
 // we will use 10 bits out of the two half-words in a 32 bit word for x and y
-const displayTable = new Int16Array(MAX_SPOTS*2);
+let displayTable = new Int16Array(MAX_SPOTS*2);
 let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
 let spotCount = 0;         // number of spots in display table
 let spotsChanged = false;  // true if spots have changed since last frame
@@ -57,8 +57,15 @@ export function clearSpots() {
 }
 
 export function addSpot(x: number, y: number) {
-    displayTable[2*numSpots] = x;
-    displayTable[2*numSpots+1] = y;
+    let i = spotCount;
+    if (params.twinkle) {
+        const j = Math.random() * spotCount | 0;
+        displayTable[2*i] = displayTable[2*j];
+        displayTable[2*i+1] = displayTable[2*j+1];
+        i = j;
+    }
+    displayTable[2*i] = x;
+    displayTable[2*i+1] = y;
     spotCount++;
     spotsChanged = true;
 }
@@ -68,6 +75,7 @@ export function addSpot(x: number, y: number) {
 const params = {
     demoSpots: 4000,
     demoSpeed: 10,
+    twinkle: false,     // scramble spots for less flicker
     interlace: false,   // draw every 8th spot
     fullscreen: false,
 }
@@ -152,6 +160,8 @@ function startup(canvas: HTMLCanvasElement) {
     const gui = new dat.GUI();
     gui.add(uniforms, 'spotSize', 1, 256);
     gui.add(uniforms, 'fadeAmount', 0, 1);
+    gui.add(params, 'twinkle');
+    gui.add(params, 'interlace');
     gui.add(params, 'demoSpots', 1, MAX_SPOTS-348); // leave room for penTracker
     gui.add(params, 'demoSpeed', 0, 100);
     gui.add(params, 'fullscreen').onChange((on: boolean) => {
@@ -203,9 +213,13 @@ function startup(canvas: HTMLCanvasElement) {
         // penTracker(penLoc);
 
         // update spots buffer
-        twgl.setAttribInfoBufferFromArray(gl,
-            spotsBuffers.attribs!.position,
-            new Int16Array(displayTable.buffer, 0, spotCount*2));
+        if (spotsChanged) {
+            if (params.interlace) interlaceDisplayTable();
+            twgl.setAttribInfoBufferFromArray(gl,
+                spotsBuffers.attribs!.position,
+                new Int16Array(displayTable.buffer, 0, spotCount*2));
+            spotsChanged = false;
+        }
 
         // render phosphor fade
         gl.enable(gl.BLEND);
@@ -288,4 +302,19 @@ function penTracker({ x, y}) {
             addSpot(x + ox * r, y + oy * r);
         }
     }
+}
+
+let tmpDisplayTable = new Int16Array(MAX_SPOTS*2);
+function interlaceDisplayTable() {
+    // transpose the display table, from 8xN to Nx8
+    // use Uint32Array to swap 32 bit words
+    const oldSpots = new Uint32Array(displayTable.buffer);
+    const newSpots = new Uint32Array(tmpDisplayTable.buffer);
+    const n = spotCount / 8 | 0;
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < n; j++) {
+            newSpots[8*j+i] = oldSpots[i*n+j];
+        }
+    }
+    displayTable = tmpDisplayTable;
 }
