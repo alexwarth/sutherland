@@ -43,6 +43,7 @@ const SPOTS_PER_MS = 50;     // TX-2 had 50K spots/sec
 let displayTable = new Int16Array(MAX_SPOTS*2);
 let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
 let spotCount = 0;         // number of spots in display table
+let penSpotCount = 0;      // number of spots at the end of the table for penTracker
 let spotsChanged = false;  // true if spots have changed since last frame
 
 ///////// PUBLIC API //////////
@@ -53,6 +54,7 @@ export function init(canvas: HTMLCanvasElement) {
 
 export function clearSpots() {
     spotCount = 0;
+    penSpotCount = 0;
     spotsChanged = true;
 }
 
@@ -210,7 +212,7 @@ function startup(canvas: HTMLCanvasElement) {
 
         processNativeEvents();
 
-        // penTracker(penLoc);
+        penTracker(penLoc);
 
         // update spots buffer
         if (spotsChanged) {
@@ -236,20 +238,25 @@ function startup(canvas: HTMLCanvasElement) {
         twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffers);
         twgl.setUniforms(spotsProg, uniforms);
 
-        // draw up to end of display table
-        if (startSpot >= spotCount) startSpot = 0;
-        const segEnd = Math.min(startSpot + spotsThisFrame, spotCount);
+        // draw up to end of non-pen spots in display table
+        const endSpot = spotCount - penSpotCount;
+        if (startSpot >= endSpot) startSpot = 0;
+        const segEnd = Math.min(startSpot + spotsThisFrame, endSpot);
         const segSize = segEnd - startSpot;
         twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, segSize, startSpot);
         spotsThisFrame -= segSize;
         startSpot = segEnd;
         // draw from start of display table to frame end
-        if (startSpot === spotCount && spotsThisFrame > 0) {
-            const remaining = Math.min(spotsThisFrame, spotCount - segSize);
+        if (startSpot === endSpot && spotsThisFrame > 0) {
+            const remaining = Math.min(spotsThisFrame, endSpot - segSize);
             if (remaining > 0) {
                 twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, remaining);
                 startSpot = remaining;
             }
+        }
+        // draw pen spots
+        if (penSpotCount > 0) {
+            twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, penSpotCount, endSpot);
         }
 
         requestAnimationFrame(render);
@@ -257,8 +264,18 @@ function startup(canvas: HTMLCanvasElement) {
     requestAnimationFrame(render);
 }
 
+function clearPenSpots() {
+    spotCount -= penSpotCount;
+    penSpotCount = 0;
+}
+
 let hadPseudoLoc = false;
 function penTracker({ x, y}) {
+    // remove pen spots from the end of the display table
+    clearPenSpots();
+    const origSpotCount = spotCount;
+    const origTwinkle = params.twinkle;
+    params.twinkle = false;
     // log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
     const COUNT = 6;          // number of spots per arm
     const START = 2;          // inner opening
@@ -302,6 +319,8 @@ function penTracker({ x, y}) {
             addSpot(x + ox * r, y + oy * r);
         }
     }
+    penSpotCount = spotCount - origSpotCount;
+    params.twinkle = origTwinkle;
 }
 
 let tmpDisplayTable = new Int16Array(MAX_SPOTS*2);
@@ -310,7 +329,7 @@ function interlaceDisplayTable() {
     // use Uint32Array to swap 32 bit words
     const oldSpots = new Uint32Array(displayTable.buffer);
     const newSpots = new Uint32Array(tmpDisplayTable.buffer);
-    const n = spotCount / 8 | 0;
+    const n = (spotCount - penSpotCount) / 8 | 0;
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < n; j++) {
             newSpots[8*j+i] = oldSpots[i*n+j];
