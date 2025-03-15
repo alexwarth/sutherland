@@ -142,7 +142,7 @@ void main() {
         v_color = vec3(1.0);                               // default: white
     }
     gl_Position = vec4(vec2(pos) / screenScale, 0.0, 1.0);
-    gl_PointSize = spotSize;
+    gl_PointSize = spotSize * 512.0 / max(screenScale.x, screenScale.y);
 }`;
 
 const SPOT_FSHADER = `#version 300 es
@@ -151,7 +151,7 @@ in vec3 v_color;
 out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-dist * 10.0);
+    float gauss = exp(-15.0 * dist*dist);                  // -15 works well for 8 bit color components
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = gauss * vec4(v_color, 1.0);
@@ -175,8 +175,8 @@ void main() {
 }`;
 
 const uniforms = {
-    spotSize: 15,
-    fadeAmount: 0.2,
+    spotSize: 20,
+    fadeAmount: 0.5,
     screenScale: [0, 0],    // set in resize()
     colorIdx: 0,
 };
@@ -336,11 +336,11 @@ function penTracker({ x, y}) {
     params.twinkle = false;
     // log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
     const COUNT = 6;          // number of spots per arm
-    const START = 2;          // inner opening
-    const DENSITY = 1.4;      // density of spots
-    const PSEUDO = 0.5;       // snap distance for pseudo pen location
-    const BRIGHT = 0.05;       // bright dot size for pseudo pen location
-    const scale = Math.max(20, uniforms.spotSize);
+    const START = 2.5;        // inner opening
+    const DENSITY = 0.25;      // density of spots
+    const PSEUDO = 5;         // snap distance for pseudo pen location
+    const BRIGHT = 0.4;       // bright dot size for pseudo pen location
+    const scale = Math.max(10, uniforms.spotSize) / 5;
     const pseudoRange = scale * PSEUDO;  // snap to spot this close
     // find closest spot, make it the pseudo pen location
     let pseudoX = x, pseudoY = y, dist = Infinity;
