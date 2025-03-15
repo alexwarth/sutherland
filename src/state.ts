@@ -180,8 +180,8 @@ class World {
     this.y = y0;
     let y = y0;
     for (const w of this.children) {
+      canvas.drawDancingLine(this, { x: x0 + xStep, y }, w.rand, 'rgba(100, 149, 237, .7)');
       w._render(x0 + xStep, y, xStep, yStep);
-      canvas.drawDancingLine(this, { x: x0 + xStep, y }, w.rand, 'cornflowerblue');
       y -= w.breadth * yStep;
     }
     this.renderCircle('cornflowerblue');
