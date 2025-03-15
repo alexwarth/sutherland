@@ -29,18 +29,22 @@ showHideConsole();
 // TODO
 // [x] Gaussian deposition of photons
 // [x] UI for experimenting with parameters
+// [x] lightpen tracking
+// [ ] use 8 draw calls for interlaced rendering
 // [ ] use for Sketchpad drawing
 // [ ] use >8bit textures for higher dynamic range
 
-const MAX_SPOTS = 16348;     // TX-2 used 32K for display table with double buffering
-const SPOTS_PER_MS = 50;     // TX-2 had 50K spots/sec
+const MAX_SPOTS = 16348;     // TX-2 used 32K words for display table with double buffering
+const SPOTS_PER_MS = 50;     // TX-2 could display 50K spots/sec
 
 // Sketchpad used 36 bit words for spot locations in the display table:
 // 10 bits from each of the two half-words for x and y,
 // plus the remaining 16 bits as ID for lightpen
 
-// we will use 10 bits out of the two half-words in a 32 bit word for x and y
-let displayTable = new Int16Array(MAX_SPOTS*2);
+// we will use 16 bits out of the two half-words in a 64 bit word for x and y
+// and 16 more bits in the x word for the spot id. The 16 bits in the y word
+// are used for a spot index, which can be used to colorize spots
+let displayTable = new Int32Array(MAX_SPOTS*2);
 let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
 let spotCount = 0;         // number of spots in display table
 let penSpotCount = 0;      // number of spots at the end of the table for penTracker
@@ -58,16 +62,22 @@ export function clearSpots() {
     spotsChanged = true;
 }
 
-export function addSpot(x: number, y: number) {
-    let i = spotCount;
+export function addSpot(x: number, y: number, id: number = 0) {
+    if (spotCount >= MAX_SPOTS) {
+        console.warn(`MAX_SPOTS (${MAX_SPOTS}) reached`);
+        return;
+    }
+    const idx = spotCount;
+    let i = idx;
     if (params.twinkle) {
         const j = Math.random() * spotCount | 0;
         displayTable[2*i] = displayTable[2*j];
         displayTable[2*i+1] = displayTable[2*j+1];
         i = j;
     }
-    displayTable[2*i] = x;
-    displayTable[2*i+1] = y;
+    // putting pos in the upper half makes it easy to sign-extend in the shader
+    displayTable[2*i]   = x << 16 | (id & 65535);   // for pen tracking?
+    displayTable[2*i+1] = y << 16 | (idx & 65535);  // for colorizing spots
     spotCount++;
     spotsChanged = true;
 }
@@ -78,8 +88,9 @@ const params = {
     demoSpots: 4000,
     demoSpeed: 10,
     twinkle: false,     // scramble spots for less flicker
-    interlace: false,   // draw every 8th spot
-    penTracker: true,  // draw pen tracker
+    colorize: false,     // colorize spots by ID
+    penTracker: true,   // draw pen tracker
+    scissor: false,     // only draw 1024x1024 square
     fullscreen: false,
 }
 
@@ -106,39 +117,68 @@ function lissajous(w: number, h: number, phase: number, a: number, b: number, nS
 
 ///////// IMPLEMENTATION //////////
 
-const VERT_SHADER = `
-attribute vec2 position;        // position of spot
-uniform vec2 screenScale;       // half width/height of screen
+const SPOT_VSHADER = `#version 300 es
+in      ivec2 xyIdIx;          // position, id, and index of spot
+uniform vec2  screenScale;     // half width/height of screen
 uniform float spotSize;        // size of spot
+uniform uint  colorIdx;        // start of spots in display table
+out     vec3  v_color;         // color of spot
+
+vec3 hue(float h) {
+    h = mod(h, 1.0);
+    float r = abs(h * 6.0 - 3.0) - 1.0;
+    float g = 2.0 - abs(h * 6.0 - 2.0);
+    float b = 2.0 - abs(h * 6.0 - 4.0);
+    return clamp(vec3(r, g, b), 0.0, 1.0);
+}
 
 void main() {
-  gl_Position = vec4(position / screenScale, 0.0, 1.0);
-  gl_PointSize = spotSize;
+    ivec2 pos = xyIdIx >> ivec2(16, 16);                   // sign extend 16 bits to 32
+    uint idx = uint(xyIdIx.y & 65535);                     // 16 bit index
+    if (idx < colorIdx) {
+        float fraction = float(idx) / float(colorIdx);     // map to [0, 1)
+        v_color = hue(float(idx) / float(colorIdx));       // color by table index
+    } else {
+        v_color = vec3(1.0);                               // default: white
+    }
+    gl_Position = vec4(vec2(pos) / screenScale, 0.0, 1.0);
+    gl_PointSize = spotSize;
 }`;
 
-const SPOT_SHADER = `
+const SPOT_FSHADER = `#version 300 es
 precision mediump float;
+in vec3 v_color;
+out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     float gauss = exp(-dist * 10.0);
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
-    gl_FragColor = gauss * vec4(1.0);
+    photons = gauss * vec4(v_color, 1.0);
 }`;
 
-const FADE_SHADER = `
+const FADE_VSHADER = `#version 300 es
+in      vec2 pos;             // position, id, and index of spot
+uniform vec2  screenScale;     // half width/height of screen
+void main() {
+    gl_Position = vec4(pos / screenScale, 0.0, 1.0);
+}`;
+
+const FADE_FSHADER = `#version 300 es
 precision mediump float;
 uniform float fadeAmount;
+out vec4 photons;
 void main() {
     vec4 color = vec4(0.0, 0.0, 0.0, fadeAmount);
     // dst*(1-src.a)) blending to fade out
-    gl_FragColor = color;
+    photons = color;
 }`;
 
 const uniforms = {
-    spotSize: 10,
-    screenScale: [512, 512],
+    spotSize: 15,
     fadeAmount: 0.2,
+    screenScale: [0, 0],    // set in resize()
+    colorIdx: 0,
 };
 
 function startup(canvas: HTMLCanvasElement) {
@@ -150,12 +190,16 @@ function startup(canvas: HTMLCanvasElement) {
         gl.viewport(0, 0, canvas.width, canvas.height);
         const scale = Math.min(canvas.width/512, canvas.height/512);
         uniforms.screenScale = [canvas.width/scale, canvas.height/scale];
-        // only draw inner square
-        const ratio = canvas.width / canvas.height;
-        const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
-        const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor( left, top, canvas.width - 2*left, canvas.height - 2*top);
+        if (params.scissor) {
+            // only draw inner square
+            const ratio = canvas.width / canvas.height;
+            const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
+            const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor( left, top, canvas.width - 2*left, canvas.height - 2*top);
+        } else {
+            gl.disable(gl.SCISSOR_TEST);
+        }
     }
     onresize = () => resize();
     resize();
@@ -164,7 +208,7 @@ function startup(canvas: HTMLCanvasElement) {
     gui.add(uniforms, 'spotSize', 1, 256);
     gui.add(uniforms, 'fadeAmount', 0, 1);
     gui.add(params, 'twinkle');
-    gui.add(params, 'interlace');
+    gui.add(params, 'colorize');
     gui.add(params, 'penTracker').onChange((on: boolean) => {
         canvas.style.cursor = on ? 'none' : 'default';
         if (!on) clearPenSpots();
@@ -191,18 +235,23 @@ function startup(canvas: HTMLCanvasElement) {
         }
     }
 
-    const fadeProg = twgl.createProgramInfo(gl, [VERT_SHADER, FADE_SHADER]);
+    const fadeProg = twgl.createProgramInfo(gl, [FADE_VSHADER, FADE_FSHADER]);
     const fadeArrays: twgl.Arrays = {
-        position: {
+        pos: {
             numComponents: 2,
-            data: [-512, -512, 512, -512, 512, 512, -512, 512],
+            data: [
+                -1024, -1024, // 2x screen size
+                 1024, -1024,
+                 1024,  1024,
+                -1024,  1024,
+            ],
         },
     };
     const fadeBuffers = twgl.createBufferInfoFromArrays(gl, fadeArrays);
 
-    const spotsProg = twgl.createProgramInfo(gl, [VERT_SHADER, SPOT_SHADER]);
+    const spotsProg = twgl.createProgramInfo(gl, [SPOT_VSHADER, SPOT_FSHADER]);
     const spotsArrays: twgl.Arrays = {
-        position: {
+        xyIdIx: {
             numComponents: 2,
             data: displayTable,
         },
@@ -221,10 +270,9 @@ function startup(canvas: HTMLCanvasElement) {
 
         // update spots buffer
         if (spotsChanged) {
-            if (params.interlace) interlaceDisplayTable();
             twgl.setAttribInfoBufferFromArray(gl,
-                spotsBuffers.attribs!.position,
-                new Int16Array(displayTable.buffer, 0, spotCount*2));
+                spotsBuffers.attribs!.xyIdIx,
+                new Int32Array(displayTable.buffer, 0, spotCount*2));
             spotsChanged = false;
         }
 
@@ -237,6 +285,7 @@ function startup(canvas: HTMLCanvasElement) {
         twgl.drawBufferInfo(gl, fadeBuffers, gl.TRIANGLE_FAN);
 
         // render ray spots
+        uniforms.colorIdx = params.colorize ? spotCount : 0;
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.ONE, gl.ONE);
         gl.useProgram(spotsProg.program);
@@ -248,7 +297,9 @@ function startup(canvas: HTMLCanvasElement) {
         if (startSpot >= endSpot) startSpot = 0;
         const segEnd = Math.min(startSpot + spotsThisFrame, endSpot);
         const segSize = segEnd - startSpot;
-        twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, segSize, startSpot);
+        if (segSize > 0) {
+            twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, segSize, startSpot);
+        }
         spotsThisFrame -= segSize;
         startSpot = segEnd;
         // draw from start of display table to frame end
@@ -261,6 +312,8 @@ function startup(canvas: HTMLCanvasElement) {
         }
         // draw pen spots
         if (penSpotCount > 0) {
+            uniforms.colorIdx = 0;
+            twgl.setUniforms(spotsProg, uniforms);
             twgl.drawBufferInfo(gl, spotsBuffers, gl.POINTS, penSpotCount, endSpot);
         }
 
@@ -292,14 +345,16 @@ function penTracker({ x, y}) {
     // find closest spot, make it the pseudo pen location
     let pseudoX = x, pseudoY = y, dist = Infinity;
     for (let i = 0; i < spotCount; i++) {
-        const dx = x - displayTable[2*i];
-        if (dx > pseudoRange || dx < -pseudoRange) continue;
-        const dy = y - displayTable[2*i+1];
-        if (dy > pseudoRange || dy < -pseudoRange) continue;
+        const spotX = displayTable[2*i] >> 16;
+        const dx = Math.abs(x - spotX);
+        if (dx > pseudoRange) continue;
+        const spotY = displayTable[2*i+1] >> 16;
+        const dy = Math.abs(y - spotY);
+        if (dy > pseudoRange) continue;
         const d = Math.min(dx, dy);
         if (d < dist) {
-            pseudoX = displayTable[2*i];
-            pseudoY = displayTable[2*i+1];
+            pseudoX = spotX;
+            pseudoY = spotY;
             dist = d;
         }
     }
@@ -326,19 +381,4 @@ function penTracker({ x, y}) {
     }
     penSpotCount = spotCount - origSpotCount;
     params.twinkle = origTwinkle;
-}
-
-let tmpDisplayTable = new Int16Array(MAX_SPOTS*2);
-function interlaceDisplayTable() {
-    // transpose the display table, from 8xN to Nx8
-    // use Uint32Array to swap 32 bit words
-    const oldSpots = new Uint32Array(displayTable.buffer);
-    const newSpots = new Uint32Array(tmpDisplayTable.buffer);
-    const n = (spotCount - penSpotCount) / 8 | 0;
-    for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < n; j++) {
-            newSpots[8*j+i] = oldSpots[i*n+j];
-        }
-    }
-    displayTable = tmpDisplayTable;
 }
