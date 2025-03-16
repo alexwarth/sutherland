@@ -109,7 +109,7 @@ const params = {
 
 const uniforms = {
     spotSize: 15,
-    fadeAmount: 1,
+    fadeAmount: 0.3,
     screenScale: [0, 0],    // set in resize()
     colorIdx: 0,
 };
