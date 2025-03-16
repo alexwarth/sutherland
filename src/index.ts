@@ -1,7 +1,7 @@
-import './console';
+// import './console';
 import * as display from './display';
 
-display.init(document.getElementById('canvas') as HTMLCanvasElement);
+display.init(document.getElementById('canvas') as HTMLCanvasElement, {showGui: true, openGui: false});
 
 /*
 import { thisWorld } from './state';
