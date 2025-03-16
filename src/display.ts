@@ -144,10 +144,9 @@ export function demo() {
 ///////// IMPLEMENTATION //////////
 
 const FADE_VSHADER = `#version 300 es
-in      vec2 pos;             // position
-uniform vec2  screenScale;     // half width/height of screen
+in      vec2 pos;
 void main() {
-    gl_Position = vec4(pos / screenScale, 0.0, 1.0);
+    gl_Position = vec4(pos, 0.0, 1.0);
 }`;
 
 const FADE_FSHADER = `#version 300 es
@@ -294,10 +293,10 @@ function startup(canvas: HTMLCanvasElement) {
         pos: {
             numComponents: 2,
             data: [
-                -1024, -1024, // 2x screen size
-                 1024, -1024,
-                 1024,  1024,
-                -1024,  1024,
+                -1, -1,
+                 1, -1,
+                 1,  1,
+                -1,  1,
             ],
         },
     };
