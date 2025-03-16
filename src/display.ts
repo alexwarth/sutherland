@@ -4,11 +4,7 @@ import * as dat from 'dat.gui';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
 import config from './config';
-import { showHideConsole, systemConsole } from './console';
-
-config().usePredictedEvents = true;
-config().console = true;
-showHideConsole();
+import { showHideConsole } from './console';
 
 // Simulate a CRT's glow by drawing into a phosphor texture,
 // thereby "depositing" photons into the phosphor, and then
@@ -103,7 +99,7 @@ const params = {
     colorizeByIndex: false, // colorize spots by ID
     showGui: false,         // show GUI
     openGui: false,         // open controls at start
-    showConsole: false,
+    showConsole: config().console,
     fullscreen: false,
 }
 
