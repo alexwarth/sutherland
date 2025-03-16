@@ -54,6 +54,7 @@ let spotsChanged = false;  // true if spots have changed since last frame
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
     if (options) setParams(options);
     startup(canvas);
+    return { clearSpots, addSpot, setParams, demo };
 }
 
 export function clearSpots() {
@@ -115,26 +116,28 @@ const uniforms = {
 
 ///////// DEMO //////////
 
-let prev = 0;
-let phase = 0;
-function step() {
-    const now = Date.now();
-    phase += (now - prev) * params.demoSpeed / 10000;
-    prev = now;
-    clearSpots();
-    lissajous(400, 400, phase, params.demoMulX, params.demoMulY, params.demoSpots);
-    // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
-};
-step();
-setInterval(step, 50);
+export function demo() {
+    let prev = 0;
+    let phase = 0;
+    function step() {
+        const now = Date.now();
+        phase += (now - prev) * params.demoSpeed / 10000;
+        prev = now;
+        clearSpots();
+        lissajous(400, 400, phase, params.demoMulX, params.demoMulY, params.demoSpots);
+        // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
+    };
+    step();
+    setInterval(step, 50);
 
-function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
-    for (let i = 0; i < nSpots; i++) {
-        const angle = i * Math.PI * 2 / nSpots;
-        addSpot(
-            Math.sin(a * angle + phase) * w,
-            Math.cos(b * angle + phase) * h,
-        );
+    function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
+        for (let i = 0; i < nSpots; i++) {
+            const angle = i * Math.PI * 2 / nSpots;
+            addSpot(
+                Math.sin(a * angle + phase) * w,
+                Math.cos(b * angle + phase) * h,
+            );
+        }
     }
 }
 
@@ -156,17 +159,6 @@ void main() {
     photons = vec4(0.0, 0.0, 0.0, fadeAmount);
 }`;
 
-const SPOT_FSHADER = `#version 300 es
-precision mediump float;
-out vec4 photons;
-void main() {
-    float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-15.0 * dist*dist);                  // -15 works well for 8 bit color components
-    if (gauss < 0.01) discard;
-    // src+dst blending to accumulate photons
-    photons = vec4(gauss, gauss, gauss, 1.0);
-}`;
-
 const SPOT_VSHADER = `#version 300 es
 in      ivec2 xyIdIx;          // position in upper 16 bits, id in lower 16 bits
 uniform vec2  screenScale;     // half width/height of screen
@@ -178,6 +170,16 @@ void main() {
     gl_PointSize = spotSize;
 }`;
 
+const SPOT_FSHADER = `#version 300 es
+precision mediump float;
+out vec4 photons;
+void main() {
+    float dist = distance(gl_PointCoord, vec2(0.5));
+    float gauss = exp(-15.0 * dist*dist);                  // -15 works well for 8 bit color components
+    if (gauss < 0.01) discard;
+    // src+dst blending to accumulate photons
+    photons = vec4(gauss, gauss, gauss, 1.0);
+}`;
 
 // fancy version that colorizes spots by index
 
