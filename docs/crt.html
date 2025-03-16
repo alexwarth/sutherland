@@ -35,27 +35,9 @@
 <p>This means it had a "resolution" of 1024x1024 spot positions, which some reports incorrectly call a 1024x1024 pixel display. But this was not a raster display, but displayed individual points. Normally the spots bleed into each other visually, but they can be drawn apart too, in this case due to interlaced rendering to reduce flicker (this screenshot is from the later Sketchpad-3D):</p>
 <p><img src="crt2.jpg" alt="interlaced spot rendering" /></p>
 
-<!-- <p>Here is a video of the CRT display showing lines and dotted lines:</p>
-
-<p>
-    <video width="800" controls poster="crt1.jpg">
-    <source src="crt.mp4" type="video/mp4">
-    <a href="crt.mp4">Click to play video</a></p>
-</video></p>
-<p>Based on this video here's a few estimates:</p>
-
-<ul>
-<li><p>The vertical line between the F and S sides consists of 25 individual points and is about 20% of the screen height long. The two lines at the lower edge of F and S has 39 points, taking up about 29% of the screenwidth.</p></li>
-<li><p>In both cases the distance between spots is about 1.2 mm.</p></li>
-<li><p>1024 positions on a 7" wide screen gives a precision of about 0.17 mm,</p></li>
-<li><p>that's about 7x the spot distance, making the animation of the spots along the lines plausible</p></li>
-<li><p>the spot size appears to be 1/3rd of the distance between spots, making it about 0.4 mm, or 1/400th of the screen width, or 2 display units. This ensures spots "bleed" into each other to form contiuous lines.</p></li>
-<li><p>assuming the point density is the same for the whole drawing, there's about 1,500 spots on the screen. Knowing that this uses 1:8 interlaced spot rendering there's a total of 12,000 spots which is in line with the 16,000 max spot number.</p></li>
-</ul> -->
-
 <h2>Display</h2>
 
-<p>The display system, or "scope" on the TX-2 is able to draw up to 100,000 spots per second, but with Sketchpad the program used 20 microseconds per spot, so the actual rate was more like 50,000 spots per second (pg. 67). The display table stored up to 16,000 spots (32,000 words due to double-buffering).</p>
+<p>The electrostatic deflection system on the TX-2 was able to display spots at a rate of up to 100,000 per second. The display subprogram took 20 microseconds per spot so that time was "left over for computation." That means the actual rate was up to 50,000 spots per second (pg. 67). The display table stored up to 32,000 words, but half of it was used for double-buffering.</p>
 
 <p>The system displayed dots either consecutively, or "interlaced" showing every 8th spot. This reduced flicker at the expense of a crawling pattern and can be switched on by the user (pg. 68).</p>
 
@@ -69,7 +51,7 @@
 
 <p>This emulation does take the TX-2's drawing speed into account, which leads to flickering. It implements both interlaced and twinkling rendering, which reduce the flicker. It also simulate the phosphor's fluorescence (which produces a slight after-image effect making movement less jerky).</p>
 
-<p>The source code for this emulation is available <a href="https://github.com/codefrau/sutherland/blob/388825238e6c477f760bd327755db768bc67fed5/src/display.ts#L1" target="_blank">here</a> (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word. The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.</p>
+<p>The source code for this emulation is available <a href="https://github.com/codefrau/sutherland/blob/388825238e6c477f760bd327755db768bc67fed5/src/display.ts#L1" target="_blank">here</a> (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word (having them in the upper half makes sign extension simpler in the shader). The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.</p>
 
 <h2>Pen Tracker</h2>
 

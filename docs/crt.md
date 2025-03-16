@@ -1,6 +1,6 @@
 # Sketchpad CRT Display
 
-Sketchpad ran on the TX-2 computer with a 7" x 7" Cathod Ray Tube to display its graphical interface: [youtube video](https://www.youtube.com/embed/GVlqhIzSUUY?si=Y40xSiqU16LgaUVg)
+Sketchpad ran on the TX-2 computer with a Cathod Ray Tube to display its graphical interface on a 7" x 7" screen: [youtube video](https://www.youtube.com/embed/GVlqhIzSUUY?si=Y40xSiqU16LgaUVg)
 
 ![sketchpad photo](crt1.jpg)
 
@@ -9,13 +9,13 @@ According to Ivan Sutherland's thesis, it stored 32,000 "spots" in a display tab
 * 10 bit horizontal and 10 bit vertical deflection of ray, origin at center, "signed fraction of full scope deflection" (pg. 70)
 * 16 bit tag (to identify what part of the drawing is sensed by the light pen)
 
-This means it had a "resolution" of 1024x1024 spot positions, which some reports incorrectly call a 1024x1024 pixel display. But this was not a raster display, but displayed individual points. Normally the spots bleed into each other visually, but they can be drawn apart too, in this case due to interlaced rendering to reduce flicker (this screenshot is from the later Sketchpad-3D):
+This means it had a "resolution" of 1024x1024 spot positions, which some reports incorrectly call a 1024x1024 pixel display. But this was not a raster display, it displayed individual points. Normally the spots bleed into each other visually, but they can be drawn apart too, in some cases due to interlaced rendering to reduce flicker (as in this screenshot from the later Sketchpad-3D):
 
 ![interlaced spot rendering](crt2.jpg)
 
-## Display
+## Display Speed
 
-The display system, or "scope" on the TX-2 is able to draw up to 100,000 spots per second, but with Sketchpad the program used 20 microseconds per spot, so the actual rate was more like 50,000 spots per second (pg. 67). The display table stored up to 16,000 spots (32,000 words due to double-buffering).
+The electrostatic deflection system on the TX-2 was able to display spots at a rate of up to 100,000 per second. The display subprogram took 20 microseconds per spot so that time was "left over for computation." That means the actual rate was up to 50,000 spots per second (pg. 67). The display table stored up to 32,000 words, but half of it was used for double-buffering.
 
 The system displayed dots either consecutively, or "interlaced" showing every 8th spot. This reduced flicker at the expense of a crawling pattern and can be switched on by the user (pg. 68).
 
@@ -23,13 +23,13 @@ Another display mode is "twinkling", using a random order which is "pleasing to 
 
 ### Display Emulation
 
-Here is a faithful emulation of the display using Gaussian splats as points. The spot locations are quantized to 1024 positions:
+Here is a faithful emulation of the TX-2 display using WebGL to draw Gaussian splats. The spot locations are quantized to 1024 positions:
 
 [Click to run](emu.html)
 
 This emulation does take the TX-2's drawing speed into account, which leads to flickering. It implements both interlaced and twinkling rendering, which reduce the flicker. It also simulates the phosphor's fluorescence (which produces a slight after-image effect making movement less jerky).
 
-The source code for this emulation is available [here](https://github.com/codefrau/sutherland/blob/388825238e6c477f760bd327755db768bc67fed5/src/display.ts#L1) (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word. The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.
+The source code for this emulation is available [here](https://github.com/codefrau/sutherland/blob/388825238e6c477f760bd327755db768bc67fed5/src/display.ts#L1) (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word (having them in the upper half makes sign extension simpler in the shader). The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.
 
 ## Pen Tracker
 
