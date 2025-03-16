@@ -14,13 +14,67 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
   overflow: hidden;
-  cursor: none;
 }
 
 body {
   font-family: system-ui;
-  background-color: black;
+  background-color: #333;
+}
+
+canvas {
+  cursor: none;
+}
+
+#tx2-buttons {
+  position: absolute;
+  width: 25dvw;
+  min-width: 10em;
+  max-width: 25dvh;
+  height: 100dvh;
+  max-height: 100dvw;
+}
+
+/* button box */
+#tx2-buttons > * {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* button row */
+#tx2-buttons > * > * {
+  flex: 1;
+  display: flex;
+  justify-content: stretch;
+}
+
+/* button */
+#tx2-buttons > * > * > * {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 150%;
+  font-family: monospace;
+  background-color: #999;
+  color:#000;
+  border: 0.2em outset #000;
+  border-radius: 0.5em;
+  padding: 0.1em 0.1em 0.1em 0.1em;
+}
+
+#tx2-buttons > * > * > *:active {
+  border-style: inset;
+  padding: 0.2em 0em 0em 0.2em;
+}
+
+/* key label */
+#tx2-buttons > * > * > * > * {
+  position: absolute;
+  text-align: center;
+  font-size: 70%;
+  margin: 2.5em 0 0 0;
 }

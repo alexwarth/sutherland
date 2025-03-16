@@ -4,9 +4,11 @@ import * as app from './app';
 import * as tablet from './tablet';
 import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
+import * as buttons from './buttons';
 import { isTablet } from './helpers';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
+buttons.init(document.getElementById('tx2-buttons') as HTMLDivElement);
 
 const controller = isTablet() ? tablet : mouseAndKeyboard;
 controller.init();
