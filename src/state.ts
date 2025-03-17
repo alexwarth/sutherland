@@ -31,7 +31,6 @@ class World {
       (window as any).dismemberAllInstances(d);
       d.forEachVar((v: Var<any>) => {
         const value = v.value;
-        console.log('writing', v, value);
         dest.do(() => (v.value = value));
       });
       for (const t of d.things) {
