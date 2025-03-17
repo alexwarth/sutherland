@@ -54,7 +54,7 @@
 
 <p>This emulation does take the TX-2's drawing speed into account, which leads to flickering. It implements both interlaced and twinkling rendering, which reduce the flicker. It also simulate the phosphor's fluorescence (which produces a slight after-image effect making movement less jerky).</p>
 
-<p>The source code for this emulation is available <a href="https://github.com/codefrau/sutherland/blob/388825238e6c477f760bd327755db768bc67fed5/src/display.ts#L1" target="_blank">here</a> (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word (having them in the upper half makes sign extension simpler in the shader). The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.</p>
+<p>The source code for this emulation is available <a href="https://github.com/codefrau/sutherland/blob/3b69c3ff4eba7e9382d8a1f79560a7aca0375fa2/src/display.ts#L1" target="_blank">here</a> (the other files in the repo are unused for this experiment). It uses 64 bits per spot, putting the x and y coordinates into the upper half of each 32 bit word (having them in the upper half makes sign extension simpler in the shader). The lower 16 bits are used for a spot ID in one word, and a spot index in the other word, which I used for distinguishing spots by color while debugging.</p>
 
 <h2>Pen Tracker</h2>
 

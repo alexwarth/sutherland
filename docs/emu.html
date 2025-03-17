@@ -75,8 +75,8 @@
     return function(h, x) {
       let v = 0;
       const I = [];
-      for (let P = 0; P < s.length; ++P) {
-        const O = i[s[P]];
+      for (let D = 0; D < s.length; ++D) {
+        const O = i[s[D]];
         x & O && (v |= O, I.push(A(O)));
       }
       return v === x ? I.join(" | ") : A(x);
@@ -93,91 +93,91 @@
     const h = _.get(s);
     return h ? [...h.keys()].map((x) => `${x}`).join(" | ") : `/*UNKNOWN WebGL ENUM*/ ${typeof s == "number" ? `0x${s.toString(16)}` : s}`;
   }
-  const T = 5126, k = 35664, j = 35665, W = 35666, G = 5124, q = 35667, H = 35668, pe = 35669, Q = 35670, ie = 35671, xe = 35672, Je = 35673, rt = 35674, Ce = 35675, Ge = 35676, Rr = 35678, Et = 35680, ns = 35679, rs = 35682, os = 35685, is = 35686, ss = 35687, as = 35688, us = 35689, cs = 35690, fs = 36289, ls = 36292, ds = 36293, Kt = 5125, wr = 36294, Fr = 36295, Ir = 36296, ms = 36298, _s = 36299, ps = 36300, hs = 36303, bs = 36306, ys = 36307, Es = 36308, xs = 36311, gs = /* @__PURE__ */ new Map([
+  const T = 5126, k = 35664, j = 35665, W = 35666, H = 5124, ee = 35667, V = 35668, pe = 35669, Z = 35670, ie = 35671, xe = 35672, Je = 35673, rt = 35674, Ce = 35675, Ge = 35676, wr = 35678, Et = 35680, rs = 35679, os = 35682, is = 35685, ss = 35686, as = 35687, us = 35688, cs = 35689, fs = 35690, ls = 36289, ds = 36292, ms = 36293, Kt = 5125, Fr = 36294, Ir = 36295, Cr = 36296, _s = 36298, ps = 36299, hs = 36300, bs = 36303, ys = 36306, Es = 36307, xs = 36308, gs = 36311, As = /* @__PURE__ */ new Map([
     [T, { size: 1, name: "float" }],
     [k, { size: 2, name: "vec2" }],
     [j, { size: 3, name: "vec3" }],
     [W, { size: 4, name: "vec4" }],
-    [G, { size: 1, name: "int" }],
-    [q, { size: 2, name: "ivec2" }],
-    [H, { size: 3, name: "ivec3" }],
+    [H, { size: 1, name: "int" }],
+    [ee, { size: 2, name: "ivec2" }],
+    [V, { size: 3, name: "ivec3" }],
     [pe, { size: 4, name: "ivec4" }],
     [Kt, { size: 1, name: "uint" }],
-    [wr, { size: 2, name: "uvec2" }],
-    [Fr, { size: 3, name: "uvec3" }],
-    [Ir, { size: 4, name: "uvec4" }],
-    [Q, { size: 1, name: "bool" }],
+    [Fr, { size: 2, name: "uvec2" }],
+    [Ir, { size: 3, name: "uvec3" }],
+    [Cr, { size: 4, name: "uvec4" }],
+    [Z, { size: 1, name: "bool" }],
     [ie, { size: 2, name: "bvec2" }],
     [xe, { size: 3, name: "bvec3" }],
     [Je, { size: 4, name: "bvec4" }],
     [rt, { size: 4, name: "mat2" }],
     [Ce, { size: 9, name: "mat3" }],
     [Ge, { size: 16, name: "mat4" }],
-    [os, { size: 6, name: "mat2x3" }],
-    [is, { size: 8, name: "mat2x4" }],
-    [ss, { size: 6, name: "mat3x2" }],
-    [as, { size: 12, name: "mat3x4" }],
-    [us, { size: 8, name: "mat4x2" }],
-    [cs, { size: 12, name: "mat4x3" }],
-    [Rr, { size: 1, name: "sampler2D" }],
+    [is, { size: 6, name: "mat2x3" }],
+    [ss, { size: 8, name: "mat2x4" }],
+    [as, { size: 6, name: "mat3x2" }],
+    [us, { size: 12, name: "mat3x4" }],
+    [cs, { size: 8, name: "mat4x2" }],
+    [fs, { size: 12, name: "mat4x3" }],
+    [wr, { size: 1, name: "sampler2D" }],
     [Et, { size: 1, name: "samplerCube" }],
-    [ns, { size: 1, name: "sampler3D" }],
-    [rs, { size: 1, name: "sampler2DShadow" }],
-    [fs, { size: 1, name: "sampler2DArray" }],
-    [ls, { size: 1, name: "sampler2DArrayShadow" }],
-    [ds, { size: 1, name: "samplerCubeShadow" }],
-    [ms, { size: 1, name: "isampler2D" }],
-    [_s, { size: 1, name: "isampler3D" }],
-    [ps, { size: 1, name: "isamplerCube" }],
-    [hs, { size: 1, name: "isampler2DArray" }],
-    [bs, { size: 1, name: "usampler2D" }],
-    [ys, { size: 1, name: "usampler3D" }],
-    [Es, { size: 1, name: "usamplerCube" }],
-    [xs, { size: 1, name: "usampler2DArray" }]
+    [rs, { size: 1, name: "sampler3D" }],
+    [os, { size: 1, name: "sampler2DShadow" }],
+    [ls, { size: 1, name: "sampler2DArray" }],
+    [ds, { size: 1, name: "sampler2DArrayShadow" }],
+    [ms, { size: 1, name: "samplerCubeShadow" }],
+    [_s, { size: 1, name: "isampler2D" }],
+    [ps, { size: 1, name: "isampler3D" }],
+    [hs, { size: 1, name: "isamplerCube" }],
+    [bs, { size: 1, name: "isampler2DArray" }],
+    [ys, { size: 1, name: "usampler2D" }],
+    [Es, { size: 1, name: "usampler3D" }],
+    [xs, { size: 1, name: "usamplerCube" }],
+    [gs, { size: 1, name: "usampler2DArray" }]
   ]);
-  function Pt(s) {
-    return gs.get(s);
+  function Dt(s) {
+    return As.get(s);
   }
-  const As = 32873, Ts = 34068, vs = 32874, Ss = 35869, Rs = 34962, ws = 34963, Fs = 34964, Is = 34965, Cs = 3553, Ns = 32879, Bs = 35866, Ds = 34067, Ps = 36160, Us = 36161, Cr = 36006, Ms = 36007, Os = 35982, Ls = 35983, ks = 36009, $s = 36008, zs = 36010, Vs = 35345, Gs = 35368, Hs = 36386, Xs = 36389, Ys = /* @__PURE__ */ new Map([
-    [Rs, Fs],
+  const Ts = 32873, vs = 34068, Ss = 32874, Rs = 35869, ws = 34962, Fs = 34963, Is = 34964, Cs = 34965, Ns = 3553, Bs = 32879, Ps = 35866, Ds = 34067, Us = 36160, Ms = 36161, Nr = 36006, Os = 36007, Ls = 35982, ks = 35983, $s = 36009, zs = 36008, Vs = 36010, Gs = 35345, Hs = 35368, Xs = 36386, Ys = 36389, Ws = /* @__PURE__ */ new Map([
     [ws, Is],
-    [Cs, As],
-    [Ds, Ts],
-    [Ns, vs],
+    [Fs, Cs],
+    [Ns, Ts],
+    [Ds, vs],
     [Bs, Ss],
-    [Us, Ms],
-    [Ps, Cr],
-    [ks, Cr],
-    [$s, zs],
-    [Vs, Gs],
-    [Os, Ls],
-    [Hs, Xs]
+    [Ps, Rs],
+    [Ms, Os],
+    [Us, Nr],
+    [$s, Nr],
+    [zs, Vs],
+    [Gs, Hs],
+    [Ls, ks],
+    [Xs, Ys]
   ]);
-  function Nr(s) {
-    return Ys.get(s);
+  function Br(s) {
+    return Ws.get(s);
   }
-  const Ws = 5120, js = 5122, Br = 5121, Dr = 5123, Ks = /* @__PURE__ */ new Map([
-    [Q, 1],
-    [Ws, 1],
-    [Br, 1],
-    [js, 2],
+  const js = 5120, Ks = 5122, Pr = 5121, Dr = 5123, Js = /* @__PURE__ */ new Map([
+    [Z, 1],
+    [js, 1],
+    [Pr, 1],
+    [Ks, 2],
     [Dr, 2],
-    [G, 4],
+    [H, 4],
     [Kt, 4],
     [T, 4]
   ]);
-  function Pr(s) {
-    return Ks.get(s) || 0;
+  function Ur(s) {
+    return Js.get(s) || 0;
   }
-  const Js = /* @__PURE__ */ new Map([
-    [Br, Uint8Array],
+  const Qs = /* @__PURE__ */ new Map([
+    [Pr, Uint8Array],
     [Dr, Uint16Array],
     [Kt, Uint32Array]
   ]);
-  function Qs(s) {
-    return Js.get(s);
+  function Zs(s) {
+    return Qs.get(s);
   }
-  const Ur = {
+  const Mr = {
     drawArrays(s, h, x) {
       return { startOffset: h, vertCount: x, instances: 1 };
     },
@@ -196,30 +196,30 @@
     drawElementsInstancedANGLE(s, h, x, v, I) {
       return { startOffset: v, vertCount: h, instances: I, indexType: x };
     },
-    drawRangeElements(s, h, x, v, I, P) {
-      return { startOffset: P, vertCount: v, instances: 1, indexType: I };
+    drawRangeElements(s, h, x, v, I, D) {
+      return { startOffset: D, vertCount: v, instances: 1, indexType: I };
     }
   };
-  function Mr(s, h) {
-    return Ur[s](...h);
+  function Or(s, h) {
+    return Mr[s](...h);
   }
-  function Un(s) {
-    return !!Ur[s];
+  function Dn(s) {
+    return !!Mr[s];
   }
-  const Zs = /* @__PURE__ */ new Map([
+  const qs = /* @__PURE__ */ new Map([
     [T, { size: 4 }],
     [k, { size: 8 }],
     [j, { size: 12 }],
     [W, { size: 16 }],
-    [G, { size: 4 }],
-    [q, { size: 8 }],
-    [H, { size: 12 }],
+    [H, { size: 4 }],
+    [ee, { size: 8 }],
+    [V, { size: 12 }],
     [pe, { size: 16 }],
     [Kt, { size: 4 }],
-    [wr, { size: 8 }],
-    [Fr, { size: 12 }],
-    [Ir, { size: 16 }],
-    [Q, { size: 4 }],
+    [Fr, { size: 8 }],
+    [Ir, { size: 12 }],
+    [Cr, { size: 16 }],
+    [Z, { size: 4 }],
     [ie, { size: 8 }],
     [xe, { size: 12 }],
     [Je, { size: 16 }],
@@ -227,132 +227,132 @@
     [Ce, { size: 9, count: 3 }],
     [Ge, { size: 16, count: 4 }]
   ]);
-  function qs(s) {
-    return Zs.get(s);
+  function ea(s) {
+    return qs.get(s);
   }
   const st = (s) => s ? new WeakRef(s) : null, at = (s, h) => {
     const x = s == null ? void 0 : s.deref();
     return !!x != !!h ? !1 : x ? x === h : !0;
   };
-  function Or(s, h) {
+  function Lr(s, h) {
     return s === "undefined" ? h : s;
   }
-  const ea = 35070;
-  function ta(s, h) {
+  const ta = 35070;
+  function na(s, h) {
     return s + h - 1;
   }
-  function na(s, h, x, v, I, P, O, U, L) {
+  function ra(s, h, x, v, I, D, O, U, L) {
     const N = s.getParameter(s.ELEMENT_ARRAY_BUFFER_BINDING);
     if (!N) {
       L.push("No ELEMENT_ARRAY_BUFFER bound");
       return;
     }
-    const V = Pr(P), ae = s.getBufferParameter(s.ELEMENT_ARRAY_BUFFER, s.BUFFER_SIZE), he = x + v * V;
+    const G = Ur(D), ae = s.getBufferParameter(s.ELEMENT_ARRAY_BUFFER, s.BUFFER_SIZE), he = x + v * G;
     if (he > ae) {
-      L.push(`offset: ${x} and count: ${v} with index type: ${A(P)} passed to ${h} are out of range for current ELEMENT_ARRAY_BUFFER.
+      L.push(`offset: ${x} and count: ${v} with index type: ${A(D)} passed to ${h} are out of range for current ELEMENT_ARRAY_BUFFER.
 Those parameters require ${he} bytes but the current ELEMENT_ARRAY_BUFFER ${O(N)} only has ${ae} bytes`);
       return;
     }
-    const Ae = U(N), be = Qs(P), Te = new be(Ae, x);
+    const Ae = U(N), be = Zs(D), Te = new be(Ae, x);
     let fe = Te[0];
     for (let ot = 1; ot < v; ++ot)
       fe = Math.max(fe, Te[ot]);
     return fe;
   }
-  function ra(s, h, x, v, I) {
-    const { vertCount: P, startOffset: O, indexType: U, instances: L } = Mr(h, x);
-    if (P <= 0 || L <= 0)
+  function oa(s, h, x, v, I) {
+    const { vertCount: D, startOffset: O, indexType: U, instances: L } = Or(h, x);
+    if (D <= 0 || L <= 0)
       return [];
-    const N = s.getParameter(s.CURRENT_PROGRAM), V = [], ae = U ? na(s, h, O, P, L, U, v, I, V) : ta(O, P);
-    if (V.length)
-      return V;
+    const N = s.getParameter(s.CURRENT_PROGRAM), G = [], ae = U ? ra(s, h, O, D, L, U, v, I, G) : na(O, D);
+    if (G.length)
+      return G;
     const he = e(s) || s.getExtension("ANGLE_instanced_arrays"), Ae = s.getProgramParameter(N, s.ACTIVE_ATTRIBUTES), be = s.getParameter(s.ARRAY_BUFFER_BINDING);
     for (let Te = 0; Te < Ae; ++Te) {
       const { name: fe, type: ot } = s.getActiveAttrib(N, Te);
       if (t(fe))
         continue;
-      const Qe = s.getAttribLocation(N, fe), { count: gt } = { count: 1, ...qs(ot) };
+      const Qe = s.getAttribLocation(N, fe), { count: gt } = { count: 1, ...ea(ot) };
       for (let K = 0; K < gt; ++K) {
         const ue = Qe + K;
         if (!s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_ENABLED))
           continue;
         const we = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
         if (!we) {
-          V.push(`no buffer bound to attribute (${fe}) location: ${Qe}`);
+          G.push(`no buffer bound to attribute (${fe}) location: ${Qe}`);
           continue;
         }
-        const D = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_SIZE), M = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_TYPE), w = Pr(M) * D, R = s.getVertexAttribOffset(ue, s.VERTEX_ATTRIB_ARRAY_POINTER), B = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_STRIDE), X = B || w, $ = he ? s.getVertexAttrib(ue, ea) : 0;
+        const P = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_SIZE), M = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_TYPE), w = Ur(M) * P, R = s.getVertexAttribOffset(ue, s.VERTEX_ATTRIB_ARRAY_POINTER), B = s.getVertexAttrib(ue, s.VERTEX_ATTRIB_ARRAY_STRIDE), X = B || w, $ = he ? s.getVertexAttrib(ue, ta) : 0;
         s.bindBuffer(s.ARRAY_BUFFER, we);
-        const ne = s.getBufferParameter(s.ARRAY_BUFFER, s.BUFFER_SIZE), J = $ > 0 ? ((L + $ - 1) / $ | 0) - 1 : ae, Z = R + J * X + w;
-        Z > ne && V.push(`${v(we)} assigned to attribute ${ue} used as attribute '${fe}' in current program is too small for draw parameters.
+        const ne = s.getBufferParameter(s.ARRAY_BUFFER, s.BUFFER_SIZE), J = $ > 0 ? ((L + $ - 1) / $ | 0) - 1 : ae, q = R + J * X + w;
+        q > ne && G.push(`${v(we)} assigned to attribute ${ue} used as attribute '${fe}' in current program is too small for draw parameters.
 index of highest vertex accessed: ${J}
-attribute size: ${D}, type: ${A(M)}, stride: ${B}, offset: ${R}, divisor: ${$}
-needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
+attribute size: ${P}, type: ${A(M)}, stride: ${B}, offset: ${R}, divisor: ${$}
+needs ${q} bytes for draw but buffer is only ${ne} bytes`);
       }
     }
-    return s.bindBuffer(s.ARRAY_BUFFER, be), V;
+    return s.bindBuffer(s.ARRAY_BUFFER, be), G;
   }
-  const Lr = 35678, kr = 35680, $r = 35679, zr = 35682, Vr = 36289, Gr = 36292, Hr = 36293, oa = 36298, ia = 36299, sa = 36300, aa = 36303, ua = 36306, ca = 36307, fa = 36308, la = 36311, Jt = /* @__PURE__ */ new Map([
-    [Lr, { uniformType: "sampler2D", numberType: "float/normalized", bindPoint: "2D" }],
-    [kr, { uniformType: "samplerCube", numberType: "float/normalized", bindPoint: "CUBE" }],
-    [$r, { uniformType: "sampler3D", numberType: "float/normalized", bindPoint: "3D" }],
-    [zr, { uniformType: "sampler2D", numberType: "float/normalized", bindPoint: "2D" }],
-    [Vr, { uniformType: "sampler2DArray", numberType: "float/normalized", bindPoint: "2D_ARRAY" }],
+  const kr = 35678, $r = 35680, zr = 35679, Vr = 35682, Gr = 36289, Hr = 36292, Xr = 36293, ia = 36298, sa = 36299, aa = 36300, ua = 36303, ca = 36306, fa = 36307, la = 36308, da = 36311, Jt = /* @__PURE__ */ new Map([
+    [kr, { uniformType: "sampler2D", numberType: "float/normalized", bindPoint: "2D" }],
+    [$r, { uniformType: "samplerCube", numberType: "float/normalized", bindPoint: "CUBE" }],
+    [zr, { uniformType: "sampler3D", numberType: "float/normalized", bindPoint: "3D" }],
+    [Vr, { uniformType: "sampler2D", numberType: "float/normalized", bindPoint: "2D" }],
     [Gr, { uniformType: "sampler2DArray", numberType: "float/normalized", bindPoint: "2D_ARRAY" }],
-    [Hr, { uniformType: "samplerCube", numberType: "float/normalized", bindPoint: "CUBE" }],
-    [oa, { uniformType: "isampler2D", numberType: "int", bindPoint: "2D" }],
-    [ia, { uniformType: "isampler3D", numberType: "int", bindPoint: "3D" }],
-    [sa, { uniformType: "isamplerCube", numberType: "int", bindPoint: "CUBE" }],
-    [aa, { uniformType: "isampler2DArray", numberType: "int", bindPoint: "2D_ARRAY" }],
-    [ua, { uniformType: "usampler2D", numberType: "unsigned int", bindPoint: "2D" }],
-    [ca, { uniformType: "usampler3D", numberType: "unsigned int", bindPoint: "3D" }],
-    [fa, { uniformType: "usamplerCube", numberType: "unsigned int", bindPoint: "CUBE" }],
-    [la, { uniformType: "usampler2DArray", numberType: "unsigned int", bindPoint: "2D_ARRAY" }]
+    [Hr, { uniformType: "sampler2DArray", numberType: "float/normalized", bindPoint: "2D_ARRAY" }],
+    [Xr, { uniformType: "samplerCube", numberType: "float/normalized", bindPoint: "CUBE" }],
+    [ia, { uniformType: "isampler2D", numberType: "int", bindPoint: "2D" }],
+    [sa, { uniformType: "isampler3D", numberType: "int", bindPoint: "3D" }],
+    [aa, { uniformType: "isamplerCube", numberType: "int", bindPoint: "CUBE" }],
+    [ua, { uniformType: "isampler2DArray", numberType: "int", bindPoint: "2D_ARRAY" }],
+    [ca, { uniformType: "usampler2D", numberType: "unsigned int", bindPoint: "2D" }],
+    [fa, { uniformType: "usampler3D", numberType: "unsigned int", bindPoint: "3D" }],
+    [la, { uniformType: "usamplerCube", numberType: "unsigned int", bindPoint: "CUBE" }],
+    [da, { uniformType: "usampler2DArray", numberType: "unsigned int", bindPoint: "2D_ARRAY" }]
   ]);
-  function da(s) {
+  function ma(s) {
     return Jt.get(s).bindPoint;
   }
   function Qt(s) {
     return Jt.has(s);
   }
-  function ma(s) {
+  function _a(s) {
     return Jt.get(s).numberType;
   }
-  function Xr(s) {
+  function Yr(s) {
     return Jt.get(s).uniformType;
   }
-  const _a = 3553, pa = 32879, ha = 35866, ba = 34067, ya = 34069, Ea = 34070, xa = 34071, ga = 34072, Aa = 34073, Ta = 34074, va = /* @__PURE__ */ new Map([
-    [_a, "2D"],
-    [pa, "3D"],
-    [ba, "CUBE"],
+  const pa = 3553, ha = 32879, ba = 35866, ya = 34067, Ea = 34069, xa = 34070, ga = 34071, Aa = 34072, Ta = 34073, va = 34074, Sa = /* @__PURE__ */ new Map([
+    [pa, "2D"],
+    [ha, "3D"],
     [ya, "CUBE"],
     [Ea, "CUBE"],
     [xa, "CUBE"],
     [ga, "CUBE"],
     [Aa, "CUBE"],
     [Ta, "CUBE"],
-    [ha, "2D_ARRAY"]
+    [va, "CUBE"],
+    [ba, "2D_ARRAY"]
   ]);
-  function Yr(s) {
-    return va.get(s);
+  function Wr(s) {
+    return Sa.get(s);
   }
-  const Wr = 32873, jr = 34068, Sa = 32874, Kr = 35869, Ra = /* @__PURE__ */ new Map([
-    [Lr, Wr],
-    [zr, Wr],
-    [$r, Sa],
-    [Vr, Kr],
-    [Gr, Kr],
+  const jr = 32873, Kr = 34068, Ra = 32874, Jr = 35869, wa = /* @__PURE__ */ new Map([
     [kr, jr],
-    [Hr, jr]
+    [Vr, jr],
+    [zr, Ra],
+    [Gr, Jr],
+    [Hr, Jr],
+    [$r, Kr],
+    [Xr, Kr]
   ]);
-  function wa(s, h, x) {
+  function Fa(s, h, x) {
     s.activeTexture(s.TEXTURE0 + h);
-    const v = Ra.get(x);
+    const v = wa.get(x);
     return s.getParameter(v);
   }
-  const Fa = 36063;
-  function Ia(s) {
-    return !e(s) && !s.getExtension("WEBGL_draw_buffers") ? 1 : s.getParameter(Fa);
+  const Ia = 36063;
+  function Ca(s) {
+    return !e(s) && !s.getExtension("WEBGL_draw_buffers") ? 1 : s.getParameter(Ia);
   }
   function Zt(s, h, x) {
     if (s.getFramebufferAttachmentParameter(s.FRAMEBUFFER, h, s.FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE) === s.NONE)
@@ -360,32 +360,32 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     const I = s.getFramebufferAttachmentParameter(s.FRAMEBUFFER, h, s.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME);
     I instanceof WebGLTexture && (x.has(I) || x.set(I, []), x.get(I).push(h));
   }
-  function Ca(s, h) {
+  function Na(s, h) {
     const x = s.getParameter(s.FRAMEBUFFER_BINDING);
     if (!x)
       return [];
-    const v = Ia(s), I = /* @__PURE__ */ new Map();
+    const v = Ca(s), I = /* @__PURE__ */ new Map();
     for (let N = 0; N < v; ++N)
       Zt(s, s.COLOR_ATTACHMENT0 + N, I);
     Zt(s, s.DEPTH_ATTACHMENT, I), Zt(s, s.STENCIL_ATTACHMENT, I), e(s) || Zt(s, s.DEPTH_STENCIL_ATTACHMENT, I);
-    const P = s.getParameter(s.ACTIVE_TEXTURE), O = s.getParameter(s.CURRENT_PROGRAM), U = s.getProgramParameter(O, s.ACTIVE_UNIFORMS), L = [];
+    const D = s.getParameter(s.ACTIVE_TEXTURE), O = s.getParameter(s.CURRENT_PROGRAM), U = s.getProgramParameter(O, s.ACTIVE_UNIFORMS), L = [];
     for (let N = 0; N < U; ++N) {
-      const { name: V, type: ae, size: he } = s.getActiveUniform(O, N);
-      if (!(t(V) || !Qt(ae)))
+      const { name: G, type: ae, size: he } = s.getActiveUniform(O, N);
+      if (!(t(G) || !Qt(ae)))
         if (he > 1) {
-          const Ae = V.substr(-3) === "[0]" ? V.substr(0, V.length - 3) : V;
+          const Ae = G.substr(-3) === "[0]" ? G.substr(0, G.length - 3) : G;
           for (let be = 0; be < he; ++be)
-            L.push(...Jr(s, x, I, O, `${Ae}[${be}]`, ae, h));
+            L.push(...Qr(s, x, I, O, `${Ae}[${be}]`, ae, h));
         } else
-          L.push(...Jr(s, x, I, O, V, ae, h));
+          L.push(...Qr(s, x, I, O, G, ae, h));
     }
-    return s.activeTexture(P), L;
+    return s.activeTexture(D), L;
   }
-  function Jr(s, h, x, v, I, P, O) {
-    const U = s.getUniformLocation(v, I), L = s.getUniform(v, U), N = wa(s, L, P), V = x.get(N);
-    return V ? [`${O(N)} on uniform: ${I} bound to texture unit ${L} is also attached to ${O(h)} on attachment: ${V.map((ae) => A(ae)).join(", ")}`] : [];
+  function Qr(s, h, x, v, I, D, O) {
+    const U = s.getUniformLocation(v, I), L = s.getUniform(v, U), N = Fa(s, L, D), G = x.get(N);
+    return G ? [`${O(N)} on uniform: ${I} bound to texture unit ${L} is also attached to ${O(h)} on attachment: ${G.map((ae) => A(ae)).join(", ")}`] : [];
   }
-  function Na() {
+  function Ba() {
     const s = navigator.userAgent;
     let h = s.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
     if (/trident/i.test(h[1]))
@@ -408,27 +408,27 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       version: h[1]
     };
   }
-  const Ba = function() {
-    const s = Na();
+  const Pa = function() {
+    const s = Ba();
     let h, x;
     return /chrome|opera/i.test(s.name) ? (h = 3, x = function(v) {
       const I = /at ([^(]+)*\(*(.*?):(\d+):(\d+)/.exec(v);
       if (I) {
-        let P = I[1], O = I[2];
+        let D = I[1], O = I[2];
         const U = parseInt(I[3]), L = parseInt(I[4]);
-        return O === "" && (O = P, P = ""), {
+        return O === "" && (O = D, D = ""), {
           url: O,
           lineNo: U,
           colNo: L,
-          funcName: P
+          funcName: D
         };
       }
     }) : /firefox|safari/i.test(s.name) && (h = 2, x = function(v) {
       const I = /@(.*?):(\d+):(\d+)/.exec(v);
       if (I) {
-        const P = I[1], O = parseInt(I[2]), U = parseInt(I[3]);
+        const D = I[1], O = parseInt(I[2]), U = parseInt(I[3]);
         return {
-          url: P,
+          url: D,
           lineNo: O,
           colNo: U
         };
@@ -436,9 +436,9 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     }), function(I) {
       if (x)
         try {
-          const P = I.split(`
+          const D = I.split(`
 `);
-          return x(P[h]);
+          return x(D[h]);
         } catch {
         }
     };
@@ -449,17 +449,17 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       h.push(/* @__PURE__ */ new Map());
     return h;
   }
-  const Pa = 33984, Mn = 3553, On = 32879, ut = 34067, qt = 34069, Qr = 34070, Zr = 34071, qr = 34072, eo = 34073, to = 34074, no = 10241, ro = 10240, en = 33084, oo = 33085, io = 10242, so = 10243, ao = 10497, uo = 35866, tn = 33071, Ln = 9728, co = 9729, Ua = 9986, Ma = /* @__PURE__ */ new Map([
-    [9, function([s, h, x, v, I, , P, O]) {
-      return { target: s, level: h, internalFormat: x, width: v, height: I, format: P, type: O };
+  const Ua = 33984, Un = 3553, Mn = 32879, ut = 34067, qt = 34069, Zr = 34070, qr = 34071, eo = 34072, to = 34073, no = 34074, ro = 10241, oo = 10240, en = 33084, io = 33085, so = 10242, ao = 10243, uo = 10497, co = 35866, tn = 33071, On = 9728, fo = 9729, Ma = 9986, Oa = /* @__PURE__ */ new Map([
+    [9, function([s, h, x, v, I, , D, O]) {
+      return { target: s, level: h, internalFormat: x, width: v, height: I, format: D, type: O };
     }],
-    [6, function([s, h, x, v, I, P]) {
-      return { target: s, level: h, internalFormat: x, width: P.width, height: P.height, format: v, type: I };
+    [6, function([s, h, x, v, I, D]) {
+      return { target: s, level: h, internalFormat: x, width: D.width, height: D.height, format: v, type: I };
     }],
-    [10, function([s, h, x, v, I, , P, O]) {
-      return { target: s, level: h, internalFormat: x, width: v, height: I, format: P, type: O };
+    [10, function([s, h, x, v, I, , D, O]) {
+      return { target: s, level: h, internalFormat: x, width: v, height: I, format: D, type: O };
     }]
-  ]), nn = 6406, Me = 6407, Oe = 6408, rn = 6409, on = 6410, kn = 6402, fo = 34041, lo = /* @__PURE__ */ new Set([
+  ]), nn = 6406, Me = 6407, Oe = 6408, rn = 6409, on = 6410, Ln = 6402, lo = 34041, mo = /* @__PURE__ */ new Set([
     nn,
     rn,
     on,
@@ -467,107 +467,107 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     Oe
   ]);
   function Ut(s, h) {
-    return lo.has(s) ? `${A(s)}/${A(h)}` : A(s);
+    return mo.has(s) ? `${A(s)}/${A(h)}` : A(s);
   }
-  const mo = /* @__PURE__ */ new Map([
+  const _o = /* @__PURE__ */ new Map([
+    [Un, 0],
     [Mn, 0],
-    [On, 0],
-    [uo, 0],
+    [co, 0],
     [ut, 0],
     [qt, 0],
-    [Qr, 1],
-    [Zr, 2],
-    [qr, 3],
-    [eo, 4],
-    [to, 5]
+    [Zr, 1],
+    [qr, 2],
+    [eo, 3],
+    [to, 4],
+    [no, 5]
   ]);
-  function $n(s, h) {
+  function kn(s, h) {
     return h === ut ? `(${A(qt + s)})` : "";
   }
-  const Oa = [
-    Mn
-  ], La = [
+  const La = [
+    Un
+  ], ka = [
     qt,
-    Qr,
     Zr,
     qr,
     eo,
-    to
-  ], ka = 33321, $a = 36756, _o = 33325, po = 33326, za = 33330, Va = 33329, Ga = 33338, Ha = 33337, Xa = 33340, Ya = 33339, Wa = 33323, ja = 36757, ho = 33327, bo = 33328, Ka = 33336, Ja = 33335, Qa = 33332, Za = 33331, qa = 33334, eu = 33333, tu = 32849, nu = 35905, ru = 36194, ou = 36758, iu = 35898, su = 35901, yo = 34843, Eo = 34837, au = 36221, uu = 36239, cu = 36215, fu = 36233, lu = 36209, du = 36227, mu = 32856, _u = 35907, pu = 36759, hu = 32855, bu = 32854, yu = 32857, xo = 34842, go = 34836, Eu = 36220, xu = 36238, gu = 36975, Au = 36214, Tu = 36232, vu = 36226, Su = 36208, Ru = 33189, wu = 33190, Fu = 36012, Iu = 36013, Cu = 35056, ct = 5120, ge = 5121, sn = 5122, Mt = 5123, an = 5124, Rt = 5125, Ue = 5126, Ao = 32819, To = 32820, vo = 33635, ft = 5131, So = 36193, zn = 33640, Nu = 35899, Bu = 35902, Du = 36269, Pu = 34042, un = 33319, wt = 33320, cn = 6403, Ft = 36244, It = 36248, xt = 36249;
-  function Uu() {
+    to,
+    no
+  ], $a = 33321, za = 36756, po = 33325, ho = 33326, Va = 33330, Ga = 33329, Ha = 33338, Xa = 33337, Ya = 33340, Wa = 33339, ja = 33323, Ka = 36757, bo = 33327, yo = 33328, Ja = 33336, Qa = 33335, Za = 33332, qa = 33331, eu = 33334, tu = 33333, nu = 32849, ru = 35905, ou = 36194, iu = 36758, su = 35898, au = 35901, Eo = 34843, xo = 34837, uu = 36221, cu = 36239, fu = 36215, lu = 36233, du = 36209, mu = 36227, _u = 32856, pu = 35907, hu = 36759, bu = 32855, yu = 32854, Eu = 32857, go = 34842, Ao = 34836, xu = 36220, gu = 36238, Au = 36975, Tu = 36214, vu = 36232, Su = 36226, Ru = 36208, wu = 33189, Fu = 33190, Iu = 36012, Cu = 36013, Nu = 35056, ct = 5120, ge = 5121, sn = 5122, Mt = 5123, an = 5124, St = 5125, Ue = 5126, To = 32819, vo = 32820, So = 33635, ft = 5131, Ro = 36193, $n = 33640, Bu = 35899, Pu = 35902, Du = 36269, Uu = 34042, un = 33319, Rt = 33320, cn = 6403, wt = 36244, Ft = 36248, xt = 36249;
+  function Mu() {
     const s = /* @__PURE__ */ new Map([
       // unsized formats
       [nn, { textureFormat: nn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [1, 2, 2, 4], type: [ge] }],
       [rn, { textureFormat: rn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [1, 2, 2, 4], type: [ge] }],
       [on, { textureFormat: on, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [2, 4, 4, 8], type: [ge] }],
-      [Me, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3, 6, 6, 12, 2], type: [ge, vo] }],
-      [Oe, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 8, 8, 16, 2, 2], type: [ge, Ao, To] }],
+      [Me, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3, 6, 6, 12, 2], type: [ge, So] }],
+      [Oe, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 8, 8, 16, 2, 2], type: [ge, To, vo] }],
       // sized formats
-      [ka, { textureFormat: cn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [1], type: [ge] }],
-      [$a, { textureFormat: cn, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [1], type: [ct] }],
-      [_o, { textureFormat: cn, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [4, 2], type: [Ue, ft] }],
-      [po, { textureFormat: cn, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [4], type: [Ue] }],
-      [za, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [1], type: [ge] }],
-      [Va, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [1], type: [ct] }],
-      [Qa, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [Mt] }],
-      [Za, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [sn] }],
-      [qa, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Rt] }],
-      [eu, { textureFormat: Ft, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [an] }],
-      [Wa, { textureFormat: un, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [2], type: [ge] }],
-      [ja, { textureFormat: un, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [2], type: [ct] }],
-      [ho, { textureFormat: un, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [8, 4], type: [Ue, ft] }],
-      [bo, { textureFormat: un, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [8], type: [Ue] }],
-      [Ka, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [ge] }],
-      [Ja, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [ct] }],
-      [Ga, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Mt] }],
-      [Ha, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [sn] }],
-      [Xa, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [Rt] }],
-      [Ya, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [an] }],
-      [tu, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3], type: [ge] }],
-      [nu, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [3], type: [ge] }],
-      [ru, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3, 2], type: [ge, vo] }],
-      [ou, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [3], type: [ct] }],
-      [iu, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [12, 6, 4], type: [Ue, ft, Nu] }],
+      [$a, { textureFormat: cn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [1], type: [ge] }],
+      [za, { textureFormat: cn, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [1], type: [ct] }],
+      [po, { textureFormat: cn, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [4, 2], type: [Ue, ft] }],
+      [ho, { textureFormat: cn, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [4], type: [Ue] }],
+      [Va, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [1], type: [ge] }],
+      [Ga, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [1], type: [ct] }],
+      [Za, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [Mt] }],
+      [qa, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [sn] }],
+      [eu, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [St] }],
+      [tu, { textureFormat: wt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [an] }],
+      [ja, { textureFormat: un, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [2], type: [ge] }],
+      [Ka, { textureFormat: un, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [2], type: [ct] }],
+      [bo, { textureFormat: un, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [8, 4], type: [Ue, ft] }],
+      [yo, { textureFormat: un, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [8], type: [Ue] }],
+      [Ja, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [ge] }],
+      [Qa, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [2], type: [ct] }],
+      [Ha, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Mt] }],
+      [Xa, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [sn] }],
+      [Ya, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [St] }],
+      [Wa, { textureFormat: Rt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [an] }],
+      [nu, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3], type: [ge] }],
+      [ru, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [3], type: [ge] }],
+      [ou, { textureFormat: Me, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [3, 2], type: [ge, So] }],
+      [iu, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [3], type: [ct] }],
       [su, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [12, 6, 4], type: [Ue, ft, Bu] }],
-      [yo, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [12, 6], type: [Ue, ft] }],
-      [Eo, { textureFormat: Me, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [Ue] }],
-      [au, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [3], type: [ge] }],
-      [uu, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [3], type: [ct] }],
-      [cu, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [6], type: [Mt] }],
-      [fu, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [6], type: [sn] }],
-      [lu, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [Rt] }],
-      [du, { textureFormat: It, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [an] }],
-      [mu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [ge] }],
+      [au, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [12, 6, 4], type: [Ue, ft, Pu] }],
+      [Eo, { textureFormat: Me, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [12, 6], type: [Ue, ft] }],
+      [xo, { textureFormat: Me, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [Ue] }],
+      [uu, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [3], type: [ge] }],
+      [cu, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [3], type: [ct] }],
+      [fu, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [6], type: [Mt] }],
+      [lu, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [6], type: [sn] }],
+      [du, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [St] }],
+      [mu, { textureFormat: Ft, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [12], type: [an] }],
       [_u, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [ge] }],
-      [pu, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [4], type: [ct] }],
-      [hu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 2, 4], type: [ge, To, zn] }],
-      [bu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 2], type: [ge, Ao] }],
-      [yu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [zn] }],
-      [xo, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [16, 8], type: [Ue, ft] }],
-      [go, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [16], type: [Ue] }],
-      [Eu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [ge] }],
-      [xu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [ct] }],
-      [gu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [zn] }],
-      [Au, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [Mt] }],
-      [Tu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [sn] }],
-      [vu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [16], type: [an] }],
-      [Su, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [16], type: [Rt] }],
+      [pu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [ge] }],
+      [hu, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [4], type: [ct] }],
+      [bu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 2, 4], type: [ge, vo, $n] }],
+      [yu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4, 2], type: [ge, To] }],
+      [Eu, { textureFormat: Oe, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [$n] }],
+      [go, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !0, bytesPerElement: [16, 8], type: [Ue, ft] }],
+      [Ao, { textureFormat: Oe, colorRenderable: !1, textureFilterable: !1, bytesPerElement: [16], type: [Ue] }],
+      [xu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [ge] }],
+      [gu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [ct] }],
+      [Au, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [$n] }],
+      [Tu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [Mt] }],
+      [vu, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [8], type: [sn] }],
+      [Su, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [16], type: [an] }],
+      [Ru, { textureFormat: xt, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [16], type: [St] }],
       // Sized Internal                                                                         these are marked as not filterable but for some reason they apparently are?
-      [Ru, { textureFormat: kn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [2, 4], type: [Mt, Rt] }],
-      [wu, { textureFormat: kn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [Rt] }],
-      [Fu, { textureFormat: kn, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [Ue] }],
-      [Cu, { textureFormat: fo, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Pu] }],
-      [Iu, { textureFormat: fo, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Du] }]
+      [wu, { textureFormat: Ln, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [2, 4], type: [Mt, St] }],
+      [Fu, { textureFormat: Ln, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [St] }],
+      [Iu, { textureFormat: Ln, colorRenderable: !0, textureFilterable: !0, bytesPerElement: [4], type: [Ue] }],
+      [Nu, { textureFormat: lo, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Uu] }],
+      [Cu, { textureFormat: lo, colorRenderable: !0, textureFilterable: !1, bytesPerElement: [4], type: [Du] }]
     ]);
     s.forEach((x) => {
       x.bytesPerElementMap = {}, x.bytesPerElement.forEach(function(v, I) {
-        const P = x.type[I];
-        x.bytesPerElementMap[P] = v;
+        const D = x.type[I];
+        x.bytesPerElementMap[D] = v;
       });
     });
     const h = /* @__PURE__ */ new Map();
     return s.forEach((x, v) => {
-      lo.has(v) ? x.type.forEach((I) => {
+      mo.has(v) ? x.type.forEach((I) => {
         h.set(
           Ut(v, I),
           x
@@ -584,45 +584,45 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
   function fn(s) {
     return (s & s - 1) === 0;
   }
-  function Vn(s, h = 0, x = 0) {
+  function zn(s, h = 0, x = 0) {
     return (Math.log2(Math.max(s, h, x)) | 0) + 1;
   }
   function ln(s, ...h) {
     return s ? h : [];
   }
-  function Ro(s, h) {
+  function wo(s, h) {
     return [
       ...ln(!fn(s), `width(${s}) is not a power of 2`),
       ...ln(!fn(h), `height(${h}) is not a power of 2`)
     ].join(" and ");
   }
-  function Mu(s, h) {
+  function Ou(s, h) {
     return [
       ...ln(s !== tn, `TEXTURE_WRAP_S (${A(s)}) is not CLAMP_TO_EDGE`),
       ...ln(h !== tn, `TEXTURE_WRAP_T (${A(h)}) is not CLAMP_TO_EDGE`)
     ].join(" and ");
   }
-  function Ou(s) {
+  function Lu(s) {
     const h = A(s);
     return h.endsWith("UI") ? "unsigned int" : h.endsWith("I") ? "int" : "float/normalized";
   }
-  function wo(s, h, x, v) {
-    return s === Mn || s === ut ? `${h}x${x}` : `${h}x${x}x${v}`;
+  function Fo(s, h, x, v) {
+    return s === Un || s === ut ? `${h}x${x}` : `${h}x${x}x${v}`;
   }
-  class Lu {
+  class ku {
     constructor(h, x) {
       this.redundantStateSetting = x;
-      const v = e(h), I = !v, P = /* @__PURE__ */ new Set(), O = /* @__PURE__ */ new Map(), U = /* @__PURE__ */ new Map(), L = Da(h), N = Vn(h.getParameter(h.MAX_TEXTURE_SIZE)), { internalFormatStringToFormatInfoMap: V } = Uu();
+      const v = e(h), I = !v, D = /* @__PURE__ */ new Set(), O = /* @__PURE__ */ new Map(), U = /* @__PURE__ */ new Map(), L = Da(h), N = zn(h.getParameter(h.MAX_TEXTURE_SIZE)), { internalFormatStringToFormatInfoMap: G } = Mu();
       let ae = 0, he = L[0];
       this.numTextureUnits = L.length;
-      function Ae(D) {
-        D.notRenderable = Te(D, D.parameters);
+      function Ae(P) {
+        P.notRenderable = Te(P, P.parameters);
       }
       function be() {
         O.forEach(Ae);
       }
-      function Te(D, M) {
-        const { type: w, mips: R } = D, B = M.get(en) || 0, X = Or(M.get(oo), N);
+      function Te(P, M) {
+        const { type: w, mips: R } = P, B = M.get(en) || 0, X = Lr(M.get(io), N);
         if (X < B)
           return `TEXTURE_MAX_LEVEL(${X}) is less than TEXTURE_BASE_LEVEL(${B})`;
         const $ = R[B];
@@ -633,77 +633,77 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
           return "TEXTURE_CUBE_MAP_POSITIVE_X face does not exist";
         const {
           width: J,
-          height: Z,
+          height: q,
           depth: ve,
           // internalFormat: baseInternalFormat,
           internalFormatString: le
-        } = ne, Pe = w === ut ? 6 : 1, Se = M.get(no), lt = V.get(le);
+        } = ne, De = w === ut ? 6 : 1, Se = M.get(ro), lt = G.get(le);
         if (lt && !lt.textureFilterable) {
-          if (Se !== Ln)
+          if (Se !== On)
             return `texture of type (${le}) is not filterable but TEXTURE_MIN_FILTER is set to ${A(Se)}`;
           {
-            const Fe = M.get(ro);
-            if (Fe !== Ln)
+            const Fe = M.get(oo);
+            if (Fe !== On)
               return `texture of type (${le}) is not filterable but TEXTURE_MAG_FILTER is set to ${A(Fe)}`;
           }
         }
-        const Ze = Se === co || Se === Ln ? 1 : Vn(J, Z, ve);
+        const Ze = Se === fo || Se === On ? 1 : zn(J, q, ve);
         {
-          let ye = J, Fe = Z, qe = ve;
+          let ye = J, Fe = q, qe = ve;
           const He = Math.min(X, B + Ze - 1);
           for (let ce = B; ce <= He; ++ce) {
             const At = R[ce];
             if (!At)
               return `filtering is set to use mips from level ${B} to ${He} with (TEXTURE_MIN_FILTER = ${A(Se)}) but mip level ${ce} does not exist`;
-            for (let dt = 0; dt < Pe; ++dt) {
+            for (let dt = 0; dt < De; ++dt) {
               const Xe = At[dt];
               if (!Xe)
-                return `filtering is set to use mips level ${B} to ${He} with (TEXTURE_MIN_FILTER = ${A(Se)}) but mip level ${ce}${$n(dt, w)} does not exist`;
+                return `filtering is set to use mips level ${B} to ${He} with (TEXTURE_MIN_FILTER = ${A(Se)}) but mip level ${ce}${kn(dt, w)} does not exist`;
               if (Xe.width !== ye || Xe.height !== Fe || Xe.depth !== qe)
-                return `mip level ${ce}${$n(dt, w)} needs to be ${wo(w, ye, Fe, qe)} but it is ${wo(w, Xe.width, Xe.height, Xe.depth)}`;
+                return `mip level ${ce}${kn(dt, w)} needs to be ${Fo(w, ye, Fe, qe)} but it is ${Fo(w, Xe.width, Xe.height, Xe.depth)}`;
               if (Xe.internalFormatString !== le)
-                return `mip level ${ce}${$n(dt, w)}'s internal format ${Xe.internalFormatString} does not match mip level ${B}'s internal format ${le}`;
+                return `mip level ${ce}${kn(dt, w)}'s internal format ${Xe.internalFormatString} does not match mip level ${B}'s internal format ${le}`;
             }
-            ye = Math.max(1, ye / 2 | 0), Fe = Math.max(1, Fe / 2 | 0), w !== uo && (qe = Math.max(1, qe / 2 | 0));
+            ye = Math.max(1, ye / 2 | 0), Fe = Math.max(1, Fe / 2 | 0), w !== co && (qe = Math.max(1, qe / 2 | 0));
           }
         }
-        if (I && (!fn(J) || !fn(Z))) {
+        if (I && (!fn(J) || !fn(q))) {
           if (Ze > 1)
-            return `texture's ${Ro(J, Z)} but TEXTURE_MIN_FILTER (${A(Se)}) is set to need mips`;
-          const ye = M.get(io), Fe = M.get(so);
+            return `texture's ${wo(J, q)} but TEXTURE_MIN_FILTER (${A(Se)}) is set to need mips`;
+          const ye = M.get(so), Fe = M.get(ao);
           if (ye !== tn || Fe !== tn)
-            return `texture's ${Ro(J, Z)} but ${Mu(ye, Fe)}.`;
+            return `texture's ${wo(J, q)} but ${Ou(ye, Fe)}.`;
         }
-        if (w === ut && J !== Z)
-          return `texture is CUBE_MAP but dimensions ${J}x${Z} are not square`;
+        if (w === ut && J !== q)
+          return `texture is CUBE_MAP but dimensions ${J}x${q} are not square`;
       }
-      function fe(D) {
-        const M = Yr(D), w = he.get(M);
+      function fe(P) {
+        const M = Wr(P), w = he.get(M);
         return O.get(w);
       }
-      function ot(D, M) {
-        const w = fe(D), R = mo.get(D);
+      function ot(P, M) {
+        const w = fe(P), R = _o.get(P);
         return w.mips[M][R];
       }
-      function Qe(D, M, w) {
-        const R = fe(D);
+      function Qe(P, M, w) {
+        const R = fe(P);
         R.parameters.set(M, w), Ae(R);
       }
-      function gt(D, M) {
+      function gt(P, M) {
         for (let w = 0; w < L.length; ++w) {
           const R = L[w];
-          R.get(D) === M && R.set(D, null);
+          R.get(P) === M && R.set(P, null);
         }
       }
-      function K(D) {
-        const { mips: M, parameters: w } = D, R = w.get(en) || 0, B = M[R];
+      function K(P) {
+        const { mips: M, parameters: w } = P, R = w.get(en) || 0, B = M[R];
         if (!B)
           return "";
         const X = B[0];
         return X ? X.internalFormatString : "";
       }
-      function ue(D, M) {
-        const w = P.has(M);
+      function ue(P, M) {
+        const w = D.has(M);
         [
           Oe,
           Me,
@@ -711,62 +711,62 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
           on,
           nn
         ].forEach((R) => {
-          V.set(
-            Ut(R, D),
+          G.set(
+            Ut(R, P),
             { textureFormat: h.RGBA, textureFilterable: w }
           );
         });
       }
-      function mn(D) {
-        for (const M of D) {
-          const w = V.get(
+      function mn(P) {
+        for (const M of P) {
+          const w = G.get(
             Ut(M)
           );
           w.textureFilterable = !0;
         }
       }
-      this.addExtension = function(D) {
-        switch (P.add(D), D) {
+      this.addExtension = function(P) {
+        switch (D.add(P), P) {
           case "oes_texture_float":
             ue(Ue, "oes_texture_float_linear");
             break;
           case "oes_texture_float_linear":
             v ? mn([
+              ho,
+              yo,
+              xo,
+              Ao
+            ]) : D.has("oes_texture_float") && ue(Ue, "oes_texture_float_linear"), be();
+            break;
+          case "oes_texture_half_float":
+            ue(ft, "oes_texture_half_float_linear"), ue(Ro, "oes_texture_half_float_linear");
+            break;
+          case "oes_texture_half_float_linear":
+            v ? mn([
               po,
               bo,
               Eo,
               go
-            ]) : P.has("oes_texture_float") && ue(Ue, "oes_texture_float_linear"), be();
-            break;
-          case "oes_texture_half_float":
-            ue(ft, "oes_texture_half_float_linear"), ue(So, "oes_texture_half_float_linear");
-            break;
-          case "oes_texture_half_float_linear":
-            v ? mn([
-              _o,
-              ho,
-              yo,
-              xo
-            ]) : P.has("oes_texture_half_float") && (ue(ft, "oes_texture_half_float_linear"), ue(So, "oes_texture_half_float_linear")), be();
+            ]) : D.has("oes_texture_half_float") && (ue(ft, "oes_texture_half_float_linear"), ue(Ro, "oes_texture_half_float_linear")), be();
             break;
           default:
             return;
         }
-      }, this.getTextureForTextureUnit = function(D, M) {
-        return L[D].get(M);
-      }, this.getTextureUnitUnrenderableReason = function(D, M, w, R) {
+      }, this.getTextureForTextureUnit = function(P, M) {
+        return L[P].get(M);
+      }, this.getTextureUnitUnrenderableReason = function(P, M, w, R) {
         const B = L[M].get(w);
         if (!B)
           return `no texture bound to texture unit ${M} ${w}`;
-        const X = O.get(B), { mips: $, parameters: ne } = X, J = ne.get(en) || 0, Z = $[J];
-        if (!Z)
+        const X = O.get(B), { mips: $, parameters: ne } = X, J = ne.get(en) || 0, q = $[J];
+        if (!q)
           return `no mip level ${J}`;
-        const ve = Z[0];
+        const ve = q[0];
         if (!ve)
           return `TEXTURE_CUBE_MAP_POSITIVE_X face at mip level ${J} does not exist`;
-        const le = Ou(ve.internalFormat), Pe = ma(D);
-        if (le !== Pe)
-          return `uniform ${Xr(D)} needs a ${Pe} texture but ${R(B)} on texture unit ${M} is ${le} texture (${K(X)})`;
+        const le = Lu(ve.internalFormat), De = _a(P);
+        if (le !== De)
+          return `uniform ${Yr(P)} needs a ${De} texture but ${R(B)} on texture unit ${M} is ${le} texture (${K(X)})`;
         const Se = L[M].get("SAMPLER");
         if (Se) {
           const lt = U.get(Se), Ze = Te(X, lt);
@@ -774,18 +774,18 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
         } else
           return X.notRenderable;
       };
-      function we(D, M, w, R, B, X, $ = 0) {
-        const ne = Ut(w, $), J = fe(D), { mips: Z } = J;
-        Z[M] || (Z[M] = []);
-        const ve = mo.get(D);
-        Z[M][ve] = { width: R, height: B, depth: X, internalFormatString: ne, internalFormat: w, type: $ }, Ae(J);
+      function we(P, M, w, R, B, X, $ = 0) {
+        const ne = Ut(w, $), J = fe(P), { mips: q } = J;
+        q[M] || (q[M] = []);
+        const ve = _o.get(P);
+        q[M][ve] = { width: R, height: B, depth: X, internalFormatString: ne, internalFormat: w, type: $ }, Ae(J);
       }
       this.postChecks = {
-        activeTexture(D, M, w) {
-          ae = w[0] - Pa, he = L[ae];
+        activeTexture(P, M, w) {
+          ae = w[0] - Ua, he = L[ae];
         },
-        bindTexture(D, M, w) {
-          const [R, B] = w, X = Yr(R);
+        bindTexture(P, M, w) {
+          const [R, B] = w, X = Wr(R);
           if (he.get(X) === B)
             ++x.bindTexture;
           else if (he.set(X, B), B) {
@@ -797,93 +797,93 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
               $.type = R;
           }
         },
-        createTexture(D, M, w, R) {
+        createTexture(P, M, w, R) {
           const B = {
             mips: [],
             parameters: /* @__PURE__ */ new Map([
-              [no, Ua],
-              [ro, co],
-              [io, ao],
-              [so, ao]
+              [ro, Ma],
+              [oo, fo],
+              [so, uo],
+              [ao, uo]
             ]),
             renderable: !1
           };
           O.set(R, B);
         },
-        deleteTexture(D, M, w) {
+        deleteTexture(P, M, w) {
           const [R] = w, { type: B } = O.get(R);
           O.delete(R), gt(B, R);
         },
-        createSampler(D, M, w, R) {
+        createSampler(P, M, w, R) {
           U.set(R, /* @__PURE__ */ new Map());
         },
-        deleteSampler(D, M, w) {
+        deleteSampler(P, M, w) {
           const [R] = w;
           U.delete(R), gt("SAMPLER", R);
         },
-        bindSampler(D, M, w) {
+        bindSampler(P, M, w) {
           const [R, B] = w;
           B === L[R].get("SAMPLER") ? ++x.bindSampler : L[R].set("SAMPLER", B);
         },
-        samplerParameteri(D, M, w) {
+        samplerParameteri(P, M, w) {
           const [R, B, X] = w;
           U.get(R).set(B, X);
         },
-        copyTexImage2D(D, M, w) {
-          const [R, B, X, $, ne] = w, J = D.UNSIGNED_BYTE;
+        copyTexImage2D(P, M, w) {
+          const [R, B, X, $, ne] = w, J = P.UNSIGNED_BYTE;
           we(R, B, X, $, ne, 1, J);
         },
-        texImage2D(D, M, w) {
-          const R = Ma.get(w.length), { target: B, level: X, internalFormat: $, width: ne, height: J, type: Z } = R(w);
-          we(B, X, $, ne, J, 1, Z);
+        texImage2D(P, M, w) {
+          const R = Oa.get(w.length), { target: B, level: X, internalFormat: $, width: ne, height: J, type: q } = R(w);
+          we(B, X, $, ne, J, 1, q);
         },
-        texImage3D(D, M, w) {
-          const [R, B, X, $, ne, J, , , Z] = w;
-          we(R, B, X, $, ne, J, Z);
+        texImage3D(P, M, w) {
+          const [R, B, X, $, ne, J, , , q] = w;
+          we(R, B, X, $, ne, J, q);
         },
-        texStorage2D(D, M, w) {
+        texStorage2D(P, M, w) {
           const [R, B, X, $, ne] = w;
-          let J = $, Z = ne;
-          const ve = R === ut ? La : Oa;
+          let J = $, q = ne;
+          const ve = R === ut ? ka : La;
           for (let le = 0; le < B; ++le) {
-            for (const Pe of ve)
-              we(Pe, le, X, J, Z, 1);
-            J = Math.max(1, J / 2 | 0), Z = Math.max(1, Z / 2 | 0);
+            for (const De of ve)
+              we(De, le, X, J, q, 1);
+            J = Math.max(1, J / 2 | 0), q = Math.max(1, q / 2 | 0);
           }
         },
-        texStorage3D(D, M, w) {
+        texStorage3D(P, M, w) {
           const [R, B, X, $, ne, J] = w;
-          let Z = $, ve = ne, le = J;
-          for (let Pe = 0; Pe < B; ++Pe)
-            we(R, Pe, X, Z, ve, le), Z = Math.max(1, Z / 2 | 0), ve = Math.max(1, ve / 2 | 0), R === On && (le = Math.max(1, le / 2 | 0));
+          let q = $, ve = ne, le = J;
+          for (let De = 0; De < B; ++De)
+            we(R, De, X, q, ve, le), q = Math.max(1, q / 2 | 0), ve = Math.max(1, ve / 2 | 0), R === Mn && (le = Math.max(1, le / 2 | 0));
         },
-        generateMipmap(D, M, w) {
-          const [R] = w, B = fe(R), { parameters: X } = B, $ = X.get(en) || 0, ne = Or(X.get(oo), N), J = ot(R, $), { width: Z, height: ve, depth: le, internalFormat: Pe, type: Se } = J, lt = Math.min(Vn(Z, ve, le), ne + 1 - $), Ze = R === ut ? 6 : 1;
-          let ye = Z, Fe = ve, qe = le;
+        generateMipmap(P, M, w) {
+          const [R] = w, B = fe(R), { parameters: X } = B, $ = X.get(en) || 0, ne = Lr(X.get(io), N), J = ot(R, $), { width: q, height: ve, depth: le, internalFormat: De, type: Se } = J, lt = Math.min(zn(q, ve, le), ne + 1 - $), Ze = R === ut ? 6 : 1;
+          let ye = q, Fe = ve, qe = le;
           for (let He = 0; He < lt; ++He) {
-            ye = Math.max(1, ye / 2 | 0), Fe = Math.max(1, Fe / 2 | 0), R === On && (qe = Math.max(1, qe / 2 | 0));
+            ye = Math.max(1, ye / 2 | 0), Fe = Math.max(1, Fe / 2 | 0), R === Mn && (qe = Math.max(1, qe / 2 | 0));
             for (let ce = 0; ce < Ze; ++ce) {
               const At = R === ut ? qt + ce : R;
-              we(At, $ + He, Pe, ye, Fe, qe, Se);
+              we(At, $ + He, De, ye, Fe, qe, Se);
             }
           }
         },
-        compressedTexImage2D(D, M, w) {
+        compressedTexImage2D(P, M, w) {
           const [R, B, X, $, ne] = w;
           we(R, B, X, $, ne, 1);
         },
-        compressedTexImage3D(D, M, w) {
+        compressedTexImage3D(P, M, w) {
           const [R, B, X, $, ne, J] = w;
           we(R, B, X, $, ne, J);
         },
-        texParameteri(D, M, w) {
+        texParameteri(P, M, w) {
           const [R, B, X] = w;
           Qe(R, B, X);
         }
       };
     }
   }
-  class Fo {
+  class Io {
     constructor(h) {
       this.elementAttribArray = null, this.attribs = [];
       for (let x = 0; x < h; ++x)
@@ -901,12 +901,12 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     setElementArrayBuffer(h, x) {
       at(this.elementAttribArray, x) ? ++h.bindBuffer : this.elementAttribArray = st(x);
     }
-    setAttrib(h, x, v, I, P, O, U, L, N) {
-      const V = this.attribs[v];
-      at(V.buffer, N) && V.iPointer === x && V.size === I && V.type === P && V.normalize === O && V.stride === U && V.offset === L ? ++h.vertexAttribPointer : Object.assign(V, {
+    setAttrib(h, x, v, I, D, O, U, L, N) {
+      const G = this.attribs[v];
+      at(G.buffer, N) && G.iPointer === x && G.size === I && G.type === D && G.normalize === O && G.stride === U && G.offset === L ? ++h.vertexAttribPointer : Object.assign(G, {
         iPointer: x,
         size: I,
-        type: P,
+        type: D,
         normalize: O,
         stride: U,
         offset: L,
@@ -914,41 +914,41 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       });
     }
   }
-  class ku {
+  class $u {
     constructor(h, x) {
-      this.gl = h, this.redundantStateSetting = x, this.numAttribs = h.getParameter(h.MAX_VERTEX_ATTRIBS), this.vertexArrays = /* @__PURE__ */ new WeakMap(), this.defaultVertexArray = new Fo(this.numAttribs), this.currentVertexArray = this.defaultVertexArray;
+      this.gl = h, this.redundantStateSetting = x, this.numAttribs = h.getParameter(h.MAX_VERTEX_ATTRIBS), this.vertexArrays = /* @__PURE__ */ new WeakMap(), this.defaultVertexArray = new Io(this.numAttribs), this.currentVertexArray = this.defaultVertexArray;
       const v = (O, U, L, N) => {
-        this.vertexArrays.set(N, new Fo(this.numAttribs));
+        this.vertexArrays.set(N, new Io(this.numAttribs));
       }, I = (O, U, L) => {
-        const [N] = L, V = this.vertexArrays.get(N);
-        this.currentVertexArray === V && (this.currentVertexArray = this.defaultVertexArray), this.vertexArrays.delete(N);
-      }, P = (O, U, L) => {
+        const [N] = L, G = this.vertexArrays.get(N);
+        this.currentVertexArray === G && (this.currentVertexArray = this.defaultVertexArray), this.vertexArrays.delete(N);
+      }, D = (O, U, L) => {
         let [N] = L;
         N = N ? this.vertexArrays.get(N) : this.defaultVertexArray, N === this.currentVertexArray ? ++this.redundantStateSetting.bindVertexArray : this.currentVertexArray = N;
       };
       this.postChecks = {
         createVertexArray: v,
         createVertexArrayOES: v,
-        bindVertexArray: P,
-        bindVertexArrayOES: P,
+        bindVertexArray: D,
+        bindVertexArrayOES: D,
         bindBuffer: (O, U, L) => {
-          const [N, V] = L;
-          N === h.ELEMENT_ARRAY_BUFFER && this.currentVertexArray.setElementArrayBuffer(this.redundantStateSetting, V);
+          const [N, G] = L;
+          N === h.ELEMENT_ARRAY_BUFFER && this.currentVertexArray.setElementArrayBuffer(this.redundantStateSetting, G);
         },
         deleteVertexArray: I,
         deleteVertexArrayOES: I,
         vertexAttribPointer: (O, U, L) => {
-          const [N, V, ae, he, Ae, be] = L, Te = this.gl;
-          this.currentVertexArray.setAttrib(this.redundantStateSetting, !1, N, V, ae, he, Ae, be, Te.getParameter(Te.ARRAY_BUFFER_BINDING));
+          const [N, G, ae, he, Ae, be] = L, Te = this.gl;
+          this.currentVertexArray.setAttrib(this.redundantStateSetting, !1, N, G, ae, he, Ae, be, Te.getParameter(Te.ARRAY_BUFFER_BINDING));
         },
         vertexAttribIPointer: (O, U, L) => {
-          const [N, V, ae, he, Ae] = L, be = this.gl;
-          this.currentVertexArray.setAttrib(this.redundantStateSetting, !0, N, V, ae, !1, he, Ae, be.getParameter(be.ARRAY_BUFFER_BINDING));
+          const [N, G, ae, he, Ae] = L, be = this.gl;
+          this.currentVertexArray.setAttrib(this.redundantStateSetting, !0, N, G, ae, !1, he, Ae, be.getParameter(be.ARRAY_BUFFER_BINDING));
         }
       };
     }
   }
-  const Io = u([
+  const Co = u([
     "COLOR_BUFFER_BIT",
     "DEPTH_BUFFER_BIT",
     "STENCIL_BUFFER_BIT"
@@ -956,26 +956,26 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
   function dn(s, h) {
     Array.isArray(s[h]) && (s[h] = Object.fromEntries(s[h].map((x) => [Math.abs(x), x])));
   }
-  function $u(s, h, x, v) {
-    const I = x[0], P = v.locationsToNamesMap.get(I), O = s.getParameter(s.CURRENT_PROGRAM), U = [];
-    if (P && U.push(`trying to set uniform '${P}'`), O) {
+  function zu(s, h, x, v) {
+    const I = x[0], D = v.locationsToNamesMap.get(I), O = s.getParameter(s.CURRENT_PROGRAM), U = [];
+    if (D && U.push(`trying to set uniform '${D}'`), O) {
       const L = v.webglObjectToNamesMap.get(O);
       L && U.push(`on WebGLProgram(${r(L)})`);
     } else
       U.push("on ** no current program **");
     return U.length ? `: ${U.join(" ")}` : "";
   }
-  function Co(s) {
+  function No(s) {
     if (Array.isArray(s) || n(s) || typeof s != "object")
       throw new Error("not a WebGLObject");
   }
-  function zu() {
+  function Vu() {
     return {
       elementArrayBuffer: null,
       vertexAttribs: []
     };
   }
-  const Gn = /* @__PURE__ */ new Set(), No = {
+  const Vn = /* @__PURE__ */ new Set(), Bo = {
     useProgram: 0,
     bindBuffer: 0,
     bindFramebuffer: 0,
@@ -986,14 +986,14 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     enableDisable: 0,
     vertexAttribPointer: 0
   };
-  function Bo(s, h, x = {}) {
-    if (Gn.has(s))
+  function Po(s, h, x = {}) {
+    if (Vn.has(s))
       return s;
-    Gn.add(s);
+    Vn.add(s);
     const v = x.origGLErrorFn || s.getError;
     y(s);
     function I(a) {
-      const l = zu(), f = { ...No }, d = {};
+      const l = Vu(), f = { ...Bo }, d = {};
       for (const g in a) {
         const S = a[g];
         d[g] = typeof S == "function" ? function(...F) {
@@ -1006,10 +1006,10 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
         apis: { gman_debug_helper: {
           ctx: {
             tagObject(g, S) {
-              Co(g), b.webglObjectToNamesMap.set(g, S);
+              No(g), b.webglObjectToNamesMap.set(g, S);
             },
             untagObject(g) {
-              Co(g), b.webglObjectToNamesMap.delete(g);
+              No(g), b.webglObjectToNamesMap.delete(g);
             },
             getTagForObject(g) {
               return b.webglObjectToNamesMap.get(g);
@@ -1028,7 +1028,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
             },
             getAndResetRedundantCallInfo() {
               const g = { ...f };
-              if (Object.assign(f, No), this._checksRemoved)
+              if (Object.assign(f, Bo), this._checksRemoved)
                 for (const S of Object.keys(g))
                   g[S] = "invalid is webgl-lint is no longer running. maxDrawCalls exceeded";
               return g;
@@ -1036,8 +1036,8 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
           }
         } },
         idCounts: {},
-        textureManager: new Lu(d, f),
-        vertexArrayManager: new ku(d, f),
+        textureManager: new ku(d, f),
+        vertexArrayManager: new $u(d, f),
         bufferToIndices: /* @__PURE__ */ new Map(),
         ignoredUniforms: /* @__PURE__ */ new Set(),
         // Okay or bad? This is a map of all WebGLUniformLocation object looked up
@@ -1101,14 +1101,14 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       };
       return b;
     }
-    const P = x.sharedState || I(s);
-    x.sharedState = P;
+    const D = x.sharedState || I(s);
+    x.sharedState = D;
     const {
       apis: O,
       baseContext: U,
       bufferToIndices: L,
       config: N,
-      ignoredUniforms: V,
+      ignoredUniforms: G,
       locationsToNamesMap: ae,
       programToLocationsMap: he,
       programToUniformInfoMap: Ae,
@@ -1120,7 +1120,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       idCounts: gt,
       webglState: K,
       redundantStateSetting: ue
-    } = P;
+    } = D;
     ({
       oes_texture_float(...a) {
         fe.addExtension(...a);
@@ -1172,25 +1172,25 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       texImage2D: {
         9: { enums: [0, 2, 6, 7], numbers: [1, 3, 4, 5], arrays: [-8] },
         6: { enums: [0, 2, 3, 4] },
-        10: { enums: [0, 2, 6, 7], numbers: [1, 3, 4, 5, 9], arrays: { 8: ju } }
+        10: { enums: [0, 2, 6, 7], numbers: [1, 3, 4, 5, 9], arrays: { 8: Ku } }
         // WebGL2
       },
       texImage3D: {
         10: { enums: [0, 2, 7, 8], numbers: [1, 3, 4, 5] },
         // WebGL2
-        11: { enums: [0, 2, 7, 8], numbers: [1, 3, 4, 5, 10], arrays: { 9: Xn } }
+        11: { enums: [0, 2, 7, 8], numbers: [1, 3, 4, 5, 10], arrays: { 9: Hn } }
         // WebGL2
       },
       texSubImage2D: {
         9: { enums: [0, 6, 7], numbers: [1, 2, 3, 4, 5] },
         7: { enums: [0, 4, 5], numbers: [1, 2, 3] },
-        10: { enums: [0, 6, 7], numbers: [1, 2, 3, 4, 5, 9], arrays: { 9: Xn } }
+        10: { enums: [0, 6, 7], numbers: [1, 2, 3, 4, 5, 9], arrays: { 9: Hn } }
         // WebGL2
       },
       texSubImage3D: {
         11: { enums: [0, 8, 9], numbers: [1, 2, 3, 4, 5, 6, 7] },
         // WebGL2
-        12: { enums: [0, 8, 9], numbers: [1, 2, 3, 4, 5, 6, 7, 11], arrays: { 10: Xn } }
+        12: { enums: [0, 8, 9], numbers: [1, 2, 3, 4, 5, 6, 7, 11], arrays: { 10: Hn } }
         // WebGL2
       },
       texStorage2D: { 5: { enums: [0, 2], numbers: [1, 3, 4] } },
@@ -1236,16 +1236,16 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       bindBuffer: { 2: { enums: [0], undef: [1] } },
       bufferData: {
         3: { enums: [0, 2], numbers: [-1], arrays: [-1] },
-        4: { enums: [0, 2], numbers: [-1, 3], arrays: { 1: Mo } },
+        4: { enums: [0, 2], numbers: [-1, 3], arrays: { 1: Oo } },
         // WebGL2
-        5: { enums: [0, 2], numbers: [-1, 3, 4], arrays: { 1: Oo } }
+        5: { enums: [0, 2], numbers: [-1, 3, 4], arrays: { 1: Lo } }
         // WebGL2
       },
       bufferSubData: {
-        3: { enums: [0], numbers: [1], arrays: { 2: Wu } },
-        4: { enums: [0], numbers: [1, 3], arrays: { 2: Mo } },
+        3: { enums: [0], numbers: [1], arrays: { 2: ju } },
+        4: { enums: [0], numbers: [1, 3], arrays: { 2: Oo } },
         // WebGL2
-        5: { enums: [0], numbers: [1, 3, 4], arrays: { 2: Oo } }
+        5: { enums: [0], numbers: [1, 3, 4], arrays: { 2: Lo } }
         // WebGL2
       },
       copyBufferSubData: {
@@ -1270,7 +1270,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       },
       bindRenderbuffer: { 2: { enums: [0], undef: [1] } },
       bindFramebuffer: { 2: { enums: [0], undef: [1] } },
-      blitFramebuffer: { 10: { enums: { 8: Io, 9: !0 }, numbers: [0, 1, 2, 3, 4, 5, 6, 7] } },
+      blitFramebuffer: { 10: { enums: { 8: Co, 9: !0 }, numbers: [0, 1, 2, 3, 4, 5, 6, 7] } },
       // WebGL2
       checkFramebufferStatus: { 1: { enums: [0] } },
       framebufferRenderbuffer: { 4: { enums: [0, 1, 2] } },
@@ -1297,7 +1297,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       polygonOffset: { 2: { numbers: [0, 1] } },
       scissor: { 4: { numbers: [0, 1, 2, 3] } },
       viewport: { 4: { numbers: [0, 1, 2, 3] } },
-      clear: { 1: { enums: { 0: Io } } },
+      clear: { 1: { enums: { 0: Co } } },
       clearColor: { 4: { numbers: [0, 1, 2, 3] } },
       clearDepth: { 1: { numbers: [0] } },
       clearStencil: { 1: { numbers: [0] } },
@@ -1545,22 +1545,22 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     for (const [a, l] of Object.entries(we)) {
       for (const f of Object.values(l))
         dn(f, "enums"), dn(f, "numbers"), dn(f, "arrays"), dn(f, "undef");
-      /uniform(\d|Matrix)/.test(a) && (l.errorHelper = $u);
+      /uniform(\d|Matrix)/.test(a) && (l.errorHelper = zu);
     }
-    const D = {}, M = {};
+    const P = {}, M = {};
     function w(a) {
       const l = he.get(a);
       l && l.forEach((f) => ae.delete(f)), he.set(a, /* @__PURE__ */ new Set()), Te.delete(a), Ae.delete(a), be.delete(a);
     }
     function R() {
       for (const { ctx: a, origFuncs: l } of Object.values(O))
-        Object.assign(a, l), Gn.delete(a);
-      P.apis.gman_debug_helper._checksRemoved = !0;
-      for (const a of [...Object.keys(P)])
-        delete P[a];
+        Object.assign(a, l), Vn.delete(a);
+      D.apis.gman_debug_helper._checksRemoved = !0;
+      for (const a of [...Object.keys(D)])
+        delete D[a];
     }
     function B(a, l, f) {
-      const { vertCount: d, instances: p } = Mr(l, f);
+      const { vertCount: d, instances: p } = Or(l, f);
       d === 0 && console.warn(_n(a, l, f, `count for ${l} is 0!`)), p === 0 && console.warn(_n(a, l, f, `instanceCount for ${l} is 0!`)), --N.maxDrawCalls, N.maxDrawCalls === 0 && R();
     }
     function X() {
@@ -1574,7 +1574,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       };
     }
     function ne(a) {
-      const l = Ba(new Error().stack), f = l ? `${l.url}:${l.lineNo}: ${a}` : a;
+      const l = Pa(new Error().stack), f = l ? `${l.url}:${l.lineNo}: ${a}` : a;
       if (N.throwOnError)
         throw new Error(f);
       console.error(f);
@@ -1582,7 +1582,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
     function J(a, l, f) {
       a ? ne(f) : l && console.warn(f);
     }
-    function Z(a) {
+    function q(a) {
       return typeof a == "number";
     }
     const ve = 34229;
@@ -1590,7 +1590,7 @@ needs ${Z} bytes for draw but buffer is only ${ne} bytes`);
       const a = U;
       return typeof WebGL2RenderingContext < "u" && a instanceof WebGL2RenderingContext || O.oes_vertex_array_object ? a.getParameter(ve) : null;
     }
-    function Pe(a, l, f) {
+    function De(a, l, f) {
       if (!N.failUnsetUniforms)
         return;
       const d = Te.get(K.currentProgram);
@@ -1610,11 +1610,11 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
         return;
       const d = be.get(K.currentProgram), p = fe.numTextureUnits;
       for (const { type: b, values: g, name: S } of d) {
-        const F = da(b);
+        const F = ma(b);
         for (let C = 0; C < g.length; ++C) {
           const z = g[C];
           if (z >= p) {
-            re(a, l, f, `uniform ${Pt(b).name} ${Se(S, g.length, C)} is set to ${z} which is out of range. There are only ${p} texture units`);
+            re(a, l, f, `uniform ${Dt(b).name} ${Se(S, g.length, C)} is set to ${z} which is out of range. There are only ${p} texture units`);
             return;
           }
           const te = fe.getTextureUnitUnrenderableReason(b, z, F, Ye);
@@ -1624,7 +1624,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
               a,
               l,
               f,
-              oe ? `texture ${Ye(oe)} on texture unit ${z} referenced by uniform ${Xr(b)} ${Se(S, g.length, C)} is not renderable: ${te}` : `no texture on texture unit ${z} referenced by uniform ${Se(S, g.length, C)}`
+              oe ? `texture ${Ye(oe)} on texture unit ${z} referenced by uniform ${Yr(b)} ${Se(S, g.length, C)} is not renderable: ${te}` : `no texture on texture unit ${z} referenced by uniform ${Se(S, g.length, C)}`
             );
             return;
           }
@@ -1638,7 +1638,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
         if (!C)
           p.set(F, b);
         else if (C !== b) {
-          re(a, l, f, `Two textures of different types can't use the same sampler location. uniform ${Pt(b).name} ${Se(S, g.length, 0)} is not ${Pt(C).name}`);
+          re(a, l, f, `Two textures of different types can't use the same sampler location. uniform ${Dt(b).name} ${Se(S, g.length, 0)} is not ${Dt(C).name}`);
           return;
         }
       }
@@ -1648,12 +1648,12 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
         re(a, l, f, "no current program");
         return;
       }
-      Pe(a, l, f), lt(a, l, f), Ze(a, l, f);
+      De(a, l, f), lt(a, l, f), Ze(a, l, f);
     }
     function Fe(a, l, f) {
       const [d, p, b, g = 0, S = 0] = f, F = U.getBufferParameter(d, a.BUFFER_SIZE), C = b instanceof DataView || b instanceof ArrayBuffer, z = S || (C ? b.byteLength - g : b.length - g);
       if (F < p + z) {
-        const te = Nr(d), oe = U.getParameter(te);
+        const te = Br(d), oe = U.getParameter(te);
         re(
           a,
           l,
@@ -1699,7 +1699,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
       };
     }
     function At(a) {
-      return V.has(a);
+      return G.has(a);
     }
     function dt(a) {
       return At(ae.get(a));
@@ -1729,24 +1729,24 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
         He(p, z);
       };
     }
-    function Vu(a) {
+    function Gu(a) {
       const l = ce(a);
       return function(f, d, p) {
         l(f, d, p);
         const [b, g] = p;
-        Po(b, g);
+        Uo(b, g);
       };
     }
     function Le(a, l, f) {
       const [d] = f;
       He(d, 1);
     }
-    function Gu(a, l, f) {
+    function Hu(a, l, f) {
       Le(a, l, f);
       const [d, p] = f;
-      Po(d, [p]);
+      Uo(d, [p]);
     }
-    function Po(a, l) {
+    function Uo(a, l) {
       const f = ae.get(a), d = Ae.get(K.currentProgram), { index: p, type: b, values: g } = d.get(f);
       if (!Qt(b))
         return;
@@ -1758,9 +1758,9 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
       const [d] = f;
       Qe.delete(d);
     }
-    const Hu = /ERROR:\s*\d+:(\d+)/gi;
-    function Uo(a, l = "") {
-      const f = [...l.matchAll(Hu)], d = new Map(f.map((p, b) => {
+    const Xu = /ERROR:\s*\d+:(\d+)/gi;
+    function Mo(a, l = "") {
+      const f = [...l.matchAll(Xu)], d = new Map(f.map((p, b) => {
         const g = parseInt(p[1]), S = f[b + 1], F = S ? S.index : l.length, C = l.substring(p.index, F);
         return [g - 1, C];
       }));
@@ -1773,7 +1773,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
       }).join(`
 `);
     }
-    const Hn = {
+    const Gn = {
       enable(a, l, f) {
         const [d] = f;
         K.enabled[d] ? ++ue.enableDisable : K.enabled[d] = !0;
@@ -1826,7 +1826,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
         if (d !== a.ELEMENT_ARRAY_BUFFER)
           return;
         const S = U.getParameter(a.ELEMENT_ARRAY_BUFFER_BINDING);
-        if (Z(p))
+        if (q(p))
           L.set(S, new ArrayBuffer(p));
         else {
           const F = p instanceof DataView, C = g || (F ? p.byteLength - b : p.length - b), z = F ? 1 : p.BYTES_PER_ELEMENT, te = C * z, oe = p.buffer ? p.buffer : p, Ne = (p.byteOffset || 0) + b * z;
@@ -1850,7 +1850,7 @@ See docs at https://github.com/greggman/webgl-lint/ for how to turn off this che
           return;
         const [d] = f;
         if (!U.getShaderParameter(d, a.COMPILE_STATUS)) {
-          const b = U.getShaderInfoLog(d), g = Uo(U.getShaderSource(d), b), S = U.getShaderParameter(d, a.SHADER_TYPE), F = `failed to compile ${A(S)}: ${b}
+          const b = U.getShaderInfoLog(d), g = Mo(U.getShaderSource(d), b), S = U.getShaderParameter(d, a.SHADER_TYPE), F = `failed to compile ${A(S)}: ${b}
 ------[ shader source ]------
 ${g}`;
           re(a, l, f, F);
@@ -1879,7 +1879,7 @@ ${g}`;
       uniform2f: Le,
       uniform3f: Le,
       uniform4f: Le,
-      uniform1i: Gu,
+      uniform1i: Hu,
       uniform2i: Le,
       uniform3i: Le,
       uniform4i: Le,
@@ -1887,7 +1887,7 @@ ${g}`;
       uniform2fv: ce(2),
       uniform3fv: ce(3),
       uniform4fv: ce(4),
-      uniform1iv: Vu(1),
+      uniform1iv: Gu(1),
       uniform2iv: ce(2),
       uniform3iv: ce(3),
       uniform4iv: ce(4),
@@ -1913,7 +1913,7 @@ ${g}`;
       },
       getUniformLocation(a, l, f, d) {
         const [p, b] = f;
-        d ? (ae.set(d, b), he.get(p).add(d)) : !At(b) && !Xe(a, f) && Ju(
+        d ? (ae.set(d, b), he.get(p).add(d)) : !At(b) && !Xe(a, f) && Qu(
           a,
           l,
           f,
@@ -1932,20 +1932,20 @@ ${g}`;
             if (t(z) || !U.getUniformLocation(d, z))
               continue;
             const Ne = /* @__PURE__ */ new Map([[z, 0]]), Lt = z.endsWith("[0]");
-            let Ct = z;
-            if (Lt && (Ct = z.substr(0, z.length - 3), Ne.set(Ct, 0)), oe > 1)
+            let It = z;
+            if (Lt && (It = z.substr(0, z.length - 3), Ne.set(It, 0)), oe > 1)
               for (let Ie = 0; Ie < oe; ++Ie)
-                Ne.set(`${Ct}[${Ie}]`, Ie);
-            const kt = (!Qt(te) || N.failUnsetSamplerUniforms) && !V.has(z), _t = Qt(te) ? new Array(oe).fill(0) : void 0;
-            _t && S.push({ type: te, values: _t, name: Ct });
-            const Wn = new Set(tc(0, oe));
-            for (const [Ie, Lo] of Ne)
+                Ne.set(`${It}[${Ie}]`, Ie);
+            const kt = (!Qt(te) || N.failUnsetSamplerUniforms) && !G.has(z), _t = Qt(te) ? new Array(oe).fill(0) : void 0;
+            _t && S.push({ type: te, values: _t, name: It });
+            const Yn = new Set(nc(0, oe));
+            for (const [Ie, ko] of Ne)
               kt && b.set(Ie, {
-                index: Lo,
-                unset: Wn,
+                index: ko,
+                unset: Yn,
                 altNames: Ne
               }), g.set(Ie, {
-                index: Lo,
+                index: ko,
                 type: te,
                 size: oe,
                 ..._t && { values: _t }
@@ -1954,7 +1954,7 @@ ${g}`;
           be.set(d, S), Ae.set(d, g), b.size && Te.set(d, b);
         } else if (N.failBadShadersAndPrograms) {
           const g = U.getAttachedShaders(d).map((C) => {
-            const z = Uo(U.getShaderSource(C)), te = U.getShaderParameter(C, a.SHADER_TYPE);
+            const z = Mo(U.getShaderSource(C)), te = U.getShaderParameter(C, a.SHADER_TYPE);
             return `-------[ ${A(te)} ${Ye(C)} ]-------
 ${z}`;
           }).join(`
@@ -1988,8 +1988,8 @@ ${g}`;
     };
     [fe, ot].forEach((a) => {
       Object.entries(a.postChecks).forEach(([l, f]) => {
-        const d = Hn[l] || X;
-        Hn[l] = function(...p) {
+        const d = Gn[l] || X;
+        Gn[l] = function(...p) {
           d(...p), N.failUnrenderableTextures && f(...p);
         };
       });
@@ -1998,10 +1998,10 @@ ${g}`;
       const l = Qe.get(a) || "*unnamed*";
       return `${a.constructor.name}(${r(l)})`;
     }
-    function Xu(a) {
+    function Yu(a) {
       return L.get(a);
     }
-    function Yu(a, l, f, d, p) {
+    function Wu(a, l, f, d, p) {
       const b = Qe.get(p);
       if (b)
         return `${p.constructor.name}("${b}")`;
@@ -2018,7 +2018,7 @@ ${g}`;
               if (typeof C == "function")
                 return C(a, p);
               if (!l.startsWith("bind") && d === 0) {
-                const z = Nr(p);
+                const z = Br(p);
                 if (z) {
                   const te = U.getParameter(z);
                   if (te)
@@ -2049,52 +2049,52 @@ ${g}`;
           return;
         }
     }
-    function Xn(a, l, f, d, p) {
+    function Hn(a, l, f, d, p) {
       const b = f[f.length - 1], g = d.length - b;
       Ot(a, l, f, d, p, b, g);
     }
-    function Wu(a, l, f, d, p) {
+    function ju(a, l, f, d, p) {
       if (n(d) && o(d)) {
         const g = d.length - 0;
         Ot(a, l, f, d, p, 0, g);
       } else
         Array.isArray(d) && re(a, l, f, `argument ${p} is not an ArrayBufferView or ArrayBuffer`);
     }
-    function Mo(a, l, f, d, p) {
+    function Oo(a, l, f, d, p) {
       if (n(d) && o(d)) {
         const b = f[f.length - 1], g = d.length - b;
         Ot(a, l, f, d, p, b, g);
       } else
         Array.isArray(d) && re(a, l, f, `argument ${p} is not an ArrayBufferView or ArrayBuffer`);
     }
-    function Oo(a, l, f, d, p) {
+    function Lo(a, l, f, d, p) {
       if (n(d) && o(d)) {
         const b = f[f.length - 2], g = f[f.length - 1];
         Ot(a, l, f, d, p, b, g);
       } else
         Array.isArray(d) && re(a, l, f, `argument ${p} is not an ArrayBufferView or ArrayBuffer`);
     }
-    function ju(a, l, f, d, p) {
+    function Ku(a, l, f, d, p) {
       if (Array.isArray(d) || n(d)) {
         const b = f[f.length - 1], g = d.length - b;
         Ot(a, l, f, d, p, b, g);
       }
     }
-    function Yn(a, l, f, d, p, b, g, S) {
+    function Xn(a, l, f, d, p, b, g, S) {
       const F = f[0];
       if (!F)
         return;
       const C = Ae.get(K.currentProgram);
       if (!C)
         return;
-      const z = ae.get(F), { type: te, size: oe, index: mt } = C.get(z), Ne = Pt(te).size;
-      S !== Ne && re(a, l, f, `uniform "${z}" is ${Pt(te).name} which is wrong for ${l}`);
-      const Lt = oe - mt, kt = Math.min(g / S | 0, Lt) * S, _t = b, Wn = b + kt;
-      for (let Ie = _t; Ie < Wn; ++Ie)
+      const z = ae.get(F), { type: te, size: oe, index: mt } = C.get(z), Ne = Dt(te).size;
+      S !== Ne && re(a, l, f, `uniform "${z}" is ${Dt(te).name} which is wrong for ${l}`);
+      const Lt = oe - mt, kt = Math.min(g / S | 0, Lt) * S, _t = b, Yn = b + kt;
+      for (let Ie = _t; Ie < Yn; ++Ie)
         if (d[Ie] === void 0) {
           re(a, l, f, `element ${Ie} of argument ${p} is undefined`);
           return;
-        } else if (Qu(d[Ie])) {
+        } else if (Zu(d[Ie])) {
           re(a, l, f, `element ${Ie} of argument ${p} is an array. WebGL expects flat arrays`);
           return;
         } else if (isNaN(d[Ie])) {
@@ -2105,50 +2105,50 @@ ${g}`;
     function de(a) {
       return function(l, f, d, p, b) {
         const g = d[d.length - 2], S = d[d.length - 1];
-        Yn(l, f, d, p, b, g, S, a);
+        Xn(l, f, d, p, b, g, S, a);
       };
     }
     function me(a) {
       return function(l, f, d, p, b) {
         const g = d[d.length - 1], S = p.length - g;
-        Yn(l, f, d, p, b, g, S, a);
+        Xn(l, f, d, p, b, g, S, a);
       };
     }
     function _e(a) {
       return function(l, f, d, p, b) {
         const S = p.length;
-        Yn(l, f, d, p, b, 0, S, a);
+        Xn(l, f, d, p, b, 0, S, a);
       };
     }
-    function Ku(a, l, f) {
+    function Ju(a, l, f) {
       const d = f.length;
       return f.map(function(b, g) {
-        let S = Yu(a, l, d, g, b);
+        let S = Wu(a, l, d, g, b);
         return S.length > 200 && (S = S.substring(0, 200) + "..."), S;
       }).join(", ");
     }
     function _n(a, l, f, d) {
       const p = U, b = [d], g = we[l];
-      if (g && g.errorHelper && b.push(g.errorHelper(a, l, f, P)), l.includes("draw")) {
+      if (g && g.errorHelper && b.push(g.errorHelper(a, l, f, D)), l.includes("draw")) {
         const F = p.getParameter(p.CURRENT_PROGRAM);
         F ? b.push(`with ${Ye(F)} as current program`) : b.push("no shader program in use!");
       }
-      if (l.includes("vertexAttrib") || Un(l)) {
+      if (l.includes("vertexAttrib") || Dn(l)) {
         const F = le(), C = Qe.get(F), z = `WebGLVertexArrayObject(${r(C || "*unnamed*")})`;
         b.push(`with ${F ? z : "the default vertex array"} bound`);
       }
-      const S = Ku(a, l, f);
+      const S = Ju(a, l, f);
       return `error in ${l}(${S}): ${b.join(`
 `)}`;
     }
-    function Ju(a, l, f, d, p, b) {
+    function Qu(a, l, f, d, p, b) {
       J(p, b, _n(a, l, f, d));
     }
     function re(a, l, f, d) {
       ne(_n(a, l, f, d));
     }
-    const Qu = (a) => Array.isArray(a) || n(a);
-    function Zu(a, l, f) {
+    const Zu = (a) => Array.isArray(a) || n(a);
+    function qu(a, l, f) {
       const d = we[l];
       if (d) {
         const p = d[f.length];
@@ -2199,7 +2199,7 @@ ${g}`;
         }
       }
     }
-    const qu = {
+    const ec = {
       getExtension(a, l) {
         const f = a[l];
         a[l] = function(...d) {
@@ -2207,43 +2207,43 @@ ${g}`;
           if (b)
             return b.ctx;
           const g = f.call(a, ...d);
-          return g && Bo(g, p, { ...x, origGLErrorFn: v }), g;
+          return g && Po(g, p, { ...x, origGLErrorFn: v }), g;
         };
       }
     };
-    function ec(a, l) {
-      const f = a[l], d = qe[l] || X, p = Hn[l] || X;
+    function tc(a, l) {
+      const f = a[l], d = qe[l] || X, p = Gn[l] || X;
       a[l] = function(...g) {
-        if (d(a, l, g), Zu(a, l, g), K.currentProgram && Un(l)) {
-          const z = ra(U, l, g, Ye, Xu);
+        if (d(a, l, g), qu(a, l, g), K.currentProgram && Dn(l)) {
+          const z = oa(U, l, g, Ye, Yu);
           z.length && re(a, l, g, z.join(`
 `));
         }
         const S = f.call(a, ...g), F = U, C = v.call(F);
         if (C !== 0) {
-          D[C] = !0;
+          P[C] = !0;
           const z = [A(C)];
-          Un(l) && K.currentProgram && z.push(...Ca(F, Ye)), re(a, l, g, z.join(`
+          Dn(l) && K.currentProgram && z.push(...Na(F, Ye)), re(a, l, g, z.join(`
 `));
         } else
           p(a, l, g, S);
         return S;
       };
-      const b = qu[l];
+      const b = ec[l];
       b && b(a, l, v);
     }
-    function tc(a, l) {
+    function nc(a, l) {
       const f = [];
       for (let d = a; d < l; ++d)
         f.push(d);
       return f;
     }
     for (const a in s)
-      typeof s[a] == "function" && (M[a] = s[a], ec(s, a));
+      typeof s[a] == "function" && (M[a] = s[a], tc(s, a));
     s.getError && (s.getError = function() {
-      for (const a of Object.keys(D))
-        if (D[a])
-          return D[a] = !1, a;
+      for (const a of Object.keys(P))
+        if (P[a])
+          return P[a] = !1, a;
       return s.NO_ERROR;
     }), O[h.toLowerCase()] = { ctx: s, origFuncs: M };
   }
@@ -2253,7 +2253,7 @@ ${g}`;
     s.prototype.getContext = function(x, ...v) {
       const I = h.call(this, x, ...v);
       if (I && I.bindTexture) {
-        Bo(I, x, {
+        Po(I, x, {
           maxDrawCalls: 1e3,
           throwOnError: !0,
           failBadShadersAndPrograms: !0,
@@ -2272,10 +2272,10 @@ ${g}`;
           let N;
           try {
             N = JSON.parse(L);
-          } catch (V) {
-            throw V.message += `
+          } catch (G) {
+            throw G.message += `
 ${L}
-failed to parse data-gman-debug-helper as JSON in: ${U.outerHTML}`, V;
+failed to parse data-gman-debug-helper as JSON in: ${U.outerHTML}`, G;
           }
           N && O.setConfiguration(N);
         });
@@ -2288,65 +2288,65 @@ failed to parse data-gman-debug-helper as JSON in: ${U.outerHTML}`, V;
 /* @license twgl.js 5.5.4 Copyright (c) 2015, Gregg Tavares All Rights Reserved.
 Available via the MIT license.
 see: http://github.com/greggman/twgl.js for details */
-const sr = 5120, Yt = 5121, ar = 5122, ur = 5123, cr = 5124, fr = 5125, lr = 5126, nc = 32819, rc = 32820, oc = 33635, ic = 5131, sc = 33640, ac = 35899, uc = 35902, cc = 36269, fc = 34042, ai = {};
+const ar = 5120, Yt = 5121, ur = 5122, cr = 5123, fr = 5124, lr = 5125, dr = 5126, rc = 32819, oc = 32820, ic = 33635, sc = 5131, ac = 33640, uc = 35899, cc = 35902, fc = 36269, lc = 34042, ui = {};
 {
-  const t = ai;
-  t[sr] = Int8Array, t[Yt] = Uint8Array, t[ar] = Int16Array, t[ur] = Uint16Array, t[cr] = Int32Array, t[fr] = Uint32Array, t[lr] = Float32Array, t[nc] = Uint16Array, t[rc] = Uint16Array, t[oc] = Uint16Array, t[ic] = Uint16Array, t[sc] = Uint32Array, t[ac] = Uint32Array, t[uc] = Uint32Array, t[cc] = Uint32Array, t[fc] = Uint32Array;
+  const t = ui;
+  t[ar] = Int8Array, t[Yt] = Uint8Array, t[ur] = Int16Array, t[cr] = Uint16Array, t[fr] = Int32Array, t[lr] = Uint32Array, t[dr] = Float32Array, t[rc] = Uint16Array, t[oc] = Uint16Array, t[ic] = Uint16Array, t[sc] = Uint16Array, t[ac] = Uint32Array, t[uc] = Uint32Array, t[cc] = Uint32Array, t[fc] = Uint32Array, t[lc] = Uint32Array;
 }
-function ui(t) {
+function ci(t) {
   if (t instanceof Int8Array)
-    return sr;
+    return ar;
   if (t instanceof Uint8Array || t instanceof Uint8ClampedArray)
     return Yt;
   if (t instanceof Int16Array)
-    return ar;
-  if (t instanceof Uint16Array)
     return ur;
-  if (t instanceof Int32Array)
+  if (t instanceof Uint16Array)
     return cr;
-  if (t instanceof Uint32Array)
+  if (t instanceof Int32Array)
     return fr;
-  if (t instanceof Float32Array)
+  if (t instanceof Uint32Array)
     return lr;
+  if (t instanceof Float32Array)
+    return dr;
   throw new Error("unsupported typed array type");
 }
-function ci(t) {
+function fi(t) {
   if (t === Int8Array)
-    return sr;
+    return ar;
   if (t === Uint8Array || t === Uint8ClampedArray)
     return Yt;
   if (t === Int16Array)
-    return ar;
-  if (t === Uint16Array)
     return ur;
-  if (t === Int32Array)
+  if (t === Uint16Array)
     return cr;
-  if (t === Uint32Array)
+  if (t === Int32Array)
     return fr;
-  if (t === Float32Array)
+  if (t === Uint32Array)
     return lr;
+  if (t === Float32Array)
+    return dr;
   throw new Error("unsupported typed array type");
 }
-function lc(t) {
-  const e = ai[t];
+function dc(t) {
+  const e = ui[t];
   if (!e)
     throw new Error("unknown gl type");
   return e;
 }
-const qn = typeof SharedArrayBuffer < "u" ? function(e) {
+const Zn = typeof SharedArrayBuffer < "u" ? function(e) {
   return e && e.buffer && (e.buffer instanceof ArrayBuffer || e.buffer instanceof SharedArrayBuffer);
 } : function(e) {
   return e && e.buffer && e.buffer instanceof ArrayBuffer;
 };
-function dc(...t) {
+function mc(...t) {
   console.error(...t);
 }
-const ko = /* @__PURE__ */ new Map();
-function fi(t, e) {
+const $o = /* @__PURE__ */ new Map();
+function li(t, e) {
   if (!t || typeof t != "object")
     return !1;
-  let n = ko.get(e);
-  n || (n = /* @__PURE__ */ new WeakMap(), ko.set(e, n));
+  let n = $o.get(e);
+  n || (n = /* @__PURE__ */ new WeakMap(), $o.set(e, n));
   let o = n.get(t);
   if (o === void 0) {
     const r = Object.prototype.toString.call(t);
@@ -2354,103 +2354,103 @@ function fi(t, e) {
   }
   return o;
 }
-function mc(t, e) {
-  return typeof WebGLBuffer < "u" && fi(e, "WebGLBuffer");
+function _c(t, e) {
+  return typeof WebGLBuffer < "u" && li(e, "WebGLBuffer");
 }
-function li(t, e) {
-  return typeof WebGLTexture < "u" && fi(e, "WebGLTexture");
+function di(t, e) {
+  return typeof WebGLTexture < "u" && li(e, "WebGLTexture");
 }
-const di = 35044, nt = 34962, _c = 34963, pc = 34660, hc = 5120, bc = 5121, yc = 5122, Ec = 5123, xc = 5124, gc = 5125, mi = 5126, _i = {
+const mi = 35044, nt = 34962, pc = 34963, hc = 34660, bc = 5120, yc = 5121, Ec = 5122, xc = 5123, gc = 5124, Ac = 5125, _i = 5126, pi = {
   attribPrefix: ""
 };
-function pi(t, e, n, o, r) {
-  t.bindBuffer(e, n), t.bufferData(e, o, r || di);
+function hi(t, e, n, o, r) {
+  t.bindBuffer(e, n), t.bufferData(e, o, r || mi);
 }
-function hi(t, e, n, o) {
-  if (mc(t, e))
+function bi(t, e, n, o) {
+  if (_c(t, e))
     return e;
   n = n || nt;
   const r = t.createBuffer();
-  return pi(t, n, r, e, o), r;
+  return hi(t, n, r, e, o), r;
 }
-function bi(t) {
+function yi(t) {
   return t === "indices";
 }
-function Ac(t) {
+function Tc(t) {
   return t === Int8Array || t === Uint8Array;
 }
-function Tc(t) {
+function vc(t) {
   return t.length ? t : t.data;
 }
-const vc = /coord|texture/i, Sc = /color|colour/i;
-function Rc(t, e) {
+const Sc = /coord|texture/i, Rc = /color|colour/i;
+function wc(t, e) {
   let n;
-  if (vc.test(t) ? n = 2 : Sc.test(t) ? n = 4 : n = 3, e % n > 0)
+  if (Sc.test(t) ? n = 2 : Rc.test(t) ? n = 4 : n = 3, e % n > 0)
     throw new Error(`Can not guess numComponents for attribute '${t}'. Tried ${n} but ${e} values is not evenly divisible by ${n}. You should specify it.`);
   return n;
 }
-function wc(t, e, n) {
-  return t.numComponents || t.size || Rc(e, n || Tc(t).length);
+function Fc(t, e, n) {
+  return t.numComponents || t.size || wc(e, n || vc(t).length);
 }
-function dr(t, e) {
-  if (qn(t))
+function mr(t, e) {
+  if (Zn(t))
     return t;
-  if (qn(t.data))
+  if (Zn(t.data))
     return t.data;
   Array.isArray(t) && (t = {
     data: t
   });
-  let n = t.type ? mr(t.type) : void 0;
-  return n || (bi(e) ? n = Uint16Array : n = Float32Array), new n(t.data);
+  let n = t.type ? _r(t.type) : void 0;
+  return n || (yi(e) ? n = Uint16Array : n = Float32Array), new n(t.data);
 }
-function Fc(t) {
-  return typeof t == "number" ? t : t ? ci(t) : mi;
+function Ic(t) {
+  return typeof t == "number" ? t : t ? fi(t) : _i;
 }
-function mr(t) {
-  return typeof t == "number" ? lc(t) : t || Float32Array;
+function _r(t) {
+  return typeof t == "number" ? dc(t) : t || Float32Array;
 }
-function Ic(t, e) {
+function Cc(t, e) {
   return {
     buffer: e.buffer,
     numValues: 2 * 3 * 4,
     // safely divided by 2, 3, 4
-    type: Fc(e.type),
-    arrayType: mr(e.type)
+    type: Ic(e.type),
+    arrayType: _r(e.type)
   };
 }
-function Cc(t, e) {
-  const n = e.data || e, o = mr(e.type), r = n * o.BYTES_PER_ELEMENT, i = t.createBuffer();
-  return t.bindBuffer(nt, i), t.bufferData(nt, r, e.drawType || di), {
+function Nc(t, e) {
+  const n = e.data || e, o = _r(e.type), r = n * o.BYTES_PER_ELEMENT, i = t.createBuffer();
+  return t.bindBuffer(nt, i), t.bufferData(nt, r, e.drawType || mi), {
     buffer: i,
     numValues: n,
-    type: ci(o),
+    type: fi(o),
     arrayType: o
   };
 }
-function Nc(t, e, n) {
-  const o = dr(e, n);
+function Bc(t, e, n) {
+  const o = mr(e, n);
   return {
     arrayType: o.constructor,
-    buffer: hi(t, o, void 0, e.drawType),
-    type: ui(o),
+    buffer: bi(t, o, void 0, e.drawType),
+    type: ci(o),
     numValues: 0
   };
 }
-function Bc(t, e) {
+function Pc(t, e) {
   const n = {};
   return Object.keys(e).forEach(function(o) {
-    if (!bi(o)) {
-      const r = e[o], i = r.attrib || r.name || r.attribName || _i.attribPrefix + o;
+    if (!yi(o)) {
+      const r = e[o], i = r.attrib || r.name || r.attribName || pi.attribPrefix + o;
       if (r.value) {
-        if (!Array.isArray(r.value) && !qn(r.value))
+        if (!Array.isArray(r.value) && !Zn(r.value))
           throw new Error("array.value is not array or typedarray");
         n[i] = {
           value: r.value
         };
       } else {
         let c;
-        r.buffer && r.buffer instanceof WebGLBuffer ? c = Ic : typeof r == "number" || typeof r.data == "number" ? c = Cc : c = Nc;
-        const { buffer: u, type: _, numValues: y, arrayType: A } = c(t, r, o), T = r.normalize !== void 0 ? r.normalize : Ac(A), k = wc(r, o, y);
+        r.buffer && r.buffer instanceof WebGLBuffer ? c = Cc : typeof r == "number" || typeof r.data == "number" ? c = Nc : c = Bc;
+        const { buffer: u, type: _, numValues: y, arrayType: A } = c(t, r, o), T = r.normalize !== void 0 ? r.normalize : Tc(A), k = Fc(r, o, y);
         n[i] = {
           buffer: u,
           numComponents: k,
@@ -2465,43 +2465,43 @@ function Bc(t, e) {
     }
   }), t.bindBuffer(nt, null), n;
 }
-function $o(t, e, n, o) {
-  n = dr(n), o !== void 0 ? (t.bindBuffer(nt, e.buffer), t.bufferSubData(nt, o, n)) : pi(t, nt, e.buffer, n, e.drawType);
+function zo(t, e, n, o) {
+  n = mr(n), o !== void 0 ? (t.bindBuffer(nt, e.buffer), t.bufferSubData(nt, o, n)) : hi(t, nt, e.buffer, n, e.drawType);
 }
 function Dc(t, e) {
-  return e === hc || e === bc ? 1 : e === yc || e === Ec ? 2 : e === xc || e === gc || e === mi ? 4 : 0;
+  return e === bc || e === yc ? 1 : e === Ec || e === xc ? 2 : e === gc || e === Ac || e === _i ? 4 : 0;
 }
-const jn = ["position", "positions", "a_position"];
-function Pc(t, e) {
+const Wn = ["position", "positions", "a_position"];
+function Uc(t, e) {
   let n, o;
-  for (o = 0; o < jn.length && (n = jn[o], !(n in e || (n = _i.attribPrefix + n, n in e))); ++o)
+  for (o = 0; o < Wn.length && (n = Wn[o], !(n in e || (n = pi.attribPrefix + n, n in e))); ++o)
     ;
-  o === jn.length && (n = Object.keys(e)[0]);
+  o === Wn.length && (n = Object.keys(e)[0]);
   const r = e[n];
   if (!r.buffer)
     return 1;
   t.bindBuffer(nt, r.buffer);
-  const i = t.getBufferParameter(nt, pc);
+  const i = t.getBufferParameter(nt, hc);
   t.bindBuffer(nt, null);
   const c = Dc(t, r.type), u = i / c, _ = r.numComponents || r.size, y = u / _;
   if (y % 1 !== 0)
     throw new Error(`numComponents ${_} not correct for length ${length}`);
   return y;
 }
-function Kn(t, e, n) {
-  const o = Bc(t, e), r = Object.assign({}, n || {});
+function jn(t, e, n) {
+  const o = Pc(t, e), r = Object.assign({}, n || {});
   r.attribs = Object.assign({}, n ? n.attribs : {}, o);
   const i = e.indices;
   if (i) {
-    const c = dr(i, "indices");
-    r.indices = hi(t, c, _c), r.numElements = c.length, r.elementType = ui(c);
-  } else r.numElements || (r.numElements = Pc(t, r.attribs));
+    const c = mr(i, "indices");
+    r.indices = bi(t, c, pc), r.numElements = c.length, r.elementType = ci(c);
+  } else r.numElements || (r.numElements = Uc(t, r.attribs));
   return r;
 }
-function _r(t) {
+function pr(t) {
   return !!t.texStorage2D;
 }
-const Uc = /* @__PURE__ */ function() {
+const Mc = /* @__PURE__ */ function() {
   const t = {}, e = {};
   function n(o) {
     const r = o.constructor.name;
@@ -2517,115 +2517,115 @@ const Uc = /* @__PURE__ */ function() {
   return function(r, i) {
     return n(r), e[i] || (typeof i == "number" ? `0x${i.toString(16)}` : i);
   };
-}(), pr = dc;
-function yi(t) {
+}(), hr = mc;
+function Ei(t) {
   return typeof document < "u" && document.getElementById ? document.getElementById(t) : null;
 }
-const gn = 33984, Fn = 34962, Mc = 34963, Oc = 35713, Lc = 35714, kc = 35632, $c = 35633, zc = 35981, Ei = 35718, Vc = 35721, Gc = 35971, Hc = 35382, Xc = 35396, Yc = 35398, Wc = 35392, jc = 35395, In = 5126, xi = 35664, gi = 35665, Ai = 35666, hr = 5124, Ti = 35667, vi = 35668, Si = 35669, Ri = 35670, wi = 35671, Fi = 35672, Ii = 35673, Ci = 35674, Ni = 35675, Bi = 35676, Kc = 35678, Jc = 35680, Qc = 35679, Zc = 35682, qc = 35685, ef = 35686, tf = 35687, nf = 35688, rf = 35689, of = 35690, sf = 36289, af = 36292, uf = 36293, br = 5125, Di = 36294, Pi = 36295, Ui = 36296, cf = 36298, ff = 36299, lf = 36300, df = 36303, mf = 36306, _f = 36307, pf = 36308, hf = 36311, Cn = 3553, Nn = 34067, yr = 32879, Bn = 35866, Y = {};
-function Mi(t, e) {
+const gn = 33984, wn = 34962, Oc = 34963, Lc = 35713, kc = 35714, $c = 35632, zc = 35633, Vc = 35981, xi = 35718, Gc = 35721, Hc = 35971, Xc = 35382, Yc = 35396, Wc = 35398, jc = 35392, Kc = 35395, Fn = 5126, gi = 35664, Ai = 35665, Ti = 35666, br = 5124, vi = 35667, Si = 35668, Ri = 35669, wi = 35670, Fi = 35671, Ii = 35672, Ci = 35673, Ni = 35674, Bi = 35675, Pi = 35676, Jc = 35678, Qc = 35680, Zc = 35679, qc = 35682, ef = 35685, tf = 35686, nf = 35687, rf = 35688, of = 35689, sf = 35690, af = 36289, uf = 36292, cf = 36293, yr = 5125, Di = 36294, Ui = 36295, Mi = 36296, ff = 36298, lf = 36299, df = 36300, mf = 36303, _f = 36306, pf = 36307, hf = 36308, bf = 36311, In = 3553, Cn = 34067, Er = 32879, Nn = 35866, Y = {};
+function Oi(t, e) {
   return Y[e].bindPoint;
 }
-function bf(t, e) {
+function yf(t, e) {
   return function(n) {
     t.uniform1f(e, n);
   };
 }
-function yf(t, e) {
+function Ef(t, e) {
   return function(n) {
     t.uniform1fv(e, n);
   };
 }
-function Ef(t, e) {
+function xf(t, e) {
   return function(n) {
     t.uniform2fv(e, n);
   };
 }
-function xf(t, e) {
+function gf(t, e) {
   return function(n) {
     t.uniform3fv(e, n);
   };
 }
-function gf(t, e) {
+function Af(t, e) {
   return function(n) {
     t.uniform4fv(e, n);
   };
 }
-function Oi(t, e) {
+function Li(t, e) {
   return function(n) {
     t.uniform1i(e, n);
   };
 }
-function Li(t, e) {
+function ki(t, e) {
   return function(n) {
     t.uniform1iv(e, n);
   };
 }
-function ki(t, e) {
+function $i(t, e) {
   return function(n) {
     t.uniform2iv(e, n);
   };
 }
-function $i(t, e) {
+function zi(t, e) {
   return function(n) {
     t.uniform3iv(e, n);
   };
 }
-function zi(t, e) {
+function Vi(t, e) {
   return function(n) {
     t.uniform4iv(e, n);
   };
 }
-function Af(t, e) {
+function Tf(t, e) {
   return function(n) {
     t.uniform1ui(e, n);
   };
 }
-function Tf(t, e) {
+function vf(t, e) {
   return function(n) {
     t.uniform1uiv(e, n);
   };
 }
-function vf(t, e) {
+function Sf(t, e) {
   return function(n) {
     t.uniform2uiv(e, n);
   };
 }
-function Sf(t, e) {
+function Rf(t, e) {
   return function(n) {
     t.uniform3uiv(e, n);
   };
 }
-function Rf(t, e) {
+function wf(t, e) {
   return function(n) {
     t.uniform4uiv(e, n);
   };
 }
-function wf(t, e) {
+function Ff(t, e) {
   return function(n) {
     t.uniformMatrix2fv(e, !1, n);
   };
 }
-function Ff(t, e) {
+function If(t, e) {
   return function(n) {
     t.uniformMatrix3fv(e, !1, n);
   };
 }
-function If(t, e) {
+function Cf(t, e) {
   return function(n) {
     t.uniformMatrix4fv(e, !1, n);
   };
 }
-function Cf(t, e) {
+function Nf(t, e) {
   return function(n) {
     t.uniformMatrix2x3fv(e, !1, n);
   };
 }
-function Nf(t, e) {
+function Bf(t, e) {
   return function(n) {
     t.uniformMatrix3x2fv(e, !1, n);
   };
 }
-function Bf(t, e) {
+function Pf(t, e) {
   return function(n) {
     t.uniformMatrix2x4fv(e, !1, n);
   };
@@ -2635,34 +2635,34 @@ function Df(t, e) {
     t.uniformMatrix4x2fv(e, !1, n);
   };
 }
-function Pf(t, e) {
+function Uf(t, e) {
   return function(n) {
     t.uniformMatrix3x4fv(e, !1, n);
   };
 }
-function Uf(t, e) {
+function Mf(t, e) {
   return function(n) {
     t.uniformMatrix4x3fv(e, !1, n);
   };
 }
 function Be(t, e, n, o) {
-  const r = Mi(t, e);
-  return _r(t) ? function(i) {
+  const r = Oi(t, e);
+  return pr(t) ? function(i) {
     let c, u;
-    !i || li(t, i) ? (c = i, u = null) : (c = i.texture, u = i.sampler), t.uniform1i(o, n), t.activeTexture(gn + n), t.bindTexture(r, c), t.bindSampler(n, u);
+    !i || di(t, i) ? (c = i, u = null) : (c = i.texture, u = i.sampler), t.uniform1i(o, n), t.activeTexture(gn + n), t.bindTexture(r, c), t.bindSampler(n, u);
   } : function(i) {
     t.uniform1i(o, n), t.activeTexture(gn + n), t.bindTexture(r, i);
   };
 }
-function De(t, e, n, o, r) {
-  const i = Mi(t, e), c = new Int32Array(r);
+function Pe(t, e, n, o, r) {
+  const i = Oi(t, e), c = new Int32Array(r);
   for (let u = 0; u < r; ++u)
     c[u] = n + u;
-  return _r(t) ? function(u) {
+  return pr(t) ? function(u) {
     t.uniform1iv(o, c), u.forEach(function(_, y) {
       t.activeTexture(gn + c[y]);
       let A, T;
-      !_ || li(t, _) ? (A = _, T = null) : (A = _.texture, T = _.sampler), t.bindSampler(n, T), t.bindTexture(i, A);
+      !_ || di(t, _) ? (A = _, T = null) : (A = _.texture, T = _.sampler), t.bindSampler(n, T), t.bindTexture(i, A);
     });
   } : function(u) {
     t.uniform1iv(o, c), u.forEach(function(_, y) {
@@ -2670,47 +2670,47 @@ function De(t, e, n, o, r) {
     });
   };
 }
-Y[In] = { Type: Float32Array, size: 4, setter: bf, arraySetter: yf };
-Y[xi] = { Type: Float32Array, size: 8, setter: Ef, cols: 2 };
-Y[gi] = { Type: Float32Array, size: 12, setter: xf, cols: 3 };
-Y[Ai] = { Type: Float32Array, size: 16, setter: gf, cols: 4 };
-Y[hr] = { Type: Int32Array, size: 4, setter: Oi, arraySetter: Li };
-Y[Ti] = { Type: Int32Array, size: 8, setter: ki, cols: 2 };
-Y[vi] = { Type: Int32Array, size: 12, setter: $i, cols: 3 };
-Y[Si] = { Type: Int32Array, size: 16, setter: zi, cols: 4 };
-Y[br] = { Type: Uint32Array, size: 4, setter: Af, arraySetter: Tf };
-Y[Di] = { Type: Uint32Array, size: 8, setter: vf, cols: 2 };
-Y[Pi] = { Type: Uint32Array, size: 12, setter: Sf, cols: 3 };
-Y[Ui] = { Type: Uint32Array, size: 16, setter: Rf, cols: 4 };
-Y[Ri] = { Type: Uint32Array, size: 4, setter: Oi, arraySetter: Li };
-Y[wi] = { Type: Uint32Array, size: 8, setter: ki, cols: 2 };
-Y[Fi] = { Type: Uint32Array, size: 12, setter: $i, cols: 3 };
-Y[Ii] = { Type: Uint32Array, size: 16, setter: zi, cols: 4 };
-Y[Ci] = { Type: Float32Array, size: 32, setter: wf, rows: 2, cols: 2 };
-Y[Ni] = { Type: Float32Array, size: 48, setter: Ff, rows: 3, cols: 3 };
-Y[Bi] = { Type: Float32Array, size: 64, setter: If, rows: 4, cols: 4 };
-Y[qc] = { Type: Float32Array, size: 32, setter: Cf, rows: 2, cols: 3 };
-Y[ef] = { Type: Float32Array, size: 32, setter: Bf, rows: 2, cols: 4 };
-Y[tf] = { Type: Float32Array, size: 48, setter: Nf, rows: 3, cols: 2 };
-Y[nf] = { Type: Float32Array, size: 48, setter: Pf, rows: 3, cols: 4 };
-Y[rf] = { Type: Float32Array, size: 64, setter: Df, rows: 4, cols: 2 };
-Y[of] = { Type: Float32Array, size: 64, setter: Uf, rows: 4, cols: 3 };
-Y[Kc] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Cn };
-Y[Jc] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Nn };
-Y[Qc] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: yr };
-Y[Zc] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Cn };
-Y[sf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Bn };
-Y[af] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Bn };
-Y[uf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Nn };
-Y[cf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Cn };
-Y[ff] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: yr };
-Y[lf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Nn };
-Y[df] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Bn };
-Y[mf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Cn };
-Y[_f] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: yr };
-Y[pf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Nn };
-Y[hf] = { Type: null, size: 0, setter: Be, arraySetter: De, bindPoint: Bn };
-function Dn(t, e) {
+Y[Fn] = { Type: Float32Array, size: 4, setter: yf, arraySetter: Ef };
+Y[gi] = { Type: Float32Array, size: 8, setter: xf, cols: 2 };
+Y[Ai] = { Type: Float32Array, size: 12, setter: gf, cols: 3 };
+Y[Ti] = { Type: Float32Array, size: 16, setter: Af, cols: 4 };
+Y[br] = { Type: Int32Array, size: 4, setter: Li, arraySetter: ki };
+Y[vi] = { Type: Int32Array, size: 8, setter: $i, cols: 2 };
+Y[Si] = { Type: Int32Array, size: 12, setter: zi, cols: 3 };
+Y[Ri] = { Type: Int32Array, size: 16, setter: Vi, cols: 4 };
+Y[yr] = { Type: Uint32Array, size: 4, setter: Tf, arraySetter: vf };
+Y[Di] = { Type: Uint32Array, size: 8, setter: Sf, cols: 2 };
+Y[Ui] = { Type: Uint32Array, size: 12, setter: Rf, cols: 3 };
+Y[Mi] = { Type: Uint32Array, size: 16, setter: wf, cols: 4 };
+Y[wi] = { Type: Uint32Array, size: 4, setter: Li, arraySetter: ki };
+Y[Fi] = { Type: Uint32Array, size: 8, setter: $i, cols: 2 };
+Y[Ii] = { Type: Uint32Array, size: 12, setter: zi, cols: 3 };
+Y[Ci] = { Type: Uint32Array, size: 16, setter: Vi, cols: 4 };
+Y[Ni] = { Type: Float32Array, size: 32, setter: Ff, rows: 2, cols: 2 };
+Y[Bi] = { Type: Float32Array, size: 48, setter: If, rows: 3, cols: 3 };
+Y[Pi] = { Type: Float32Array, size: 64, setter: Cf, rows: 4, cols: 4 };
+Y[ef] = { Type: Float32Array, size: 32, setter: Nf, rows: 2, cols: 3 };
+Y[tf] = { Type: Float32Array, size: 32, setter: Pf, rows: 2, cols: 4 };
+Y[nf] = { Type: Float32Array, size: 48, setter: Bf, rows: 3, cols: 2 };
+Y[rf] = { Type: Float32Array, size: 48, setter: Uf, rows: 3, cols: 4 };
+Y[of] = { Type: Float32Array, size: 64, setter: Df, rows: 4, cols: 2 };
+Y[sf] = { Type: Float32Array, size: 64, setter: Mf, rows: 4, cols: 3 };
+Y[Jc] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: In };
+Y[Qc] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Cn };
+Y[Zc] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Er };
+Y[qc] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: In };
+Y[af] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Nn };
+Y[uf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Nn };
+Y[cf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Cn };
+Y[ff] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: In };
+Y[lf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Er };
+Y[df] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Cn };
+Y[mf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Nn };
+Y[_f] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: In };
+Y[pf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Er };
+Y[hf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Cn };
+Y[bf] = { Type: null, size: 0, setter: Be, arraySetter: Pe, bindPoint: Nn };
+function Bn(t, e) {
   return function(n) {
     if (n.value)
       switch (t.disableVertexAttribArray(e), n.value.length) {
@@ -2730,10 +2730,10 @@ function Dn(t, e) {
           throw new Error("the length of a float constant value must be between 1 and 4!");
       }
     else
-      t.bindBuffer(Fn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribPointer(
+      t.bindBuffer(wn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribPointer(
         e,
         n.numComponents || n.size,
-        n.type || In,
+        n.type || Fn,
         n.normalize || !1,
         n.stride || 0,
         n.offset || 0
@@ -2748,10 +2748,10 @@ function ht(t, e) {
       else
         throw new Error("The length of an integer constant value must be 4!");
     else
-      t.bindBuffer(Fn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribIPointer(
+      t.bindBuffer(wn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribIPointer(
         e,
         n.numComponents || n.size,
-        n.type || hr,
+        n.type || br,
         n.stride || 0,
         n.offset || 0
       ), t.vertexAttribDivisor && t.vertexAttribDivisor(e, n.divisor || 0);
@@ -2765,20 +2765,20 @@ function Pn(t, e) {
       else
         throw new Error("The length of an unsigned integer constant value must be 4!");
     else
-      t.bindBuffer(Fn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribIPointer(
+      t.bindBuffer(wn, n.buffer), t.enableVertexAttribArray(e), t.vertexAttribIPointer(
         e,
         n.numComponents || n.size,
-        n.type || br,
+        n.type || yr,
         n.stride || 0,
         n.offset || 0
       ), t.vertexAttribDivisor && t.vertexAttribDivisor(e, n.divisor || 0);
   };
 }
-function Er(t, e, n) {
+function xr(t, e, n) {
   const o = n.size, r = n.count;
   return function(i) {
-    t.bindBuffer(Fn, i.buffer);
-    const c = i.size || i.numComponents || o, u = c / r, _ = i.type || In, A = Y[_].size * c, T = i.normalize || !1, k = i.offset || 0, j = A / r;
+    t.bindBuffer(wn, i.buffer);
+    const c = i.size || i.numComponents || o, u = c / r, _ = i.type || Fn, A = Y[_].size * c, T = i.normalize || !1, k = i.offset || 0, j = A / r;
     for (let W = 0; W < r; ++W)
       t.enableVertexAttribArray(e + W), t.vertexAttribPointer(
         e + W,
@@ -2791,28 +2791,28 @@ function Er(t, e, n) {
   };
 }
 const Ee = {};
-Ee[In] = { size: 4, setter: Dn };
-Ee[xi] = { size: 8, setter: Dn };
-Ee[gi] = { size: 12, setter: Dn };
-Ee[Ai] = { size: 16, setter: Dn };
-Ee[hr] = { size: 4, setter: ht };
-Ee[Ti] = { size: 8, setter: ht };
-Ee[vi] = { size: 12, setter: ht };
-Ee[Si] = { size: 16, setter: ht };
-Ee[br] = { size: 4, setter: Pn };
+Ee[Fn] = { size: 4, setter: Bn };
+Ee[gi] = { size: 8, setter: Bn };
+Ee[Ai] = { size: 12, setter: Bn };
+Ee[Ti] = { size: 16, setter: Bn };
+Ee[br] = { size: 4, setter: ht };
+Ee[vi] = { size: 8, setter: ht };
+Ee[Si] = { size: 12, setter: ht };
+Ee[Ri] = { size: 16, setter: ht };
+Ee[yr] = { size: 4, setter: Pn };
 Ee[Di] = { size: 8, setter: Pn };
-Ee[Pi] = { size: 12, setter: Pn };
-Ee[Ui] = { size: 16, setter: Pn };
-Ee[Ri] = { size: 4, setter: ht };
-Ee[wi] = { size: 8, setter: ht };
-Ee[Fi] = { size: 12, setter: ht };
-Ee[Ii] = { size: 16, setter: ht };
-Ee[Ci] = { size: 4, setter: Er, count: 2 };
-Ee[Ni] = { size: 9, setter: Er, count: 3 };
-Ee[Bi] = { size: 16, setter: Er, count: 4 };
-const Mf = /ERROR:\s*\d+:(\d+)/gi;
-function Of(t, e = "", n = 0) {
-  const o = [...e.matchAll(Mf)], r = new Map(o.map((i, c) => {
+Ee[Ui] = { size: 12, setter: Pn };
+Ee[Mi] = { size: 16, setter: Pn };
+Ee[wi] = { size: 4, setter: ht };
+Ee[Fi] = { size: 8, setter: ht };
+Ee[Ii] = { size: 12, setter: ht };
+Ee[Ci] = { size: 16, setter: ht };
+Ee[Ni] = { size: 4, setter: xr, count: 2 };
+Ee[Bi] = { size: 9, setter: xr, count: 3 };
+Ee[Pi] = { size: 16, setter: xr, count: 4 };
+const Of = /ERROR:\s*\d+:(\d+)/gi;
+function Lf(t, e = "", n = 0) {
+  const o = [...e.matchAll(Of)], r = new Map(o.map((i, c) => {
     const u = parseInt(i[1]), _ = o[c + 1], y = _ ? _.index : e.length, A = e.substring(i.index, y);
     return [u - 1, A];
   }));
@@ -2825,27 +2825,27 @@ function Of(t, e = "", n = 0) {
   }).join(`
 `);
 }
-const zo = /^[ \t]*\n/;
-function Vi(t) {
+const Vo = /^[ \t]*\n/;
+function Gi(t) {
   let e = 0;
-  return zo.test(t) && (e = 1, t = t.replace(zo, "")), { lineOffset: e, shaderSource: t };
+  return Vo.test(t) && (e = 1, t = t.replace(Vo, "")), { lineOffset: e, shaderSource: t };
 }
-function Lf(t, e) {
+function kf(t, e) {
   return t.errorCallback(e), t.callback && setTimeout(() => {
     t.callback(`${e}
 ${t.errors.join(`
 `)}`);
   }), null;
 }
-function kf(t, e, n, o) {
-  if (o = o || pr, !t.getShaderParameter(n, Oc)) {
-    const i = t.getShaderInfoLog(n), { lineOffset: c, shaderSource: u } = Vi(t.getShaderSource(n)), _ = `${Of(u, i, c)}
-Error compiling ${Uc(t, e)}: ${i}`;
+function $f(t, e, n, o) {
+  if (o = o || hr, !t.getShaderParameter(n, Lc)) {
+    const i = t.getShaderInfoLog(n), { lineOffset: c, shaderSource: u } = Gi(t.getShaderSource(n)), _ = `${Lf(u, i, c)}
+Error compiling ${Mc(t, e)}: ${i}`;
     return o(_), _;
   }
   return "";
 }
-function xr(t, e, n) {
+function gr(t, e, n) {
   let o, r, i;
   if (typeof e == "function" && (n = e, e = void 0), typeof t == "function")
     n = t, t = void 0;
@@ -2853,7 +2853,7 @@ function xr(t, e, n) {
     const y = t;
     n = y.errorCallback, t = y.attribLocations, o = y.transformFeedbackVaryings, r = y.transformFeedbackMode, i = y.callback;
   }
-  const c = n || pr, u = [], _ = {
+  const c = n || hr, u = [], _ = {
     errorCallback(y, ...A) {
       u.push(y), c(y, ...A);
     },
@@ -2870,52 +2870,52 @@ function xr(t, e, n) {
   }
   return _;
 }
-const $f = [
+const zf = [
   "VERTEX_SHADER",
   "FRAGMENT_SHADER"
 ];
-function zf(t, e) {
+function Vf(t, e) {
   if (e.indexOf("frag") >= 0)
-    return kc;
-  if (e.indexOf("vert") >= 0)
     return $c;
+  if (e.indexOf("vert") >= 0)
+    return zc;
 }
-function Vf(t, e, n) {
+function Gf(t, e, n) {
   const o = t.getAttachedShaders(e);
   for (const r of o)
     n.has(r) && t.deleteShader(r);
   t.deleteProgram(e);
 }
-const Gf = (t = 0) => new Promise((e) => setTimeout(e, t));
-function Hf(t, e, n) {
+const Hf = (t = 0) => new Promise((e) => setTimeout(e, t));
+function Xf(t, e, n) {
   const o = t.createProgram(), {
     attribLocations: r,
     transformFeedbackVaryings: i,
     transformFeedbackMode: c
-  } = xr(n);
+  } = gr(n);
   for (let u = 0; u < e.length; ++u) {
     let _ = e[u];
     if (typeof _ == "string") {
-      const y = yi(_), A = y ? y.text : _;
-      let T = t[$f[u]];
-      y && y.type && (T = zf(t, y.type) || T), _ = t.createShader(T), t.shaderSource(_, Vi(A).shaderSource), t.compileShader(_), t.attachShader(o, _);
+      const y = Ei(_), A = y ? y.text : _;
+      let T = t[zf[u]];
+      y && y.type && (T = Vf(t, y.type) || T), _ = t.createShader(T), t.shaderSource(_, Gi(A).shaderSource), t.compileShader(_), t.attachShader(o, _);
     }
   }
   Object.entries(r).forEach(([u, _]) => t.bindAttribLocation(o, _, u));
   {
     let u = i;
-    u && (u.attribs && (u = u.attribs), Array.isArray(u) || (u = Object.keys(u)), t.transformFeedbackVaryings(o, u, c || zc));
+    u && (u.attribs && (u = u.attribs), Array.isArray(u) || (u = Object.keys(u)), t.transformFeedbackVaryings(o, u, c || Vc));
   }
   return t.linkProgram(o), o;
 }
-function Xf(t, e, n, o, r) {
-  const i = xr(n, o, r), c = new Set(e), u = Hf(t, e, i);
+function Yf(t, e, n, o, r) {
+  const i = gr(n, o, r), c = new Set(e), u = Xf(t, e, i);
   function _(y, A) {
-    const T = Wf(y, A, i.errorCallback);
-    return T && Vf(y, A, c), T;
+    const T = jf(y, A, i.errorCallback);
+    return T && Gf(y, A, c), T;
   }
   if (i.callback) {
-    Yf(t, u).then(() => {
+    Wf(t, u).then(() => {
       const y = _(t, u);
       i.callback(y, y ? void 0 : u);
     });
@@ -2923,52 +2923,52 @@ function Xf(t, e, n, o, r) {
   }
   return _(t, u) ? void 0 : u;
 }
-async function Yf(t, e) {
+async function Wf(t, e) {
   const n = t.getExtension("KHR_parallel_shader_compile"), o = n ? (i, c) => i.getProgramParameter(c, n.COMPLETION_STATUS_KHR) : () => !0;
   let r = 0;
   do
-    await Gf(r), r = 1e3 / 60;
+    await Hf(r), r = 1e3 / 60;
   while (!o(t, e));
 }
-function Wf(t, e, n) {
-  if (n = n || pr, !t.getProgramParameter(e, Lc)) {
+function jf(t, e, n) {
+  if (n = n || hr, !t.getProgramParameter(e, kc)) {
     const r = t.getProgramInfoLog(e);
     n(`Error in program linking: ${r}`);
-    const c = t.getAttachedShaders(e).map((u) => kf(t, t.getShaderParameter(u, t.SHADER_TYPE), u, n));
+    const c = t.getAttachedShaders(e).map((u) => $f(t, t.getShaderParameter(u, t.SHADER_TYPE), u, n));
     return `${r}
 ${c.filter((u) => u).join(`
 `)}`;
   }
 }
-function jf(t, e, n, o, r) {
-  return Xf(t, e, n, o, r);
+function Kf(t, e, n, o, r) {
+  return Yf(t, e, n, o, r);
 }
-function Gi(t) {
+function Hi(t) {
   const e = t.name;
   return e.startsWith("gl_") || e.startsWith("webgl_");
 }
-const Kf = /(\.|\[|]|\w+)/g, Jf = (t) => t >= "0" && t <= "9";
-function Qf(t, e, n, o) {
-  const r = t.split(Kf).filter((u) => u !== "");
+const Jf = /(\.|\[|]|\w+)/g, Qf = (t) => t >= "0" && t <= "9";
+function Zf(t, e, n, o) {
+  const r = t.split(Jf).filter((u) => u !== "");
   let i = 0, c = "";
   for (; ; ) {
     const u = r[i++];
     c += u;
-    const _ = Jf(u[0]), y = _ ? parseInt(u) : u;
+    const _ = Qf(u[0]), y = _ ? parseInt(u) : u;
     if (_ && (c += r[i++]), i === r.length) {
       n[y] = e;
       break;
     } else {
       const T = r[i++], k = T === "[", j = n[y] || (k ? [] : {});
       n[y] = j, n = j, o[c] = o[c] || /* @__PURE__ */ function(W) {
-        return function(G) {
-          Hi(W, G);
+        return function(H) {
+          Xi(W, H);
         };
       }(j), c += T;
     }
   }
 }
-function Zf(t, e) {
+function qf(t, e) {
   let n = 0;
   function o(u, _, y) {
     const A = _.name.endsWith("[0]"), T = _.type, k = Y[T];
@@ -2982,23 +2982,23 @@ function Zf(t, e) {
       k.arraySetter && A ? j = k.arraySetter(t, y) : j = k.setter(t, y);
     return j.location = y, j;
   }
-  const r = {}, i = {}, c = t.getProgramParameter(e, Ei);
+  const r = {}, i = {}, c = t.getProgramParameter(e, xi);
   for (let u = 0; u < c; ++u) {
     const _ = t.getActiveUniform(e, u);
-    if (Gi(_))
+    if (Hi(_))
       continue;
     let y = _.name;
     y.endsWith("[0]") && (y = y.substr(0, y.length - 3));
     const A = t.getUniformLocation(e, _.name);
     if (A) {
       const T = o(e, _, A);
-      r[y] = T, Qf(y, T, i, r);
+      r[y] = T, Zf(y, T, i, r);
     }
   }
   return r;
 }
-function qf(t, e) {
-  const n = {}, o = t.getProgramParameter(e, Gc);
+function el(t, e) {
+  const n = {}, o = t.getProgramParameter(e, Hc);
   for (let r = 0; r < o; ++r) {
     const i = t.getTransformFeedbackVarying(e, r);
     n[i.name] = {
@@ -3009,8 +3009,8 @@ function qf(t, e) {
   }
   return n;
 }
-function el(t, e) {
-  const n = t.getProgramParameter(e, Ei), o = [], r = [];
+function tl(t, e) {
+  const n = t.getProgramParameter(e, xi), o = [], r = [];
   for (let u = 0; u < n; ++u) {
     r.push(u), o.push({});
     const _ = t.getActiveUniform(e, u);
@@ -3028,14 +3028,14 @@ function el(t, e) {
       o[T][y] = A;
     });
   });
-  const i = {}, c = t.getProgramParameter(e, Hc);
+  const i = {}, c = t.getProgramParameter(e, Xc);
   for (let u = 0; u < c; ++u) {
     const _ = t.getActiveUniformBlockName(e, u), y = {
       index: t.getUniformBlockIndex(e, _),
-      usedByVertexShader: t.getActiveUniformBlockParameter(e, u, Xc),
-      usedByFragmentShader: t.getActiveUniformBlockParameter(e, u, Yc),
-      size: t.getActiveUniformBlockParameter(e, u, Wc),
-      uniformIndices: t.getActiveUniformBlockParameter(e, u, jc)
+      usedByVertexShader: t.getActiveUniformBlockParameter(e, u, Yc),
+      usedByFragmentShader: t.getActiveUniformBlockParameter(e, u, Wc),
+      size: t.getActiveUniformBlockParameter(e, u, jc),
+      uniformIndices: t.getActiveUniformBlockParameter(e, u, Kc)
     };
     y.used = y.usedByVertexShader || y.usedByFragmentShader, i[_] = y;
   }
@@ -3044,10 +3044,10 @@ function el(t, e) {
     uniformData: o
   };
 }
-function Hi(t, e) {
+function Xi(t, e) {
   for (const n in e) {
     const o = t[n];
-    typeof o == "function" ? o(e[n]) : Hi(t[n], e[n]);
+    typeof o == "function" ? o(e[n]) : Xi(t[n], e[n]);
   }
 }
 function yn(t, ...e) {
@@ -3065,40 +3065,40 @@ function yn(t, ...e) {
       }
   }
 }
-function tl(t, e) {
-  const n = {}, o = t.getProgramParameter(e, Vc);
+function nl(t, e) {
+  const n = {}, o = t.getProgramParameter(e, Gc);
   for (let r = 0; r < o; ++r) {
     const i = t.getActiveAttrib(e, r);
-    if (Gi(i))
+    if (Hi(i))
       continue;
     const c = t.getAttribLocation(e, i.name), u = Ee[i.type], _ = u.setter(t, c, u);
     _.location = c, n[i.name] = _;
   }
   return n;
 }
-function nl(t, e) {
+function rl(t, e) {
   for (const n in e) {
     const o = t[n];
     o && o(e[n]);
   }
 }
 function pn(t, e, n) {
-  n.vertexArrayObject ? t.bindVertexArray(n.vertexArrayObject) : (nl(e.attribSetters || e, n.attribs), n.indices && t.bindBuffer(Mc, n.indices));
+  n.vertexArrayObject ? t.bindVertexArray(n.vertexArrayObject) : (rl(e.attribSetters || e, n.attribs), n.indices && t.bindBuffer(Oc, n.indices));
 }
-function Vo(t, e) {
-  const n = Zf(t, e), o = tl(t, e), r = {
+function Go(t, e) {
+  const n = qf(t, e), o = nl(t, e), r = {
     program: e,
     uniformSetters: n,
     attribSetters: o
   };
-  return _r(t) && (r.uniformBlockSpec = el(t, e), r.transformFeedbackInfo = qf(t, e)), r;
+  return pr(t) && (r.uniformBlockSpec = tl(t, e), r.transformFeedbackInfo = el(t, e)), r;
 }
-const rl = /\s|{|}|;/;
-function Jn(t, e, n, o, r) {
-  const i = xr(n, o, r), c = [];
+const ol = /\s|{|}|;/;
+function Kn(t, e, n, o, r) {
+  const i = gr(n, o, r), c = [];
   if (e = e.map(function(y) {
-    if (!rl.test(y)) {
-      const A = yi(y);
+    if (!ol.test(y)) {
+      const A = Ei(y);
       if (A)
         y = A.text;
       else {
@@ -3108,32 +3108,32 @@ function Jn(t, e, n, o, r) {
     }
     return y;
   }), c.length)
-    return Lf(i, "");
+    return kf(i, "");
   const u = i.callback;
   u && (i.callback = (y, A) => {
-    u(y, y ? void 0 : Vo(t, A));
+    u(y, y ? void 0 : Go(t, A));
   });
-  const _ = jf(t, e, i);
-  return _ ? Vo(t, _) : null;
+  const _ = Kf(t, e, i);
+  return _ ? Go(t, _) : null;
 }
-const ol = 4, Go = 5123;
+const il = 4, Ho = 5123;
 function $t(t, e, n, o, r, i) {
-  n = n === void 0 ? ol : n;
+  n = n === void 0 ? il : n;
   const c = e.indices, u = e.elementType, _ = o === void 0 ? e.numElements : o;
-  r = r === void 0 ? 0 : r, u || c ? i !== void 0 ? t.drawElementsInstanced(n, _, u === void 0 ? Go : e.elementType, r, i) : t.drawElements(n, _, u === void 0 ? Go : e.elementType, r) : i !== void 0 ? t.drawArraysInstanced(n, r, _, i) : t.drawArrays(n, r, _);
+  r = r === void 0 ? 0 : r, u || c ? i !== void 0 ? t.drawElementsInstanced(n, _, u === void 0 ? Ho : e.elementType, r, i) : t.drawElements(n, _, u === void 0 ? Ho : e.elementType, r) : i !== void 0 ? t.drawArraysInstanced(n, r, _, i) : t.drawArrays(n, r, _);
 }
-function il(t, e) {
+function sl(t, e) {
   e = e || 1, e = Math.max(0, e);
   const n = t.clientWidth * e | 0, o = t.clientHeight * e | 0;
   return t.width !== n || t.height !== o ? (t.width = n, t.height = o, !0) : !1;
 }
-function sl(t) {
+function al(t) {
   if (!(typeof window > "u")) {
     var e = document.createElement("style");
     return e.setAttribute("type", "text/css"), e.innerHTML = t, document.head.appendChild(e), t;
   }
 }
-function Dt(t, e) {
+function Bt(t, e) {
   var n = t.__state.conversionName.toString(), o = Math.round(t.r), r = Math.round(t.g), i = Math.round(t.b), c = t.a, u = Math.round(t.h), _ = t.s.toFixed(1), y = t.v.toFixed(1);
   if (e || n === "THREE_CHAR_HEX" || n === "SIX_CHAR_HEX") {
     for (var A = t.hex.toString(16); A.length < 6; )
@@ -3161,7 +3161,7 @@ function Dt(t, e) {
   }
   return "unknown format";
 }
-var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
+var Xo = Array.prototype.forEach, zt = Array.prototype.slice, E = {
   BREAK: {},
   extend: function(e) {
     return this.each(zt.call(arguments, 1), function(n) {
@@ -3189,7 +3189,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
   },
   each: function(e, n, o) {
     if (e) {
-      if (Ho && e.forEach && e.forEach === Ho)
+      if (Xo && e.forEach && e.forEach === Xo)
         e.forEach(n, o);
       else if (e.length === e.length + 0) {
         var r = void 0, i = void 0;
@@ -3253,7 +3253,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
   isFunction: function(e) {
     return e instanceof Function;
   }
-}, al = [
+}, ul = [
   {
     litmus: E.isString,
     conversions: {
@@ -3265,7 +3265,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
             hex: parseInt("0x" + n[1].toString() + n[1].toString() + n[2].toString() + n[2].toString() + n[3].toString() + n[3].toString(), 0)
           };
         },
-        write: Dt
+        write: Bt
       },
       SIX_CHAR_HEX: {
         read: function(e) {
@@ -3275,7 +3275,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
             hex: parseInt("0x" + n[1].toString(), 0)
           };
         },
-        write: Dt
+        write: Bt
       },
       CSS_RGB: {
         read: function(e) {
@@ -3287,7 +3287,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
             b: parseFloat(n[3])
           };
         },
-        write: Dt
+        write: Bt
       },
       CSS_RGBA: {
         read: function(e) {
@@ -3300,7 +3300,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
             a: parseFloat(n[4])
           };
         },
-        write: Dt
+        write: Bt
       }
     }
   },
@@ -3430,17 +3430,17 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
       }
     }
   }
-], Vt = void 0, hn = void 0, er = function() {
+], Vt = void 0, hn = void 0, qn = function() {
   hn = !1;
   var e = arguments.length > 1 ? E.toArray(arguments) : arguments[0];
-  return E.each(al, function(n) {
+  return E.each(ul, function(n) {
     if (n.litmus(e))
       return E.each(n.conversions, function(o, r) {
         if (Vt = o.read(e), hn === !1 && Vt !== !1)
           return hn = Vt, Vt.conversionName = r, Vt.conversion = o, E.BREAK;
       }), E.BREAK;
   }), hn;
-}, Xo = void 0, An = {
+}, Yo = void 0, An = {
   hsv_to_rgb: function(e, n, o) {
     var r = Math.floor(e / 60) % 6, i = e / 60 - Math.floor(e / 60), c = o * (1 - n), u = o * (1 - i * n), _ = o * (1 - (1 - i) * n), y = [[o, _, c], [u, o, c], [c, o, _], [c, u, o], [_, c, o], [o, c, u]][r];
     return {
@@ -3473,9 +3473,9 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
     return e >> n * 8 & 255;
   },
   hex_with_component: function(e, n, o) {
-    return o << (Xo = n * 8) | e & ~(255 << Xo);
+    return o << (Yo = n * 8) | e & ~(255 << Yo);
   }
-}, ul = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(t) {
+}, cl = typeof Symbol == "function" && typeof Symbol.iterator == "symbol" ? function(t) {
   return typeof t;
 } : function(t) {
   return t && typeof Symbol == "function" && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t;
@@ -3521,19 +3521,19 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
   return e && (typeof e == "object" || typeof e == "function") ? e : t;
 }, Re = function() {
   function t() {
-    if (je(this, t), this.__state = er.apply(this, arguments), this.__state === !1)
+    if (je(this, t), this.__state = qn.apply(this, arguments), this.__state === !1)
       throw new Error("Failed to interpret color arguments");
     this.__state.a = this.__state.a || 1;
   }
   return Ke(t, [{
     key: "toString",
     value: function() {
-      return Dt(this);
+      return Bt(this);
     }
   }, {
     key: "toHexString",
     value: function() {
-      return Dt(this, !0);
+      return Bt(this, !0);
     }
   }, {
     key: "toOriginal",
@@ -3542,7 +3542,7 @@ var Ho = Array.prototype.forEach, zt = Array.prototype.slice, E = {
     }
   }]), t;
 }();
-function gr(t, e, n) {
+function Ar(t, e, n) {
   Object.defineProperty(t, e, {
     get: function() {
       return this.__state.space === "RGB" ? this.__state[e] : (Re.recalculateRGB(this, e, n), this.__state[e]);
@@ -3552,7 +3552,7 @@ function gr(t, e, n) {
     }
   });
 }
-function Ar(t, e) {
+function Tr(t, e) {
   Object.defineProperty(t, e, {
     get: function() {
       return this.__state.space === "HSV" ? this.__state[e] : (Re.recalculateHSV(this), this.__state[e]);
@@ -3578,12 +3578,12 @@ Re.recalculateHSV = function(t) {
   }), E.isNaN(e.h) ? E.isUndefined(t.__state.h) && (t.__state.h = 0) : t.__state.h = e.h;
 };
 Re.COMPONENTS = ["r", "g", "b", "h", "s", "v", "hex", "a"];
-gr(Re.prototype, "r", 2);
-gr(Re.prototype, "g", 1);
-gr(Re.prototype, "b", 0);
-Ar(Re.prototype, "h");
-Ar(Re.prototype, "s");
-Ar(Re.prototype, "v");
+Ar(Re.prototype, "r", 2);
+Ar(Re.prototype, "g", 1);
+Ar(Re.prototype, "b", 0);
+Tr(Re.prototype, "h");
+Tr(Re.prototype, "s");
+Tr(Re.prototype, "v");
 Object.defineProperty(Re.prototype, "a", {
   get: function() {
     return this.__state.a;
@@ -3600,7 +3600,7 @@ Object.defineProperty(Re.prototype, "hex", {
     this.__state.space = "HEX", this.__state.hex = e;
   }
 });
-var St = function() {
+var vt = function() {
   function t(e, n) {
     je(this, t), this.initialValue = e[n], this.domElement = document.createElement("div"), this.object = e, this.property = n, this.__onChange = void 0, this.__onFinishChange = void 0;
   }
@@ -3635,21 +3635,21 @@ var St = function() {
       return this.initialValue !== this.getValue();
     }
   }]), t;
-}(), cl = {
+}(), fl = {
   HTMLEvents: ["change"],
   MouseEvents: ["click", "mousemove", "mousedown", "mouseup", "mouseover"],
   KeyboardEvents: ["keydown"]
-}, Xi = {};
-E.each(cl, function(t, e) {
+}, Yi = {};
+E.each(fl, function(t, e) {
   E.each(t, function(n) {
-    Xi[n] = e;
+    Yi[n] = e;
   });
 });
-var fl = /(\d+(\.\d+)?)px/;
+var ll = /(\d+(\.\d+)?)px/;
 function tt(t) {
   if (t === "0" || E.isUndefined(t))
     return 0;
-  var e = t.match(fl);
+  var e = t.match(ll);
   return E.isNull(e) ? 0 : parseFloat(e[1]);
 }
 var m = {
@@ -3664,7 +3664,7 @@ var m = {
     E.isUndefined(i) && (i = !0), E.isUndefined(r) && (r = !0), e.style.position = "absolute", i && (e.style.left = 0, e.style.right = 0), r && (e.style.top = 0, e.style.bottom = 0);
   },
   fakeEvent: function(e, n, o, r) {
-    var i = o || {}, c = Xi[n];
+    var i = o || {}, c = Yi[n];
     if (!c)
       throw new Error("Event type " + n + " not supported.");
     var u = document.createEvent(c);
@@ -3761,7 +3761,7 @@ var m = {
   isActive: function(e) {
     return e === document.activeElement && (e.type || e.href);
   }
-}, Yi = function(t) {
+}, Wi = function(t) {
   bt(e, t);
   function e(n, o) {
     je(this, e);
@@ -3784,7 +3784,7 @@ var m = {
       return this.getValue() === !0 ? (this.__checkbox.setAttribute("checked", "checked"), this.__checkbox.checked = !0, this.__prev = !0) : (this.__checkbox.checked = !1, this.__prev = !1), pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this);
     }
   }]), e;
-}(St), ll = function(t) {
+}(vt), dl = function(t) {
   bt(e, t);
   function e(n, o, r) {
     je(this, e);
@@ -3815,7 +3815,7 @@ var m = {
       return m.isActive(this.__select) ? this : (this.__select.value = this.getValue(), pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this));
     }
   }]), e;
-}(St), dl = function(t) {
+}(vt), ml = function(t) {
   bt(e, t);
   function e(n, o) {
     je(this, e);
@@ -3836,17 +3836,17 @@ var m = {
       return m.isActive(this.__input) || (this.__input.value = this.getValue()), pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this);
     }
   }]), e;
-}(St);
-function Yo(t) {
+}(vt);
+function Wo(t) {
   var e = t.toString();
   return e.indexOf(".") > -1 ? e.length - e.indexOf(".") - 1 : 0;
 }
-var Wi = function(t) {
+var ji = function(t) {
   bt(e, t);
   function e(n, o, r) {
     je(this, e);
     var i = yt(this, (e.__proto__ || Object.getPrototypeOf(e)).call(this, n, o)), c = r || {};
-    return i.__min = c.min, i.__max = c.max, i.__step = c.step, E.isUndefined(i.__step) ? i.initialValue === 0 ? i.__impliedStep = 1 : i.__impliedStep = Math.pow(10, Math.floor(Math.log(Math.abs(i.initialValue)) / Math.LN10)) / 10 : i.__impliedStep = i.__step, i.__precision = Yo(i.__impliedStep), i;
+    return i.__min = c.min, i.__max = c.max, i.__step = c.step, E.isUndefined(i.__step) ? i.initialValue === 0 ? i.__impliedStep = 1 : i.__impliedStep = Math.pow(10, Math.floor(Math.log(Math.abs(i.initialValue)) / Math.LN10)) / 10 : i.__impliedStep = i.__step, i.__precision = Wo(i.__impliedStep), i;
   }
   return Ke(e, [{
     key: "setValue",
@@ -3867,11 +3867,11 @@ var Wi = function(t) {
   }, {
     key: "step",
     value: function(o) {
-      return this.__step = o, this.__impliedStep = o, this.__precision = Yo(o), this;
+      return this.__step = o, this.__impliedStep = o, this.__precision = Wo(o), this;
     }
   }]), e;
-}(St);
-function ml(t, e) {
+}(vt);
+function _l(t, e) {
   var n = Math.pow(10, e);
   return Math.round(t * n) / n;
 }
@@ -3893,8 +3893,8 @@ var Tn = function(t) {
       y();
     }
     function T(W) {
-      var G = u - W.clientY;
-      c.setValue(c.getValue() + G * c.__impliedStep), u = W.clientY;
+      var H = u - W.clientY;
+      c.setValue(c.getValue() + H * c.__impliedStep), u = W.clientY;
     }
     function k() {
       m.unbind(window, "mousemove", T), m.unbind(window, "mouseup", k), y();
@@ -3909,36 +3909,36 @@ var Tn = function(t) {
   return Ke(e, [{
     key: "updateDisplay",
     value: function() {
-      return this.__input.value = this.__truncationSuspended ? this.getValue() : ml(this.getValue(), this.__precision), pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this);
+      return this.__input.value = this.__truncationSuspended ? this.getValue() : _l(this.getValue(), this.__precision), pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this);
     }
   }]), e;
-}(Wi);
-function Wo(t, e, n, o, r) {
+}(ji);
+function jo(t, e, n, o, r) {
   return o + (r - o) * ((t - e) / (n - e));
 }
-var tr = function(t) {
+var er = function(t) {
   bt(e, t);
   function e(n, o, r, i, c) {
     je(this, e);
     var u = yt(this, (e.__proto__ || Object.getPrototypeOf(e)).call(this, n, o, { min: r, max: i, step: c })), _ = u;
     u.__background = document.createElement("div"), u.__foreground = document.createElement("div"), m.bind(u.__background, "mousedown", y), m.bind(u.__background, "touchstart", k), m.addClass(u.__background, "slider"), m.addClass(u.__foreground, "slider-fg");
-    function y(G) {
-      document.activeElement.blur(), m.bind(window, "mousemove", A), m.bind(window, "mouseup", T), A(G);
+    function y(H) {
+      document.activeElement.blur(), m.bind(window, "mousemove", A), m.bind(window, "mouseup", T), A(H);
     }
-    function A(G) {
-      G.preventDefault();
-      var q = _.__background.getBoundingClientRect();
-      return _.setValue(Wo(G.clientX, q.left, q.right, _.__min, _.__max)), !1;
+    function A(H) {
+      H.preventDefault();
+      var ee = _.__background.getBoundingClientRect();
+      return _.setValue(jo(H.clientX, ee.left, ee.right, _.__min, _.__max)), !1;
     }
     function T() {
       m.unbind(window, "mousemove", A), m.unbind(window, "mouseup", T), _.__onFinishChange && _.__onFinishChange.call(_, _.getValue());
     }
-    function k(G) {
-      G.touches.length === 1 && (m.bind(window, "touchmove", j), m.bind(window, "touchend", W), j(G));
+    function k(H) {
+      H.touches.length === 1 && (m.bind(window, "touchmove", j), m.bind(window, "touchend", W), j(H));
     }
-    function j(G) {
-      var q = G.touches[0].clientX, H = _.__background.getBoundingClientRect();
-      _.setValue(Wo(q, H.left, H.right, _.__min, _.__max));
+    function j(H) {
+      var ee = H.touches[0].clientX, V = _.__background.getBoundingClientRect();
+      _.setValue(jo(ee, V.left, V.right, _.__min, _.__max));
     }
     function W() {
       m.unbind(window, "touchmove", j), m.unbind(window, "touchend", W), _.__onFinishChange && _.__onFinishChange.call(_, _.getValue());
@@ -3952,7 +3952,7 @@ var tr = function(t) {
       return this.__foreground.style.width = o * 100 + "%", pt(e.prototype.__proto__ || Object.getPrototypeOf(e.prototype), "updateDisplay", this).call(this);
     }
   }]), e;
-}(Wi), ji = function(t) {
+}(ji), Ki = function(t) {
   bt(e, t);
   function e(n, o, r) {
     je(this, e);
@@ -3967,15 +3967,15 @@ var tr = function(t) {
       this.__onChange && this.__onChange.call(this), this.getValue().call(this.object), this.__onFinishChange && this.__onFinishChange.call(this, this.getValue());
     }
   }]), e;
-}(St), nr = function(t) {
+}(vt), tr = function(t) {
   bt(e, t);
   function e(n, o) {
     je(this, e);
     var r = yt(this, (e.__proto__ || Object.getPrototypeOf(e)).call(this, n, o));
     r.__color = new Re(r.getValue()), r.__temp = new Re(0);
     var i = r;
-    r.domElement = document.createElement("div"), m.makeSelectable(r.domElement, !1), r.__selector = document.createElement("div"), r.__selector.className = "selector", r.__saturation_field = document.createElement("div"), r.__saturation_field.className = "saturation-field", r.__field_knob = document.createElement("div"), r.__field_knob.className = "field-knob", r.__field_knob_border = "2px solid ", r.__hue_knob = document.createElement("div"), r.__hue_knob.className = "hue-knob", r.__hue_field = document.createElement("div"), r.__hue_field.className = "hue-field", r.__input = document.createElement("input"), r.__input.type = "text", r.__input_textShadow = "0 1px 1px ", m.bind(r.__input, "keydown", function(G) {
-      G.keyCode === 13 && T.call(this);
+    r.domElement = document.createElement("div"), m.makeSelectable(r.domElement, !1), r.__selector = document.createElement("div"), r.__selector.className = "selector", r.__saturation_field = document.createElement("div"), r.__saturation_field.className = "saturation-field", r.__field_knob = document.createElement("div"), r.__field_knob.className = "field-knob", r.__field_knob_border = "2px solid ", r.__hue_knob = document.createElement("div"), r.__hue_knob.className = "hue-knob", r.__hue_field = document.createElement("div"), r.__hue_field.className = "hue-field", r.__input = document.createElement("input"), r.__input.type = "text", r.__input_textShadow = "0 1px 1px ", m.bind(r.__input, "keydown", function(H) {
+      H.keyCode === 13 && T.call(this);
     }), m.bind(r.__input, "blur", T), m.bind(r.__selector, "mousedown", function() {
       m.addClass(this, "drag").bind(window, "mouseup", function() {
         m.removeClass(i.__selector, "drag");
@@ -4017,7 +4017,7 @@ var tr = function(t) {
       width: "100%",
       height: "100%",
       background: "none"
-    }), jo(c, "top", "rgba(0,0,0,0)", "#000"), E.extend(r.__hue_field.style, {
+    }), Ko(c, "top", "rgba(0,0,0,0)", "#000"), E.extend(r.__hue_field.style, {
       width: "15px",
       height: "100px",
       border: "1px solid #555",
@@ -4025,7 +4025,7 @@ var tr = function(t) {
       position: "absolute",
       top: "3px",
       right: "3px"
-    }), pl(r.__hue_field), E.extend(r.__input.style, {
+    }), hl(r.__hue_field), E.extend(r.__input.style, {
       outline: "none",
       textAlign: "center",
       color: "#fff",
@@ -4033,11 +4033,11 @@ var tr = function(t) {
       fontWeight: "bold",
       textShadow: r.__input_textShadow + "rgba(0,0,0,0.7)"
     }), m.bind(r.__saturation_field, "mousedown", u), m.bind(r.__saturation_field, "touchstart", u), m.bind(r.__field_knob, "mousedown", u), m.bind(r.__field_knob, "touchstart", u), m.bind(r.__hue_field, "mousedown", _), m.bind(r.__hue_field, "touchstart", _);
-    function u(G) {
-      j(G), m.bind(window, "mousemove", j), m.bind(window, "touchmove", j), m.bind(window, "mouseup", y), m.bind(window, "touchend", y);
+    function u(H) {
+      j(H), m.bind(window, "mousemove", j), m.bind(window, "touchmove", j), m.bind(window, "mouseup", y), m.bind(window, "touchend", y);
     }
-    function _(G) {
-      W(G), m.bind(window, "mousemove", W), m.bind(window, "touchmove", W), m.bind(window, "mouseup", A), m.bind(window, "touchend", A);
+    function _(H) {
+      W(H), m.bind(window, "mousemove", W), m.bind(window, "touchmove", W), m.bind(window, "mouseup", A), m.bind(window, "touchend", A);
     }
     function y() {
       m.unbind(window, "mousemove", j), m.unbind(window, "touchmove", j), m.unbind(window, "mouseup", y), m.unbind(window, "touchend", y), k();
@@ -4046,29 +4046,29 @@ var tr = function(t) {
       m.unbind(window, "mousemove", W), m.unbind(window, "touchmove", W), m.unbind(window, "mouseup", A), m.unbind(window, "touchend", A), k();
     }
     function T() {
-      var G = er(this.value);
-      G !== !1 ? (i.__color.__state = G, i.setValue(i.__color.toOriginal())) : this.value = i.__color.toString();
+      var H = qn(this.value);
+      H !== !1 ? (i.__color.__state = H, i.setValue(i.__color.toOriginal())) : this.value = i.__color.toString();
     }
     function k() {
       i.__onFinishChange && i.__onFinishChange.call(i, i.__color.toOriginal());
     }
     r.__saturation_field.appendChild(c), r.__selector.appendChild(r.__field_knob), r.__selector.appendChild(r.__saturation_field), r.__selector.appendChild(r.__hue_field), r.__hue_field.appendChild(r.__hue_knob), r.domElement.appendChild(r.__input), r.domElement.appendChild(r.__selector), r.updateDisplay();
-    function j(G) {
-      G.type.indexOf("touch") === -1 && G.preventDefault();
-      var q = i.__saturation_field.getBoundingClientRect(), H = G.touches && G.touches[0] || G, pe = H.clientX, Q = H.clientY, ie = (pe - q.left) / (q.right - q.left), xe = 1 - (Q - q.top) / (q.bottom - q.top);
+    function j(H) {
+      H.type.indexOf("touch") === -1 && H.preventDefault();
+      var ee = i.__saturation_field.getBoundingClientRect(), V = H.touches && H.touches[0] || H, pe = V.clientX, Z = V.clientY, ie = (pe - ee.left) / (ee.right - ee.left), xe = 1 - (Z - ee.top) / (ee.bottom - ee.top);
       return xe > 1 ? xe = 1 : xe < 0 && (xe = 0), ie > 1 ? ie = 1 : ie < 0 && (ie = 0), i.__color.v = xe, i.__color.s = ie, i.setValue(i.__color.toOriginal()), !1;
     }
-    function W(G) {
-      G.type.indexOf("touch") === -1 && G.preventDefault();
-      var q = i.__hue_field.getBoundingClientRect(), H = G.touches && G.touches[0] || G, pe = H.clientY, Q = 1 - (pe - q.top) / (q.bottom - q.top);
-      return Q > 1 ? Q = 1 : Q < 0 && (Q = 0), i.__color.h = Q * 360, i.setValue(i.__color.toOriginal()), !1;
+    function W(H) {
+      H.type.indexOf("touch") === -1 && H.preventDefault();
+      var ee = i.__hue_field.getBoundingClientRect(), V = H.touches && H.touches[0] || H, pe = V.clientY, Z = 1 - (pe - ee.top) / (ee.bottom - ee.top);
+      return Z > 1 ? Z = 1 : Z < 0 && (Z = 0), i.__color.h = Z * 360, i.setValue(i.__color.toOriginal()), !1;
     }
     return r;
   }
   return Ke(e, [{
     key: "updateDisplay",
     value: function() {
-      var o = er(this.getValue());
+      var o = qn(this.getValue());
       if (o !== !1) {
         var r = !1;
         E.each(Re.COMPONENTS, function(u) {
@@ -4083,23 +4083,23 @@ var tr = function(t) {
         marginTop: 100 * (1 - this.__color.v) - 7 + "px",
         backgroundColor: this.__temp.toHexString(),
         border: this.__field_knob_border + "rgb(" + i + "," + i + "," + i + ")"
-      }), this.__hue_knob.style.marginTop = (1 - this.__color.h / 360) * 100 + "px", this.__temp.s = 1, this.__temp.v = 1, jo(this.__saturation_field, "left", "#fff", this.__temp.toHexString()), this.__input.value = this.__color.toString(), E.extend(this.__input.style, {
+      }), this.__hue_knob.style.marginTop = (1 - this.__color.h / 360) * 100 + "px", this.__temp.s = 1, this.__temp.v = 1, Ko(this.__saturation_field, "left", "#fff", this.__temp.toHexString()), this.__input.value = this.__color.toString(), E.extend(this.__input.style, {
         backgroundColor: this.__color.toHexString(),
         color: "rgb(" + i + "," + i + "," + i + ")",
         textShadow: this.__input_textShadow + "rgba(" + c + "," + c + "," + c + ",.7)"
       });
     }
   }]), e;
-}(St), _l = ["-moz-", "-o-", "-webkit-", "-ms-", ""];
-function jo(t, e, n, o) {
-  t.style.background = "", E.each(_l, function(r) {
+}(vt), pl = ["-moz-", "-o-", "-webkit-", "-ms-", ""];
+function Ko(t, e, n, o) {
+  t.style.background = "", E.each(pl, function(r) {
     t.style.cssText += "background: " + r + "linear-gradient(" + e + ", " + n + " 0%, " + o + " 100%); ";
   });
 }
-function pl(t) {
+function hl(t) {
   t.style.background = "", t.style.cssText += "background: -moz-linear-gradient(top,  #ff0000 0%, #ff00ff 17%, #0000ff 34%, #00ffff 50%, #00ff00 67%, #ffff00 84%, #ff0000 100%);", t.style.cssText += "background: -webkit-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);", t.style.cssText += "background: -o-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);", t.style.cssText += "background: -ms-linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);", t.style.cssText += "background: linear-gradient(top,  #ff0000 0%,#ff00ff 17%,#0000ff 34%,#00ffff 50%,#00ff00 67%,#ffff00 84%,#ff0000 100%);";
 }
-var hl = {
+var bl = {
   load: function(e, n) {
     var o = n || document, r = o.createElement("link");
     r.type = "text/css", r.rel = "stylesheet", r.href = e, o.getElementsByTagName("head")[0].appendChild(r);
@@ -4113,7 +4113,7 @@ var hl = {
     } catch {
     }
   }
-}, bl = `<div id="dg-save" class="dg dialogue">
+}, yl = `<div id="dg-save" class="dg dialogue">
 
   Here's the new load parameter for your <code>GUI</code>'s constructor:
 
@@ -4133,14 +4133,14 @@ var hl = {
 
   </div>
 
-</div>`, yl = function(e, n) {
+</div>`, El = function(e, n) {
   var o = e[n];
-  return E.isArray(arguments[2]) || E.isObject(arguments[2]) ? new ll(e, n, arguments[2]) : E.isNumber(o) ? E.isNumber(arguments[2]) && E.isNumber(arguments[3]) ? E.isNumber(arguments[4]) ? new tr(e, n, arguments[2], arguments[3], arguments[4]) : new tr(e, n, arguments[2], arguments[3]) : E.isNumber(arguments[4]) ? new Tn(e, n, { min: arguments[2], max: arguments[3], step: arguments[4] }) : new Tn(e, n, { min: arguments[2], max: arguments[3] }) : E.isString(o) ? new dl(e, n) : E.isFunction(o) ? new ji(e, n, "") : E.isBoolean(o) ? new Yi(e, n) : null;
+  return E.isArray(arguments[2]) || E.isObject(arguments[2]) ? new dl(e, n, arguments[2]) : E.isNumber(o) ? E.isNumber(arguments[2]) && E.isNumber(arguments[3]) ? E.isNumber(arguments[4]) ? new er(e, n, arguments[2], arguments[3], arguments[4]) : new er(e, n, arguments[2], arguments[3]) : E.isNumber(arguments[4]) ? new Tn(e, n, { min: arguments[2], max: arguments[3], step: arguments[4] }) : new Tn(e, n, { min: arguments[2], max: arguments[3] }) : E.isString(o) ? new ml(e, n) : E.isFunction(o) ? new Ki(e, n, "") : E.isBoolean(o) ? new Wi(e, n) : null;
 };
-function El(t) {
+function xl(t) {
   setTimeout(t, 1e3 / 60);
 }
-var xl = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || El, gl = function() {
+var gl = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || xl, Al = function() {
   function t() {
     je(this, t), this.backgroundElement = document.createElement("div"), E.extend(this.backgroundElement.style, {
       backgroundColor: "rgba(0,0,0,0.8)",
@@ -4186,26 +4186,26 @@ var xl = window.requestAnimationFrame || window.webkitRequestAnimationFrame || w
       this.domElement.style.left = window.innerWidth / 2 - m.getWidth(this.domElement) / 2 + "px", this.domElement.style.top = window.innerHeight / 2 - m.getHeight(this.domElement) / 2 + "px";
     }
   }]), t;
-}(), Al = sl(`.dg ul{list-style:none;margin:0;padding:0;width:100%;clear:both}.dg.ac{position:fixed;top:0;left:0;right:0;height:0;z-index:0}.dg:not(.ac) .main{overflow:hidden}.dg.main{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear}.dg.main.taller-than-window{overflow-y:auto}.dg.main.taller-than-window .close-button{opacity:1;margin-top:-1px;border-top:1px solid #2c2c2c}.dg.main ul.closed .close-button{opacity:1 !important}.dg.main:hover .close-button,.dg.main .close-button.drag{opacity:1}.dg.main .close-button{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear;border:0;line-height:19px;height:20px;cursor:pointer;text-align:center;background-color:#000}.dg.main .close-button.close-top{position:relative}.dg.main .close-button.close-bottom{position:absolute}.dg.main .close-button:hover{background-color:#111}.dg.a{float:right;margin-right:15px;overflow-y:visible}.dg.a.has-save>ul.close-top{margin-top:0}.dg.a.has-save>ul.close-bottom{margin-top:27px}.dg.a.has-save>ul.closed{margin-top:0}.dg.a .save-row{top:0;z-index:1002}.dg.a .save-row.close-top{position:relative}.dg.a .save-row.close-bottom{position:fixed}.dg li{-webkit-transition:height .1s ease-out;-o-transition:height .1s ease-out;-moz-transition:height .1s ease-out;transition:height .1s ease-out;-webkit-transition:overflow .1s linear;-o-transition:overflow .1s linear;-moz-transition:overflow .1s linear;transition:overflow .1s linear}.dg li:not(.folder){cursor:auto;height:27px;line-height:27px;padding:0 4px 0 5px}.dg li.folder{padding:0;border-left:4px solid rgba(0,0,0,0)}.dg li.title{cursor:pointer;margin-left:-4px}.dg .closed li:not(.title),.dg .closed ul li,.dg .closed ul li>*{height:0;overflow:hidden;border:0}.dg .cr{clear:both;padding-left:3px;height:27px;overflow:hidden}.dg .property-name{cursor:default;float:left;clear:left;width:40%;overflow:hidden;text-overflow:ellipsis}.dg .cr.function .property-name{width:100%}.dg .c{float:left;width:60%;position:relative}.dg .c input[type=text]{border:0;margin-top:4px;padding:3px;width:100%;float:right}.dg .has-slider input[type=text]{width:30%;margin-left:0}.dg .slider{float:left;width:66%;margin-left:-5px;margin-right:0;height:19px;margin-top:4px}.dg .slider-fg{height:100%}.dg .c input[type=checkbox]{margin-top:7px}.dg .c select{margin-top:5px}.dg .cr.function,.dg .cr.function .property-name,.dg .cr.function *,.dg .cr.boolean,.dg .cr.boolean *{cursor:pointer}.dg .cr.color{overflow:visible}.dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:23px;z-index:10}.dg .c:hover .selector,.dg .selector.drag{display:block}.dg li.save-row{padding:0}.dg li.save-row .button{display:inline-block;padding:0px 6px}.dg.dialogue{background-color:#222;width:460px;padding:15px;font-size:13px;line-height:15px}#dg-new-constructor{padding:10px;color:#222;font-family:Monaco, monospace;font-size:10px;border:0;resize:none;box-shadow:inset 1px 1px 1px #888;word-wrap:break-word;margin:12px 0;display:block;width:440px;overflow-y:scroll;height:100px;position:relative}#dg-local-explain{display:none;font-size:11px;line-height:17px;border-radius:3px;background-color:#333;padding:8px;margin-top:10px}#dg-local-explain code{font-size:10px}#dat-gui-save-locally{display:none}.dg{color:#eee;font:11px 'Lucida Grande', sans-serif;text-shadow:0 -1px 0 #111}.dg.main::-webkit-scrollbar{width:5px;background:#1a1a1a}.dg.main::-webkit-scrollbar-corner{height:0;display:none}.dg.main::-webkit-scrollbar-thumb{border-radius:5px;background:#676767}.dg li:not(.folder){background:#1a1a1a;border-bottom:1px solid #2c2c2c}.dg li.save-row{line-height:25px;background:#dad5cb;border:0}.dg li.save-row select{margin-left:5px;width:108px}.dg li.save-row .button{margin-left:5px;margin-top:1px;border-radius:2px;font-size:9px;line-height:7px;padding:4px 4px 5px 4px;background:#c5bdad;color:#fff;text-shadow:0 1px 0 #b0a58f;box-shadow:0 -1px 0 #b0a58f;cursor:pointer}.dg li.save-row .button.gears{background:#c5bdad url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQJJREFUeNpiYKAU/P//PwGIC/ApCABiBSAW+I8AClAcgKxQ4T9hoMAEUrxx2QSGN6+egDX+/vWT4e7N82AMYoPAx/evwWoYoSYbACX2s7KxCxzcsezDh3evFoDEBYTEEqycggWAzA9AuUSQQgeYPa9fPv6/YWm/Acx5IPb7ty/fw+QZblw67vDs8R0YHyQhgObx+yAJkBqmG5dPPDh1aPOGR/eugW0G4vlIoTIfyFcA+QekhhHJhPdQxbiAIguMBTQZrPD7108M6roWYDFQiIAAv6Aow/1bFwXgis+f2LUAynwoIaNcz8XNx3Dl7MEJUDGQpx9gtQ8YCueB+D26OECAAQDadt7e46D42QAAAABJRU5ErkJggg==) 2px 1px no-repeat;height:7px;width:8px}.dg li.save-row .button:hover{background-color:#bab19e;box-shadow:0 -1px 0 #b0a58f}.dg li.folder{border-bottom:0}.dg li.title{padding-left:16px;background:#000 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.2)}.dg .closed li.title{background-image:url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlGIWqMCbWAEAOw==)}.dg .cr.boolean{border-left:3px solid #806787}.dg .cr.color{border-left:3px solid}.dg .cr.function{border-left:3px solid #e61d5f}.dg .cr.number{border-left:3px solid #2FA1D6}.dg .cr.number input[type=text]{color:#2FA1D6}.dg .cr.string{border-left:3px solid #1ed36f}.dg .cr.string input[type=text]{color:#1ed36f}.dg .cr.function:hover,.dg .cr.boolean:hover{background:#111}.dg .c input[type=text]{background:#303030;outline:none}.dg .c input[type=text]:hover{background:#3c3c3c}.dg .c input[type=text]:focus{background:#494949;color:#fff}.dg .c .slider{background:#303030;cursor:ew-resize}.dg .c .slider-fg{background:#2FA1D6;max-width:100%}.dg .c .slider:hover{background:#3c3c3c}.dg .c .slider:hover .slider-fg{background:#44abda}
+}(), Tl = al(`.dg ul{list-style:none;margin:0;padding:0;width:100%;clear:both}.dg.ac{position:fixed;top:0;left:0;right:0;height:0;z-index:0}.dg:not(.ac) .main{overflow:hidden}.dg.main{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear}.dg.main.taller-than-window{overflow-y:auto}.dg.main.taller-than-window .close-button{opacity:1;margin-top:-1px;border-top:1px solid #2c2c2c}.dg.main ul.closed .close-button{opacity:1 !important}.dg.main:hover .close-button,.dg.main .close-button.drag{opacity:1}.dg.main .close-button{-webkit-transition:opacity .1s linear;-o-transition:opacity .1s linear;-moz-transition:opacity .1s linear;transition:opacity .1s linear;border:0;line-height:19px;height:20px;cursor:pointer;text-align:center;background-color:#000}.dg.main .close-button.close-top{position:relative}.dg.main .close-button.close-bottom{position:absolute}.dg.main .close-button:hover{background-color:#111}.dg.a{float:right;margin-right:15px;overflow-y:visible}.dg.a.has-save>ul.close-top{margin-top:0}.dg.a.has-save>ul.close-bottom{margin-top:27px}.dg.a.has-save>ul.closed{margin-top:0}.dg.a .save-row{top:0;z-index:1002}.dg.a .save-row.close-top{position:relative}.dg.a .save-row.close-bottom{position:fixed}.dg li{-webkit-transition:height .1s ease-out;-o-transition:height .1s ease-out;-moz-transition:height .1s ease-out;transition:height .1s ease-out;-webkit-transition:overflow .1s linear;-o-transition:overflow .1s linear;-moz-transition:overflow .1s linear;transition:overflow .1s linear}.dg li:not(.folder){cursor:auto;height:27px;line-height:27px;padding:0 4px 0 5px}.dg li.folder{padding:0;border-left:4px solid rgba(0,0,0,0)}.dg li.title{cursor:pointer;margin-left:-4px}.dg .closed li:not(.title),.dg .closed ul li,.dg .closed ul li>*{height:0;overflow:hidden;border:0}.dg .cr{clear:both;padding-left:3px;height:27px;overflow:hidden}.dg .property-name{cursor:default;float:left;clear:left;width:40%;overflow:hidden;text-overflow:ellipsis}.dg .cr.function .property-name{width:100%}.dg .c{float:left;width:60%;position:relative}.dg .c input[type=text]{border:0;margin-top:4px;padding:3px;width:100%;float:right}.dg .has-slider input[type=text]{width:30%;margin-left:0}.dg .slider{float:left;width:66%;margin-left:-5px;margin-right:0;height:19px;margin-top:4px}.dg .slider-fg{height:100%}.dg .c input[type=checkbox]{margin-top:7px}.dg .c select{margin-top:5px}.dg .cr.function,.dg .cr.function .property-name,.dg .cr.function *,.dg .cr.boolean,.dg .cr.boolean *{cursor:pointer}.dg .cr.color{overflow:visible}.dg .selector{display:none;position:absolute;margin-left:-9px;margin-top:23px;z-index:10}.dg .c:hover .selector,.dg .selector.drag{display:block}.dg li.save-row{padding:0}.dg li.save-row .button{display:inline-block;padding:0px 6px}.dg.dialogue{background-color:#222;width:460px;padding:15px;font-size:13px;line-height:15px}#dg-new-constructor{padding:10px;color:#222;font-family:Monaco, monospace;font-size:10px;border:0;resize:none;box-shadow:inset 1px 1px 1px #888;word-wrap:break-word;margin:12px 0;display:block;width:440px;overflow-y:scroll;height:100px;position:relative}#dg-local-explain{display:none;font-size:11px;line-height:17px;border-radius:3px;background-color:#333;padding:8px;margin-top:10px}#dg-local-explain code{font-size:10px}#dat-gui-save-locally{display:none}.dg{color:#eee;font:11px 'Lucida Grande', sans-serif;text-shadow:0 -1px 0 #111}.dg.main::-webkit-scrollbar{width:5px;background:#1a1a1a}.dg.main::-webkit-scrollbar-corner{height:0;display:none}.dg.main::-webkit-scrollbar-thumb{border-radius:5px;background:#676767}.dg li:not(.folder){background:#1a1a1a;border-bottom:1px solid #2c2c2c}.dg li.save-row{line-height:25px;background:#dad5cb;border:0}.dg li.save-row select{margin-left:5px;width:108px}.dg li.save-row .button{margin-left:5px;margin-top:1px;border-radius:2px;font-size:9px;line-height:7px;padding:4px 4px 5px 4px;background:#c5bdad;color:#fff;text-shadow:0 1px 0 #b0a58f;box-shadow:0 -1px 0 #b0a58f;cursor:pointer}.dg li.save-row .button.gears{background:#c5bdad url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAANCAYAAAB/9ZQ7AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAQJJREFUeNpiYKAU/P//PwGIC/ApCABiBSAW+I8AClAcgKxQ4T9hoMAEUrxx2QSGN6+egDX+/vWT4e7N82AMYoPAx/evwWoYoSYbACX2s7KxCxzcsezDh3evFoDEBYTEEqycggWAzA9AuUSQQgeYPa9fPv6/YWm/Acx5IPb7ty/fw+QZblw67vDs8R0YHyQhgObx+yAJkBqmG5dPPDh1aPOGR/eugW0G4vlIoTIfyFcA+QekhhHJhPdQxbiAIguMBTQZrPD7108M6roWYDFQiIAAv6Aow/1bFwXgis+f2LUAynwoIaNcz8XNx3Dl7MEJUDGQpx9gtQ8YCueB+D26OECAAQDadt7e46D42QAAAABJRU5ErkJggg==) 2px 1px no-repeat;height:7px;width:8px}.dg li.save-row .button:hover{background-color:#bab19e;box-shadow:0 -1px 0 #b0a58f}.dg li.folder{border-bottom:0}.dg li.title{padding-left:16px;background:#000 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.2)}.dg .closed li.title{background-image:url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlGIWqMCbWAEAOw==)}.dg .cr.boolean{border-left:3px solid #806787}.dg .cr.color{border-left:3px solid}.dg .cr.function{border-left:3px solid #e61d5f}.dg .cr.number{border-left:3px solid #2FA1D6}.dg .cr.number input[type=text]{color:#2FA1D6}.dg .cr.string{border-left:3px solid #1ed36f}.dg .cr.string input[type=text]{color:#1ed36f}.dg .cr.function:hover,.dg .cr.boolean:hover{background:#111}.dg .c input[type=text]{background:#303030;outline:none}.dg .c input[type=text]:hover{background:#3c3c3c}.dg .c input[type=text]:focus{background:#494949;color:#fff}.dg .c .slider{background:#303030;cursor:ew-resize}.dg .c .slider-fg{background:#2FA1D6;max-width:100%}.dg .c .slider:hover{background:#3c3c3c}.dg .c .slider:hover .slider-fg{background:#44abda}
 `);
-hl.inject(Al);
-var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
+bl.inject(Tl);
+var Jo = "dg", Qo = 72, Zo = 20, Wt = "Default", Gt = function() {
   try {
     return !!window.localStorage;
   } catch {
     return !1;
   }
-}(), Ht = void 0, Zo = !0, Nt = void 0, Qn = !1, Ki = [], se = function t(e) {
+}(), Ht = void 0, qo = !0, Ct = void 0, Jn = !1, Ji = [], se = function t(e) {
   var n = this, o = e || {};
-  this.domElement = document.createElement("div"), this.__ul = document.createElement("ul"), this.domElement.appendChild(this.__ul), m.addClass(this.domElement, Ko), this.__folders = {}, this.__controllers = [], this.__rememberedObjects = [], this.__rememberedObjectIndecesToControllers = [], this.__listening = [], o = E.defaults(o, {
+  this.domElement = document.createElement("div"), this.__ul = document.createElement("ul"), this.domElement.appendChild(this.__ul), m.addClass(this.domElement, Jo), this.__folders = {}, this.__controllers = [], this.__rememberedObjects = [], this.__rememberedObjectIndecesToControllers = [], this.__listening = [], o = E.defaults(o, {
     closeOnTop: !1,
     autoPlace: !0,
     width: t.DEFAULT_WIDTH
   }), o = E.defaults(o, {
     resizable: o.autoPlace,
     hideable: o.autoPlace
-  }), E.isUndefined(o.load) ? o.load = { preset: Wt } : o.preset && (o.load.preset = o.preset), E.isUndefined(o.parent) && o.hideable && Ki.push(this), o.resizable = E.isUndefined(o.parent) && o.resizable, o.autoPlace && E.isUndefined(o.scrollable) && (o.scrollable = !0);
-  var r = Gt && localStorage.getItem(Bt(this, "isLocal")) === "true", i = void 0, c = void 0;
+  }), E.isUndefined(o.load) ? o.load = { preset: Wt } : o.preset && (o.load.preset = o.preset), E.isUndefined(o.parent) && o.hideable && Ji.push(this), o.resizable = E.isUndefined(o.parent) && o.resizable, o.autoPlace && E.isUndefined(o.scrollable) && (o.scrollable = !0);
+  var r = Gt && localStorage.getItem(Nt(this, "isLocal")) === "true", i = void 0, c = void 0;
   if (Object.defineProperties(
     this,
     {
@@ -4234,7 +4234,7 @@ var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
           return n.parent ? n.getRoot().preset : o.load.preset;
         },
         set: function(k) {
-          n.parent ? n.getRoot().preset = k : o.load.preset = k, Rl(this), n.revert();
+          n.parent ? n.getRoot().preset = k : o.load.preset = k, wl(this), n.revert();
         }
       },
       width: {
@@ -4242,7 +4242,7 @@ var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
           return o.width;
         },
         set: function(k) {
-          o.width = k, ir(n, k);
+          o.width = k, or(n, k);
         }
       },
       name: {
@@ -4271,14 +4271,14 @@ var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
           return r;
         },
         set: function(k) {
-          Gt && (r = k, k ? m.bind(window, "unload", i) : m.unbind(window, "unload", i), localStorage.setItem(Bt(n, "isLocal"), k));
+          Gt && (r = k, k ? m.bind(window, "unload", i) : m.unbind(window, "unload", i), localStorage.setItem(Nt(n, "isLocal"), k));
         }
       }
     }
   ), E.isUndefined(o.parent)) {
     if (this.closed = o.closed || !1, m.addClass(this.domElement, t.CLASS_MAIN), m.makeSelectable(this.domElement, !1), Gt && r) {
       n.useLocalStorage = !0;
-      var u = localStorage.getItem(Bt(this, "gui"));
+      var u = localStorage.getItem(Nt(this, "gui"));
       u && (o.load = JSON.parse(u));
     }
     this.__closeButton = document.createElement("div"), this.__closeButton.innerHTML = t.TEXT_CLOSED, m.addClass(this.__closeButton, t.CLASS_CLOSE_BUTTON), o.closeOnTop ? (m.addClass(this.__closeButton, t.CLASS_CLOSE_TOP), this.domElement.insertBefore(this.__closeButton, this.domElement.childNodes[0])) : (m.addClass(this.__closeButton, t.CLASS_CLOSE_BOTTOM), this.domElement.appendChild(this.__closeButton)), m.bind(this.__closeButton, "click", function() {
@@ -4287,16 +4287,16 @@ var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
   } else {
     o.closed === void 0 && (o.closed = !0);
     var _ = document.createTextNode(o.name);
-    m.addClass(_, "controller-name"), c = Tr(n, _);
+    m.addClass(_, "controller-name"), c = vr(n, _);
     var y = function(k) {
       return k.preventDefault(), n.closed = !n.closed, !1;
     };
     m.addClass(this.__ul, t.CLASS_CLOSED), m.addClass(c, "title"), m.bind(c, "click", y), o.closed || (this.closed = !1);
   }
-  o.autoPlace && (E.isUndefined(o.parent) && (Zo && (Nt = document.createElement("div"), m.addClass(Nt, Ko), m.addClass(Nt, t.CLASS_AUTO_PLACE_CONTAINER), document.body.appendChild(Nt), Zo = !1), Nt.appendChild(this.domElement), m.addClass(this.domElement, t.CLASS_AUTO_PLACE)), this.parent || ir(n, o.width)), this.__resizeHandler = function() {
+  o.autoPlace && (E.isUndefined(o.parent) && (qo && (Ct = document.createElement("div"), m.addClass(Ct, Jo), m.addClass(Ct, t.CLASS_AUTO_PLACE_CONTAINER), document.body.appendChild(Ct), qo = !1), Ct.appendChild(this.domElement), m.addClass(this.domElement, t.CLASS_AUTO_PLACE)), this.parent || or(n, o.width)), this.__resizeHandler = function() {
     n.onResizeDebounced();
-  }, m.bind(window, "resize", this.__resizeHandler), m.bind(this.__ul, "webkitTransitionEnd", this.__resizeHandler), m.bind(this.__ul, "transitionend", this.__resizeHandler), m.bind(this.__ul, "oTransitionEnd", this.__resizeHandler), this.onResize(), o.resizable && Sl(this), i = function() {
-    Gt && localStorage.getItem(Bt(n, "isLocal")) === "true" && localStorage.setItem(Bt(n, "gui"), JSON.stringify(n.getSaveObject()));
+  }, m.bind(window, "resize", this.__resizeHandler), m.bind(this.__ul, "webkitTransitionEnd", this.__resizeHandler), m.bind(this.__ul, "transitionend", this.__resizeHandler), m.bind(this.__ul, "oTransitionEnd", this.__resizeHandler), this.onResize(), o.resizable && Rl(this), i = function() {
+    Gt && localStorage.getItem(Nt(n, "isLocal")) === "true" && localStorage.setItem(Nt(n, "gui"), JSON.stringify(n.getSaveObject()));
   }, this.saveToLocalStorageIfPossible = i;
   function A() {
     var T = n.getRoot();
@@ -4307,8 +4307,8 @@ var Ko = "dg", Jo = 72, Qo = 20, Wt = "Default", Gt = function() {
   o.parent || A();
 };
 se.toggleHide = function() {
-  Qn = !Qn, E.each(Ki, function(t) {
-    t.domElement.style.display = Qn ? "none" : "";
+  Jn = !Jn, E.each(Ji, function(t) {
+    t.domElement.style.display = Jn ? "none" : "";
   });
 };
 se.CLASS_AUTO_PLACE = "a";
@@ -4325,7 +4325,7 @@ se.DEFAULT_WIDTH = 245;
 se.TEXT_CLOSED = "Close Controls";
 se.TEXT_OPEN = "Open Controls";
 se._keydownHandler = function(t) {
-  document.activeElement.type !== "text" && (t.which === Jo || t.keyCode === Jo) && se.toggleHide();
+  document.activeElement.type !== "text" && (t.which === Qo || t.keyCode === Qo) && se.toggleHide();
 };
 m.bind(window, "keydown", se._keydownHandler, !1);
 E.extend(
@@ -4351,11 +4351,11 @@ E.extend(
     destroy: function() {
       if (this.parent)
         throw new Error("Only the root GUI should be removed with .destroy(). For subfolders, use gui.removeFolder(folder) instead.");
-      this.autoPlace && Nt.removeChild(this.domElement);
+      this.autoPlace && Ct.removeChild(this.domElement);
       var e = this;
       E.each(this.__folders, function(n) {
         e.removeFolder(n);
-      }), m.unbind(window, "keydown", se._keydownHandler, !1), qo(this);
+      }), m.unbind(window, "keydown", se._keydownHandler, !1), ei(this);
     },
     addFolder: function(e) {
       if (this.__folders[e] !== void 0)
@@ -4364,11 +4364,11 @@ E.extend(
       n.autoPlace = this.autoPlace, this.load && this.load.folders && this.load.folders[e] && (n.closed = this.load.folders[e].closed, n.load = this.load.folders[e]);
       var o = new se(n);
       this.__folders[e] = o;
-      var r = Tr(this, o.domElement);
+      var r = vr(this, o.domElement);
       return m.addClass(r, "folder"), o;
     },
     removeFolder: function(e) {
-      this.__ul.removeChild(e.domElement.parentElement), delete this.__folders[e.name], this.load && this.load.folders && this.load.folders[e.name] && delete this.load.folders[e.name], qo(e);
+      this.__ul.removeChild(e.domElement.parentElement), delete this.__folders[e.name], this.load && this.load.folders && this.load.folders[e.name] && delete this.load.folders[e.name], ei(e);
       var n = this;
       E.each(e.__folders, function(o) {
         e.removeFolder(o);
@@ -4394,7 +4394,7 @@ E.extend(
         var n = m.getOffset(e.__ul).top, o = 0;
         E.each(e.__ul.childNodes, function(r) {
           e.autoPlace && r === e.__save_row || (o += m.getHeight(r));
-        }), window.innerHeight - n - Qo < o ? (m.addClass(e.domElement, se.CLASS_TOO_TALL), e.__ul.style.height = window.innerHeight - n - Qo + "px") : (m.removeClass(e.domElement, se.CLASS_TOO_TALL), e.__ul.style.height = "auto");
+        }), window.innerHeight - n - Zo < o ? (m.addClass(e.domElement, se.CLASS_TOO_TALL), e.__ul.style.height = window.innerHeight - n - Zo + "px") : (m.removeClass(e.domElement, se.CLASS_TOO_TALL), e.__ul.style.height = "auto");
       }
       e.__resize_handle && E.defer(function() {
         e.__resize_handle.style.height = e.__ul.offsetHeight + "px";
@@ -4404,12 +4404,12 @@ E.extend(
       this.onResize();
     }, 50),
     remember: function() {
-      if (E.isUndefined(Ht) && (Ht = new gl(), Ht.domElement.innerHTML = bl), this.parent)
+      if (E.isUndefined(Ht) && (Ht = new Al(), Ht.domElement.innerHTML = yl), this.parent)
         throw new Error("You can only call remember on a top level GUI.");
       var e = this;
       E.each(Array.prototype.slice.call(arguments), function(n) {
-        e.__rememberedObjects.length === 0 && vl(e), e.__rememberedObjects.indexOf(n) === -1 && e.__rememberedObjects.push(n);
-      }), this.autoPlace && ir(this, this.width);
+        e.__rememberedObjects.length === 0 && Sl(e), e.__rememberedObjects.indexOf(n) === -1 && e.__rememberedObjects.push(n);
+      }), this.autoPlace && or(this, this.width);
     },
     getRoot: function() {
       for (var e = this; e.parent; )
@@ -4423,21 +4423,21 @@ E.extend(
       }), e;
     },
     save: function() {
-      this.load.remembered || (this.load.remembered = {}), this.load.remembered[this.preset] = bn(this), rr(this, !1), this.saveToLocalStorageIfPossible();
+      this.load.remembered || (this.load.remembered = {}), this.load.remembered[this.preset] = bn(this), nr(this, !1), this.saveToLocalStorageIfPossible();
     },
     saveAs: function(e) {
-      this.load.remembered || (this.load.remembered = {}, this.load.remembered[Wt] = bn(this, !0)), this.load.remembered[e] = bn(this), this.preset = e, or(this, e, !0), this.saveToLocalStorageIfPossible();
+      this.load.remembered || (this.load.remembered = {}, this.load.remembered[Wt] = bn(this, !0)), this.load.remembered[e] = bn(this), this.preset = e, rr(this, e, !0), this.saveToLocalStorageIfPossible();
     },
     revert: function(e) {
       E.each(this.__controllers, function(n) {
-        this.getRoot().load.remembered ? Ji(e || this.getRoot(), n) : n.setValue(n.initialValue), n.__onFinishChange && n.__onFinishChange.call(n, n.getValue());
+        this.getRoot().load.remembered ? Qi(e || this.getRoot(), n) : n.setValue(n.initialValue), n.__onFinishChange && n.__onFinishChange.call(n, n.getValue());
       }, this), E.each(this.__folders, function(n) {
         n.revert(n);
-      }), e || rr(this.getRoot(), !1);
+      }), e || nr(this.getRoot(), !1);
     },
     listen: function(e) {
       var n = this.__listening.length === 0;
-      this.__listening.push(e), n && Qi(this.__listening);
+      this.__listening.push(e), n && Zi(this.__listening);
     },
     updateDisplay: function() {
       E.each(this.__controllers, function(e) {
@@ -4448,18 +4448,18 @@ E.extend(
     }
   }
 );
-function Tr(t, e, n) {
+function vr(t, e, n) {
   var o = document.createElement("li");
   return e && o.appendChild(e), n ? t.__ul.insertBefore(o, n) : t.__ul.appendChild(o), t.onResize(), o;
 }
-function qo(t) {
+function ei(t) {
   m.unbind(window, "resize", t.__resizeHandler), t.saveToLocalStorageIfPossible && m.unbind(window, "unload", t.saveToLocalStorageIfPossible);
 }
-function rr(t, e) {
+function nr(t, e) {
   var n = t.__preset_select[t.__preset_select.selectedIndex];
   e ? n.innerHTML = n.value + "*" : n.innerHTML = n.value;
 }
-function Tl(t, e, n) {
+function vl(t, e, n) {
   if (n.__li = e, n.__gui = t, E.extend(n, {
     options: function(c) {
       if (arguments.length > 1) {
@@ -4486,7 +4486,7 @@ function Tl(t, e, n) {
     remove: function() {
       return n.__gui.remove(n), n;
     }
-  }), n instanceof tr) {
+  }), n instanceof er) {
     var o = new Tn(n.object, n.property, { min: n.__min, max: n.__max, step: n.__step });
     E.each(["updateDisplay", "onChange", "onFinishChange", "step", "min", "max"], function(i) {
       var c = n[i], u = o[i];
@@ -4509,24 +4509,24 @@ function Tl(t, e, n) {
       return c;
     };
     n.min = E.compose(r, n.min), n.max = E.compose(r, n.max);
-  } else n instanceof Yi ? (m.bind(e, "click", function() {
+  } else n instanceof Wi ? (m.bind(e, "click", function() {
     m.fakeEvent(n.__checkbox, "click");
   }), m.bind(n.__checkbox, "click", function(i) {
     i.stopPropagation();
-  })) : n instanceof ji ? (m.bind(e, "click", function() {
+  })) : n instanceof Ki ? (m.bind(e, "click", function() {
     m.fakeEvent(n.__button, "click");
   }), m.bind(e, "mouseover", function() {
     m.addClass(n.__button, "hover");
   }), m.bind(e, "mouseout", function() {
     m.removeClass(n.__button, "hover");
-  })) : n instanceof nr && (m.addClass(e, "color"), n.updateDisplay = E.compose(function(i) {
+  })) : n instanceof tr && (m.addClass(e, "color"), n.updateDisplay = E.compose(function(i) {
     return e.style.borderLeftColor = n.__color.toString(), i;
   }, n.updateDisplay), n.updateDisplay());
   n.setValue = E.compose(function(i) {
-    return t.getRoot().__preset_select && n.isModified() && rr(t.getRoot(), !0), i;
+    return t.getRoot().__preset_select && n.isModified() && nr(t.getRoot(), !0), i;
   }, n.setValue);
 }
-function Ji(t, e) {
+function Qi(t, e) {
   var n = t.getRoot(), o = n.__rememberedObjects.indexOf(e.object);
   if (o !== -1) {
     var r = n.__rememberedObjectIndecesToControllers[o];
@@ -4550,30 +4550,30 @@ function Xt(t, e, n, o) {
     throw new Error('Object "' + e + '" has no property "' + n + '"');
   var r = void 0;
   if (o.color)
-    r = new nr(e, n);
+    r = new tr(e, n);
   else {
     var i = [e, n].concat(o.factoryArgs);
-    r = yl.apply(t, i);
+    r = El.apply(t, i);
   }
-  o.before instanceof St && (o.before = o.before.__li), Ji(t, r), m.addClass(r.domElement, "c");
+  o.before instanceof vt && (o.before = o.before.__li), Qi(t, r), m.addClass(r.domElement, "c");
   var c = document.createElement("span");
   m.addClass(c, "property-name"), c.innerHTML = r.property;
   var u = document.createElement("div");
   u.appendChild(c), u.appendChild(r.domElement);
-  var _ = Tr(t, u, o.before);
-  return m.addClass(_, se.CLASS_CONTROLLER_ROW), r instanceof nr ? m.addClass(_, "color") : m.addClass(_, ul(r.getValue())), Tl(t, _, r), t.__controllers.push(r), r;
+  var _ = vr(t, u, o.before);
+  return m.addClass(_, se.CLASS_CONTROLLER_ROW), r instanceof tr ? m.addClass(_, "color") : m.addClass(_, cl(r.getValue())), vl(t, _, r), t.__controllers.push(r), r;
 }
-function Bt(t, e) {
+function Nt(t, e) {
   return document.location.href + "." + e;
 }
-function or(t, e, n) {
+function rr(t, e, n) {
   var o = document.createElement("option");
   o.innerHTML = e, o.value = e, t.__preset_select.appendChild(o), n && (t.__preset_select.selectedIndex = t.__preset_select.length - 1);
 }
-function ei(t, e) {
+function ti(t, e) {
   e.style.display = t.useLocalStorage ? "block" : "none";
 }
-function vl(t) {
+function Sl(t) {
   var e = t.__save_row = document.createElement("li");
   m.addClass(t.domElement, "has-save"), t.__ul.insertBefore(e, t.__ul.firstChild), m.addClass(e, "save-row");
   var n = document.createElement("span");
@@ -4586,15 +4586,15 @@ function vl(t) {
   i.innerHTML = "Revert", m.addClass(i, "button"), m.addClass(i, "revert");
   var c = t.__preset_select = document.createElement("select");
   if (t.load && t.load.remembered ? E.each(t.load.remembered, function(T, k) {
-    or(t, k, k === t.preset);
-  }) : or(t, Wt, !1), m.bind(c, "change", function() {
+    rr(t, k, k === t.preset);
+  }) : rr(t, Wt, !1), m.bind(c, "change", function() {
     for (var T = 0; T < t.__preset_select.length; T++)
       t.__preset_select[T].innerHTML = t.__preset_select[T].value;
     t.preset = this.value;
   }), e.appendChild(c), e.appendChild(n), e.appendChild(o), e.appendChild(r), e.appendChild(i), Gt) {
     var u = document.getElementById("dg-local-explain"), _ = document.getElementById("dg-local-storage"), y = document.getElementById("dg-save-locally");
-    y.style.display = "block", localStorage.getItem(Bt(t, "isLocal")) === "true" && _.setAttribute("checked", "checked"), ei(t, u), m.bind(_, "change", function() {
-      t.useLocalStorage = !t.useLocalStorage, ei(t, u);
+    y.style.display = "block", localStorage.getItem(Nt(t, "isLocal")) === "true" && _.setAttribute("checked", "checked"), ti(t, u), m.bind(_, "change", function() {
+      t.useLocalStorage = !t.useLocalStorage, ti(t, u);
     });
   }
   var A = document.getElementById("dg-new-constructor");
@@ -4611,7 +4611,7 @@ function vl(t) {
     t.revert();
   });
 }
-function Sl(t) {
+function Rl(t) {
   var e = void 0;
   t.__resize_handle = document.createElement("div"), E.extend(t.__resize_handle.style, {
     width: "6px",
@@ -4631,7 +4631,7 @@ function Sl(t) {
   }
   m.bind(t.__resize_handle, "mousedown", r), m.bind(t.__closeButton, "mousedown", r), t.domElement.insertBefore(t.__resize_handle, t.domElement.firstElementChild);
 }
-function ir(t, e) {
+function or(t, e) {
   t.domElement.style.width = e + "px", t.__save_row && t.autoPlace && (t.__save_row.style.width = e + "px"), t.__closeButton && (t.__closeButton.style.width = e + "px");
 }
 function bn(t, e) {
@@ -4643,23 +4643,23 @@ function bn(t, e) {
     }), n[r] = i;
   }), n;
 }
-function Rl(t) {
+function wl(t) {
   for (var e = 0; e < t.__preset_select.length; e++)
     t.__preset_select[e].value === t.preset && (t.__preset_select.selectedIndex = e);
 }
-function Qi(t) {
-  t.length !== 0 && xl.call(window, function() {
-    Qi(t);
+function Zi(t) {
+  t.length !== 0 && gl.call(window, function() {
+    Zi(t);
   }), E.each(t, function(e) {
     e.updateDisplay();
   });
 }
-var wl = se, si;
-const Fl = (si = window.webkit) == null ? void 0 : si.messageHandlers, Il = window.webkit != null;
-function ti(t, e = t) {
-  Il && Fl[t].postMessage(e);
+var Fl = se, ai;
+const Il = (ai = window.webkit) == null ? void 0 : ai.messageHandlers, Cl = window.webkit != null;
+function ni(t, e = t) {
+  Cl && Il[t].postMessage(e);
 }
-const ni = {
+const ri = {
   debug: !1,
   console: !1,
   flicker: !0,
@@ -4692,28 +4692,28 @@ const ni = {
   onionSkinAlpha: 0
 };
 let En;
-function Cl() {
-  En = JSON.parse(localStorage.getItem("config") ?? JSON.stringify(ni));
-  for (const [t, e] of Object.entries(ni))
+function Nl() {
+  En = JSON.parse(localStorage.getItem("config") ?? JSON.stringify(ri));
+  for (const [t, e] of Object.entries(ri))
     Object.hasOwn(En, t) || (En[t] = e);
 }
-function vt() {
+function Pt() {
   return En;
 }
-Cl();
-window.config = vt;
-let jt = [], Zn = !1;
-function Nl() {
+Nl();
+window.config = Pt;
+let jt = [], Qn = !1;
+function Bl() {
   const t = jt;
   return jt = [], t;
 }
-function ri(t) {
+function oi(t) {
   for (const e of t)
-    (!e.predicted || vt().usePredictedEvents) && jt.push(e);
+    (!e.predicted || Pt().usePredictedEvents) && jt.push(e);
 }
-function vr(t, e) {
+function Sr(t, e) {
   const n = t.pointerType == "touch" ? "finger" : "pencil";
-  e === "began" && (Zn = !0), e === "ended" && (Zn = !1), !(e === "moved" && !Zn) && jt.push({
+  e === "began" && (Qn = !0), e === "ended" && (Qn = !1), !(e === "moved" && !Qn) && jt.push({
     id: t.pointerId,
     type: n,
     phase: e,
@@ -4727,16 +4727,16 @@ function vr(t, e) {
     timestamp: performance.now()
   });
 }
-function Bl() {
-  window.onpointerdown = null, window.onpointermove = null, window.onpointerup = null, window.removeEventListener("touchstart", Zi), jt = [];
+function Pl() {
+  window.onpointerdown = null, window.onpointermove = null, window.onpointerup = null, window.removeEventListener("touchstart", qi), jt = [];
 }
-window.onpointerdown = (t) => vr(t, "began");
-window.onpointermove = (t) => vr(t, "moved");
-window.onpointerup = (t) => vr(t, "ended");
-const Zi = (t) => t.preventDefault();
-window.addEventListener("touchstart", Zi, { passive: !1 });
+window.onpointerdown = (t) => Sr(t, "began");
+window.onpointermove = (t) => Sr(t, "moved");
+window.onpointerup = (t) => Sr(t, "ended");
+const qi = (t) => t.preventDefault();
+window.addEventListener("touchstart", qi, { passive: !1 });
 window.wrapperEvents = (t) => {
-  window.wrapperEvents = ri, Bl(), ri(t);
+  window.wrapperEvents = oi, Pl(), oi(t);
 };
 const Dl = {
   log: console.log,
@@ -4744,71 +4744,68 @@ const Dl = {
   error: console.error
 };
 let $e = null, xn = [];
-function vn() {
-  if (vt().console) {
+function ir() {
+  if (Pt().console) {
     if (!$e) {
-      $e = Pl();
-      for (const e of xn) qi(e);
+      $e = Ul();
+      for (const e of xn) es(e);
     }
     $e.style.display = "block";
   } else $e && ($e.style.display = "none");
 }
-function Pl() {
+function Ul() {
   const t = document.createElement("div");
   t.innerHTML = `<div style="position: absolute; right: 0; bottom: 0; padding: 5px; width: fit-content; white-space: pre; font-family: monospace; background: rgba(0,0,0,0.5); max-width: 50%;
     white-space: break-spaces; pointer-events: none"></div>`;
   const e = t.children[0];
   return document.body.appendChild(e), e;
 }
-function Sr(t) {
+function Rr(t) {
   return function(...e) {
     Dl[t](...e);
     const n = e.map((c) => typeof c == "string" ? c : JSON.stringify(c, null, 2)).join(" "), o = document.createElement("div"), r = t === "error" ? "#F33" : t === "warn" ? "#FD4" : "#CCC", i = new Date(Date.now() - (/* @__PURE__ */ new Date()).getTimezoneOffset() * 6e4).toISOString().slice(11, 23);
-    o.innerHTML = `<span style="color: #999">${i}:</span> <span style="color: ${r}">${n}</span>`, xn.length > 100 && xn.shift(), xn.push(o), qi(o);
+    o.innerHTML = `<span style="color: #999">${i}:</span> <span style="color: ${r}">${n}</span>`, xn.length > 100 && xn.shift(), xn.push(o), es(o);
   };
 }
-function qi(t) {
+function es(t) {
   if ($e) {
     for ($e.appendChild(t); $e.getBoundingClientRect().height > window.innerHeight * 2 && $e.children[1]; )
       $e.children[0].remove();
     $e.scrollTop = $e.scrollHeight;
   }
 }
-console.log = Sr("log");
-console.warn = Sr("warn");
-console.error = Sr("error");
+console.log = Rr("log");
+console.warn = Rr("warn");
+console.error = Rr("error");
 addEventListener("error", (t) => console.error("Error:", t.error.message || t.error));
 addEventListener("unhandledrejection", (t) => console.error("Unhandled Rejection:", t.reason.message || t.reason));
 console.log("Back to 1963!");
-vn();
-vt().usePredictedEvents = !0;
-vt().console = !0;
-vn();
-const Sn = 16348;
-let ze = new Int32Array(Sn * 2 + 64), Ve = 0, Tt = 0, ke = 0, Rn = !1;
-function Ul(t, e) {
-  return e && oi(e), Gl(t), { clearSpots: es, addSpot: wn, setParams: oi, demo: Ml };
+ir();
+const vn = 16348;
+let ze = new Int32Array(vn * 2 + 64), Ve = 0, Tt = 0, ke = 0, Sn = !1;
+function Ml(t, e) {
+  return e && ii(e), Gl(t), { clearSpots: ts, addSpot: Rn, setParams: ii, demo: sr };
 }
-function es() {
-  Ve = 0, Tt = 0, Rn = !0;
+function ts() {
+  Ve = 0, Tt = 0, Sn = !0;
 }
-function wn(t, e, n = 0) {
-  if (Ve >= Sn) {
-    console.warn(`MAX_SPOTS (${Sn}) reached`);
+function Rn(t, e, n = 0) {
+  if (Ve >= vn) {
+    console.warn(`MAX_SPOTS (${vn}) reached`);
     return;
   }
   const o = Ve;
   let r = o;
-  if (ee.twinkle) {
+  if (Q.twinkle) {
     const i = Math.random() * Ve | 0;
     ze[2 * r] = ze[2 * i], ze[2 * r + 1] = ze[2 * i + 1], r = i;
   }
-  ze[2 * r] = t << 16 | n & 65535, ze[2 * r + 1] = e << 16 | o & 65535, Ve++, Rn = !0;
+  ze[2 * r] = t << 16 | n & 65535, ze[2 * r + 1] = e << 16 | o & 65535, Ve++, Sn = !0;
 }
-function oi(t) {
-  Object.assign(ee, t);
+function ii(t) {
+  Object.assign(Q, t);
 }
-const ee = {
+const Q = {
   interlace: !1,
   // interlaced rendering
   twinkle: !1,
@@ -4819,38 +4816,36 @@ const ee = {
   // only draw within 1024x1024 square
   spotsPerSec: 5e4,
   // draw speed in spots per second
+  demo: !1,
+  // run demo
   demoSpots: 4e3,
-  demoSpeed: 10,
   demoMulX: 3,
   demoMulY: 4,
+  demoPhaseX: 1,
+  demoPhaseY: 0,
   colorizeByIndex: !1,
   // colorize spots by ID
   showGui: !1,
   // show GUI
   openGui: !1,
   // open controls at start
-  showConsole: !1,
+  showConsole: Pt().console,
   fullscreen: !1
 }, We = {
-  spotSize: 15,
+  spotSize: 12,
   fadeAmount: 0.3,
   screenScale: [0, 0],
   // set in resize()
   colorIdx: 0
 };
-function Ml() {
-  let t = 0, e = 0;
-  function n() {
-    const r = Date.now();
-    e += (r - t) * ee.demoSpeed / 1e4, t = r, es(), o(400, 400, e, ee.demoMulX, ee.demoMulY, ee.demoSpots);
-  }
-  n(), setInterval(n, 50);
-  function o(r, i, c, u, _, y) {
-    for (let A = 0; A < y; A++) {
-      const T = A * Math.PI * 2 / y;
-      wn(
-        Math.sin(u * T + c) * r,
-        Math.cos(_ * T + c) * i
+function sr() {
+  ts(), t(400, 400, Q.demoPhaseX, Q.demoPhaseY, Q.demoMulX | 0, Q.demoMulY | 0, Q.demoSpots);
+  function t(e, n, o, r, i, c, u) {
+    for (let _ = 0; _ < u; _++) {
+      const y = _ * Math.PI * 2 / u;
+      Rn(
+        Math.sin(i * y + o) * e,
+        Math.cos(c * y + r) * n
       );
     }
   }
@@ -4925,36 +4920,44 @@ function Gl(t) {
   const e = t.getContext("webgl2", { preserveDrawingBuffer: !0 });
   if (!e) throw new Error("No WebGL2 context found");
   function n() {
-    il(t, devicePixelRatio), e.viewport(0, 0, t.width, t.height);
-    const H = Math.min(t.width / 512, t.height / 512);
-    if (We.screenScale = [t.width / H, t.height / H], ee.scissor) {
-      const pe = t.width / t.height, Q = pe > 1 ? (t.width - t.height) / 2 : 0, ie = pe < 1 ? (t.height - t.width) / 2 : 0;
-      e.enable(e.SCISSOR_TEST), e.scissor(Q, ie, t.width - 2 * Q, t.height - 2 * ie);
+    sl(t, devicePixelRatio), e.viewport(0, 0, t.width, t.height);
+    const V = Math.min(t.width / 512, t.height / 512);
+    if (We.screenScale = [t.width / V, t.height / V], Q.scissor) {
+      const pe = t.width / t.height, Z = pe > 1 ? (t.width - t.height) / 2 : 0, ie = pe < 1 ? (t.height - t.width) / 2 : 0;
+      e.enable(e.SCISSOR_TEST), e.scissor(Z, ie, t.width - 2 * Z, t.height - 2 * ie);
     } else
       e.disable(e.SCISSOR_TEST);
   }
   onresize = () => n(), n();
-  const o = new wl();
-  o.add(ee, "spotsPerSec", 1e3, 5e5), o.add(We, "spotSize", 1, 256), o.add(We, "fadeAmount", 0, 1), o.add(ee, "interlace"), o.add(ee, "twinkle"), o.add(ee, "penTracker").onChange((H) => {
-    t.style.cursor = H ? "none" : "default", H || ts();
-  }), o.add(ee, "demoSpots", 1, Sn - 348), o.add(ee, "demoSpeed", 0, 100), o.add(ee, "demoMulX", 1, 10), o.add(ee, "demoMulY", 1, 10), o.add(ee, "colorizeByIndex"), o.add(ee, "showConsole").onChange((H) => {
-    vt().console = H, vn();
-  }), o.add(ee, "scissor").onChange(() => n()), o.add(ee, "fullscreen").onChange((H) => {
-    H ? document.body.requestFullscreen() : document.exitFullscreen();
-  }), ee.showGui || o.hide(), ee.openGui || o.close(), vt().console = ee.showConsole, vn(), t.style.cursor = ee.penTracker ? "none" : "default";
-  const r = { x: 0, y: 0 };
-  function i(H, pe) {
-    const Q = t.getBoundingClientRect();
-    r.x = (H - Q.left - Q.width / 2) / Q.width * 2 * We.screenScale[0] | 0, r.y = (pe - Q.top - Q.height / 2) / Q.height * -2 * We.screenScale[1] | 0;
-  }
-  t.onpointermove = t.onpointerdown = t.onpointerup = (H) => {
-    i(H.clientX, H.clientY);
+  const o = new Fl();
+  o.add(Q, "spotsPerSec", 1e3, 5e5), o.add(We, "spotSize", 1, 256), o.add(We, "fadeAmount", 0, 1), o.add(Q, "interlace"), o.add(Q, "twinkle"), o.add(Q, "penTracker").onChange((V) => {
+    t.style.cursor = V ? "none" : "default", V || ns();
+  }), Q.demo && (sr(), o.add(Q, "demoSpots", 1, vn - 348), o.add(Q, "demoMulX", 1, 10), o.add(Q, "demoMulY", 1, 10)), o.add(Q, "colorizeByIndex"), o.add(Q, "showConsole").onChange((V) => {
+    Pt().console = V, ir();
+  }), o.add(Q, "scissor").onChange(() => n()), o.add(Q, "fullscreen").onChange((V) => {
+    V ? document.body.requestFullscreen() : document.exitFullscreen();
+  }), Q.showGui || o.hide(), Q.openGui || o.close(), Pt().console = Q.showConsole, ir(), t.style.cursor = Q.penTracker ? "none" : "default";
+  const r = {
+    pos: { x: 0, y: 0 }
   };
-  function c() {
-    for (const H of Nl())
-      H.type === "pencil" && i(H.position.x, H.position.y);
+  function i(V, pe) {
+    const Z = t.getBoundingClientRect();
+    r.pos.x = (V - Z.left - Z.width / 2) / Z.width * 2 * We.screenScale[0] | 0, r.pos.y = (pe - Z.top - Z.height / 2) / Z.height * -2 * We.screenScale[1] | 0, r.downPos && (Q.demoPhaseX = r.downPhase.x + (r.pos.x - r.downPos.x) / 500, Q.demoPhaseY = r.downPhase.y + (r.pos.y - r.downPos.y) / 500, Q.demo && sr());
   }
-  const u = Jn(e, [Ol, Ll]), y = Kn(e, {
+  t.onpointermove = (V) => i(V.clientX, V.clientY);
+  function c() {
+    for (const V of Bl())
+      if (V.type === "pencil")
+        switch (i(V.position.x, V.position.y), V.phase) {
+          case "began":
+            r.downPos = { ...r.pos }, r.downPhase = { x: Q.demoPhaseX, y: Q.demoPhaseY };
+            break;
+          case "ended":
+            r.downPos = void 0;
+            break;
+        }
+  }
+  const u = Kn(e, [Ol, Ll]), y = jn(e, {
     pos: {
       numComponents: 2,
       data: [
@@ -4969,103 +4972,106 @@ function Gl(t) {
       ]
     }
   });
-  let A = Jn(e, [kl, $l]), T = Jn(e, [zl, Vl]);
-  const j = Kn(e, {
+  let A = Kn(e, [kl, $l]), T = Kn(e, [zl, Vl]);
+  const j = jn(e, {
     xyIdIx: {
       numComponents: 2,
       data: ze
     }
   }), W = [];
-  for (let H = 0; H < 8; H++) {
+  for (let V = 0; V < 8; V++) {
     const pe = {
       xyIdIx: {
         numComponents: 2,
         data: ze,
         stride: 64,
         // every 8th spot, 8 bytes per spot
-        offset: 8 * H
+        offset: 8 * V
         // staggered by 8 bytes
       }
     };
-    W.push(Kn(e, pe));
+    W.push(jn(e, pe));
   }
-  let G = 0;
-  function q(H) {
-    const pe = H - G;
-    G = H;
-    let Q = Math.max(8, Math.min(pe, 30)) * ee.spotsPerSec / 1e3 | 0;
-    if (c(), ee.penTracker && Hl(r), e.enable(e.BLEND), e.blendFunc(e.ZERO, e.ONE_MINUS_SRC_ALPHA), e.useProgram(u.program), pn(e, u, y), yn(u, We), $t(e, y, e.TRIANGLE_FAN), Rn) {
-      $o(
+  let H = 0;
+  function ee(V) {
+    const pe = V - H;
+    H = V;
+    let Z = Math.max(8, Math.min(pe, 30)) * Q.spotsPerSec / 1e3 | 0;
+    if (c(), Q.penTracker && Hl(r.pos), e.enable(e.BLEND), e.blendFunc(e.ZERO, e.ONE_MINUS_SRC_ALPHA), e.useProgram(u.program), pn(e, u, y), yn(u, We), $t(e, y, e.TRIANGLE_FAN), Sn) {
+      zo(
         e,
         j.attribs.xyIdIx,
         new Int32Array(ze.buffer, 0, Ve * 2)
       );
       for (let Je = 0; Je < 8; Je++)
-        $o(
+        zo(
           e,
           W[Je].attribs.xyIdIx,
           new Int32Array(ze.buffer, 0, Ve * 2)
         );
-      Rn = !1;
+      Sn = !1;
     }
     const ie = Ve - Tt;
     ke >= ie && (ke = 0);
-    let xe = ee.colorizeByIndex ? T : A;
-    if (e.enable(e.BLEND), e.blendFunc(e.ONE, e.ONE), e.useProgram(xe.program), We.colorIdx = ie, yn(xe, We), ee.interlace && ie > 8) {
+    let xe = Q.colorizeByIndex ? T : A;
+    if (e.enable(e.BLEND), e.blendFunc(e.ONE, e.ONE), e.useProgram(xe.program), We.colorIdx = ie, yn(xe, We), Q.interlace && ie > 8) {
       const Je = ie >> 3;
       let rt = 0, Ce = ke >> 3, Ge = ke & 7;
-      for (; Q > 0 && ie > rt; ) {
+      for (; Z > 0 && ie > rt; ) {
         pn(e, xe, W[Ge]);
-        const Et = Math.min(Ce + Q, Je) - Ce;
+        const Et = Math.min(Ce + Z, Je) - Ce;
         if (Et <= 0) break;
-        $t(e, W[Ge], e.POINTS, Et, Ce), rt += Et, Q -= Et, Ce += Et, Ce === Je && (Ce = 0, Ge++ === 7 && (Ge = 0));
+        $t(e, W[Ge], e.POINTS, Et, Ce), rt += Et, Z -= Et, Ce += Et, Ce === Je && (Ce = 0, Ge++ === 7 && (Ge = 0));
       }
       ke = (Ce << 3) + Ge;
     } else {
       pn(e, xe, j);
-      const rt = Math.min(ke + Q, ie) - ke;
+      const rt = Math.min(ke + Z, ie) - ke;
       rt > 0 && $t(e, j, e.POINTS, rt, ke);
       const Ce = rt;
-      if (Q -= Ce, ke = (ke + Ce) % ie, Q > 0 && ie > Ce) {
-        const Ge = Math.min(Q, ie - Ce);
+      if (Z -= Ce, ke = (ke + Ce) % ie, Z > 0 && ie > Ce) {
+        const Ge = Math.min(Z, ie - Ce);
         $t(e, j, e.POINTS, Ge), ke = (ke + Ge) % ie;
       }
     }
-    Tt > 0 && (We.colorIdx = 0, yn(xe, We), pn(e, xe, j), $t(e, j, e.POINTS, Tt, ie)), requestAnimationFrame(q);
+    Tt > 0 && (We.colorIdx = 0, yn(xe, We), pn(e, xe, j), $t(e, j, e.POINTS, Tt, ie)), requestAnimationFrame(ee);
   }
-  requestAnimationFrame(q);
+  requestAnimationFrame(ee);
 }
-function ts() {
+function ns() {
   Ve -= Tt, Tt = 0;
 }
-let ii = !1;
+let si = !1;
 function Hl({ x: t, y: e }) {
-  ts();
-  const n = Ve, o = ee.twinkle;
-  ee.twinkle = !1;
+  ns();
+  const n = Ve, o = Q.twinkle;
+  Q.twinkle = !1;
   const r = 6, i = 2.5, c = 0.25, u = 5, _ = 0.4, y = Math.max(10, We.spotSize) / 5, A = y * u;
   let T = t, k = e, j = 1 / 0;
-  for (let q = 0; q < Ve; q++) {
-    const H = ze[2 * q] >> 16, pe = Math.abs(t - H);
+  for (let ee = 0; ee < Ve; ee++) {
+    const V = ze[2 * ee] >> 16, pe = Math.abs(t - V);
     if (pe > A) continue;
-    const Q = ze[2 * q + 1] >> 16, ie = Math.abs(e - Q);
+    const Z = ze[2 * ee + 1] >> 16, ie = Math.abs(e - Z);
     if (ie > A) continue;
     const xe = Math.min(pe, ie);
-    xe < j && (T = H, k = Q, j = xe);
+    xe < j && (T = V, k = Z, j = xe);
   }
   const W = j < 1 / 0;
-  W !== ii && (W && (ti("prepareHaptics"), ti("hapticImpact")), ii = W);
-  const G = y * _;
-  for (const [q, H] of [[-2, -2], [-3, 0], [-2, 2], [0, -3], [0, 0], [0, 3], [2, -2], [3, 0], [2, 2]])
-    wn(T + q * G, k + H * G);
-  for (let q = 0; q < r; q++) {
-    const H = Math.log(i + q) / c * y;
-    for (const [pe, Q] of [[-1, 0], [1, 0], [0, -1], [0, 1]])
-      wn(t + pe * H, e + Q * H);
+  W !== si && (W && (ni("prepareHaptics"), ni("hapticImpact")), si = W);
+  const H = y * _;
+  for (const [ee, V] of [[-2, -2], [-3, 0], [-2, 2], [0, -3], [0, 0], [0, 3], [2, -2], [3, 0], [2, 2]])
+    Rn(T + ee * H, k + V * H);
+  for (let ee = 0; ee < r; ee++) {
+    const V = Math.log(i + ee) / c * y;
+    for (const [pe, Z] of [[-1, 0], [1, 0], [0, -1], [0, 1]])
+      Rn(t + pe * V, e + Z * V);
   }
-  Tt = Ve - n, ee.twinkle = o;
+  Tt = Ve - n, Q.twinkle = o;
 }
-Ul(document.getElementById("canvas"), { showGui: !0, openGui: !1 }).demo();
+Ml(
+  document.getElementById("canvas"),
+  { showGui: !0, openGui: !0, showConsole: !0, demo: !0 }
+);
     </script>
   </body>
 </html>
