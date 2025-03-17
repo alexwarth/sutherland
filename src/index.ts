@@ -2,8 +2,7 @@
 import * as display from './display';
 
 display.init(document.getElementById('canvas') as HTMLCanvasElement,
-  {showGui: true, openGui: false, showConsole: true})
-  .demo()
+  {showGui: true, openGui: true, showConsole: true, demo: true})
 
 /*
 import { thisWorld } from './state';

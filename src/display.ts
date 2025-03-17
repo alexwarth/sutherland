@@ -45,6 +45,7 @@ let penSpotCount = 0;      // number of spots at the end of the table for penTra
 let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
 let spotsChanged = false;  // true if spots have changed since last frame
 
+
 ///////// PUBLIC API //////////
 
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
@@ -83,6 +84,7 @@ export function setParams(p: Partial<typeof params>) {
     Object.assign(params, p);
 }
 
+
 ///////// CONFIG //////////
 
 // you can override these defaults by passing options to init()
@@ -92,10 +94,12 @@ const params = {
     penTracker: true,       // draw pen tracker
     scissor: false,         // only draw within 1024x1024 square
     spotsPerSec: 50000,     // draw speed in spots per second
+    demo: false,            // run demo
     demoSpots: 4000,
-    demoSpeed: 10,
     demoMulX: 3,
     demoMulY: 4,
+    demoPhaseX: 1,
+    demoPhaseY: 0,
     colorizeByIndex: false, // colorize spots by ID
     showGui: false,         // show GUI
     openGui: false,         // open controls at start
@@ -104,38 +108,31 @@ const params = {
 }
 
 const uniforms = {
-    spotSize: 15,
+    spotSize: 12,
     fadeAmount: 0.3,
     screenScale: [0, 0],    // set in resize()
     colorIdx: 0,
 };
 
+
 ///////// DEMO //////////
 
 export function demo() {
-    let prev = 0;
-    let phase = 0;
-    function step() {
-        const now = Date.now();
-        phase += (now - prev) * params.demoSpeed / 10000;
-        prev = now;
-        clearSpots();
-        lissajous(400, 400, phase, params.demoMulX, params.demoMulY, params.demoSpots);
-        // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
-    };
-    step();
-    setInterval(step, 50);
+    clearSpots();
+    lissajous(400, 400, params.demoPhaseX, params.demoPhaseY, params.demoMulX|0, params.demoMulY|0, params.demoSpots);
+    // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
 
-    function lissajous(w: number, h: number, phase: number, a: number, b: number, nSpots: number) {
+    function lissajous(w: number, h: number, phaseX: number, phaseY: number, a: number, b: number, nSpots: number) {
         for (let i = 0; i < nSpots; i++) {
             const angle = i * Math.PI * 2 / nSpots;
             addSpot(
-                Math.sin(a * angle + phase) * w,
-                Math.cos(b * angle + phase) * h,
+                Math.sin(a * angle + phaseX) * w,
+                Math.cos(b * angle + phaseY) * h,
             );
         }
     }
 }
+
 
 ///////// IMPLEMENTATION //////////
 
@@ -252,10 +249,12 @@ function startup(canvas: HTMLCanvasElement) {
         canvas.style.cursor = on ? 'none' : 'default';
         if (!on) clearPenSpots();
     });
-    gui.add(params, 'demoSpots', 1, MAX_SPOTS-348); // leave room for penTracker
-    gui.add(params, 'demoSpeed', 0, 100);
-    gui.add(params, 'demoMulX', 1, 10);
-    gui.add(params, 'demoMulY', 1, 10);
+    if (params.demo) {
+        demo();
+        gui.add(params, 'demoSpots', 1, MAX_SPOTS-348); // leave room for penTracker
+        gui.add(params, 'demoMulX', 1, 10);
+        gui.add(params, 'demoMulY', 1, 10);
+    }
     gui.add(params, 'colorizeByIndex');
     gui.add(params, 'showConsole').onChange((on) => { config().console = on; showHideConsole(); });
     gui.add(params, 'scissor').onChange(() => resize());
@@ -269,18 +268,40 @@ function startup(canvas: HTMLCanvasElement) {
     showHideConsole();
     canvas.style.cursor = params.penTracker ? 'none' : 'default';
 
-    const penLoc = { x: 0, y: 0 };
+    const pen: {
+        pos: { x: number, y: number },
+        downPos?: { x: number, y: number },
+        downPhase?: { x: number, y: number },
+    } = {
+        pos: { x: 0, y: 0 },
+    };
     function updatePen(x, y) {
         const b = canvas.getBoundingClientRect();
-        penLoc.x = (x - b.left - b.width/2) / b.width * 2 * uniforms.screenScale[0] | 0;
-        penLoc.y = (y - b.top - b.height/2) / b.height * -2 * uniforms.screenScale[1] | 0;
+        pen.pos.x = (x - b.left - b.width/2) / b.width * 2 * uniforms.screenScale[0] | 0;
+        pen.pos.y = (y - b.top - b.height/2) / b.height * -2 * uniforms.screenScale[1] | 0;
+        if (pen.downPos) {
+            params.demoPhaseX = pen.downPhase!.x + (pen.pos.x - pen.downPos.x) / 500;
+            params.demoPhaseY = pen.downPhase!.y + (pen.pos.y - pen.downPos.y) / 500;
+            params.demo && demo();
+        }
     };
-    canvas.onpointermove = canvas.onpointerdown = canvas.onpointerup = (e) => {
-        updatePen(e.clientX, e.clientY);
-    }
+    // canvas.onpointerdown = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = {...pen.pos}; pen.downPhase = params.demoPhase; };
+    canvas.onpointermove = (e) => updatePen(e.clientX, e.clientY);
+    // canvas.onpointermove = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = undefined; };
     function processNativeEvents() {
         for (const event of NativeEvents.getQueuedEvents()) {
-            if (event.type === 'pencil') updatePen(event.position.x, event.position.y);
+            if (event.type === 'pencil') {
+                updatePen(event.position.x, event.position.y);
+                switch (event.phase) {
+                    case 'began':
+                        pen.downPos = {...pen.pos};
+                        pen.downPhase = { x: params.demoPhaseX, y: params.demoPhaseY };
+                        break;
+                    case 'ended':
+                        pen.downPos = undefined;
+                        break;
+                }
+            }
         }
     }
 
@@ -328,7 +349,7 @@ function startup(canvas: HTMLCanvasElement) {
         // console.log('spotsBudget', spotsBudget);
 
         processNativeEvents();
-        if (params.penTracker) penTracker(penLoc);
+        if (params.penTracker) penTracker(pen.pos);
 
         // render phosphor fade
         gl.enable(gl.BLEND);
@@ -422,7 +443,7 @@ function clearPenSpots() {
 }
 
 let hadPseudoLoc = false;
-function penTracker({ x, y}) {
+function penTracker({ x, y }) {
     // remove pen spots from the end of the display table
     clearPenSpots();
     const origSpotCount = spotCount;
