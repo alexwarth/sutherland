@@ -1,10 +1,10 @@
 # Sketchpad CRT Display
 
-Sketchpad ran on the TX-2 computer with a Cathod Ray Tube to display its graphical interface on a 7" x 7" screen: [youtube video](https://www.youtube.com/embed/GVlqhIzSUUY?si=Y40xSiqU16LgaUVg)
+Sketchpad ran on the TX-2 computer with a Cathod Ray Tube to display its graphical interface on a 7" x 7" screen: [video](crt.mp4)
 
-![sketchpad photo](crt1.jpg)
+![tx2 photo](crt1.jpg)
 
-According to Ivan Sutherland's thesis, it stored 32,000 "spots" in a display table (or more precisely, two display tables for double-buffering), each a 36 bit word:
+According to [Ivan Sutherland's thesis](https://dspace.mit.edu/handle/1721.1/14979), it stored 32,000 "spots" in a display table (or more precisely, two display tables for double-buffering), each a 36 bit word:
 
 * 10 bit horizontal and 10 bit vertical deflection of ray, origin at center, "signed fraction of full scope deflection" (pg. 70)
 * 16 bit tag (to identify what part of the drawing is sensed by the light pen)
