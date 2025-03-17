@@ -5,7 +5,7 @@ import * as status from './status';
 import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
-import { maybeTimeTravelToWorldAt, topLevelWorld } from './state';
+import { maybeTimeTravelToWorldAt, topLevelWorld, thisWorld, bookmarkedWorld } from './state';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -75,6 +75,9 @@ function onKeyDown(e: KeyboardEvent) {
     case 'S':
       app.toggleAutoSolve();
       return;
+    case 'p':
+      app.paste();
+      return;
   }
 
   if (app.drawing().isEmpty()) {
@@ -126,6 +129,9 @@ function onKeyDown(e: KeyboardEvent) {
       break;
     case 'D':
       app.dismember();
+      break;
+    case 'C':
+      app.copy();
       break;
   }
 }

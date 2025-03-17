@@ -7,7 +7,7 @@ import { Drawing } from './Drawing';
 import { Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
-import { Var } from './state';
+import { bookmarkedWorld, thisWorld, Var } from './state';
 
 // TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
@@ -383,6 +383,12 @@ export function dismember() {
   }
 }
 
+export function dismemberAllInstances(d: Drawing) {
+  d.dismemberAllInstances();
+  cleanUp();
+}
+(window as any).dismemberAllInstances = dismemberAllInstances;
+
 export function rotateInstanceBy(dTheta: number) {
   return !!pen.pos && drawing().rotateInstanceAt(pen.pos, dTheta);
 }
@@ -443,6 +449,21 @@ export function panBy(dx: number, dy: number) {
     scope.center.x -= dx;
     scope.center.y -= dy;
   });
+}
+
+export function copy() {
+  status.set('copy');
+  thisWorld().bookmark();
+}
+
+export function paste() {
+  const copied = bookmarkedWorld();
+  if (!copied) {
+    return;
+  }
+
+  status.set('paste');
+  copied.pasteInto(thisWorld());
 }
 
 // ---------- clean up ----------

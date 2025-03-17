@@ -48,6 +48,10 @@ export default class ConstraintSet {
     this.constraints.forEach(fn);
   }
 
+  forEachVar(fn: (v: Var<any>) => void) {
+    this.constraints.forEach((c) => c.forEachVar(fn));
+  }
+
   relax(vars: Set<Var<number>>) {
     this.forEach((c) => c.preRelax());
     const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;

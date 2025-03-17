@@ -19,6 +19,7 @@ export abstract class Constraint {
     handleMap: Map<Handle, Handle>,
     transform: (pos: Position) => Position,
   ): Constraint;
+  abstract forEachVar(fn: (v: Var<any>) => void): void;
   abstract forEachThing(fn: (t: Thing) => void): void;
   abstract forEachHandle(fn: (t: Handle) => void): void;
   abstract replaceHandle(oldHandle: Handle, newHandle: Handle): void;
@@ -78,6 +79,10 @@ export class FixedPointConstraint extends Constraint {
     return new FixedPointConstraint(handleMap.get(this.p)!, transform(this.pos));
   }
 
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._p);
+  }
+
   override forEachThing(fn: (t: Thing) => void): void {
     // no op
   }
@@ -128,6 +133,11 @@ export class HorizontalOrVerticalConstraint extends Constraint {
 
   override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
     return new HorizontalOrVerticalConstraint(handleMap.get(this.a)!, handleMap.get(this.b)!);
+  }
+
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a);
+    fn(this._b);
   }
 
   override forEachThing(fn: (t: Thing) => void): void {
@@ -187,6 +197,11 @@ export class FixedDistanceConstraint extends Constraint {
 
   override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
     return new FixedDistanceConstraint(handleMap.get(this.a)!, handleMap.get(this.b)!);
+  }
+
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a);
+    fn(this._b);
   }
 
   override forEachThing(fn: (t: Thing) => void): void {
@@ -266,6 +281,13 @@ export class EqualDistanceConstraint extends Constraint {
     );
   }
 
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a1);
+    fn(this._b1);
+    fn(this._a2);
+    fn(this._b2);
+  }
+
   forEachThing(fn: (t: Thing) => void): void {
     // no op
   }
@@ -339,6 +361,12 @@ export class PointOnLineConstraint extends Constraint {
       handleMap.get(this.a)!,
       handleMap.get(this.b)!,
     );
+  }
+
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._p);
+    fn(this._a);
+    fn(this._b);
   }
 
   override forEachThing(fn: (t: Thing) => void): void {
@@ -422,6 +450,13 @@ export class PointOnArcConstraint extends Constraint {
     );
   }
 
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._p);
+    fn(this._a);
+    fn(this._b);
+    fn(this._c);
+  }
+
   override forEachThing(fn: (t: Thing) => void): void {
     // no op
   }
@@ -502,6 +537,11 @@ export class PointInstanceConstraint extends Constraint {
     );
   }
 
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._instancePoint);
+    fn(this._masterPoint);
+  }
+
   override forEachThing(fn: (t: Thing) => void): void {
     fn(this.instance);
   }
@@ -545,6 +585,10 @@ export class SizeConstraint extends Constraint {
     fn(this.instance);
   }
 
+  override forEachVar(fn: (v: Var<any>) => void) {
+    // no op
+  }
+
   override forEachHandle(fn: (t: Handle) => void): void {
     // no op
   }
@@ -585,6 +629,10 @@ export class WeightConstraint extends Constraint {
 
   override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {
     return new WeightConstraint(handleMap.get(this.a)!);
+  }
+
+  override forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a);
   }
 
   override forEachThing(fn: (t: Thing) => void): void {

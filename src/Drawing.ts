@@ -52,7 +52,7 @@ export class Drawing {
   }
 
   relax() {
-    return this.constraints.relax(this.getVars());
+    return this.constraints.relax(this.getRelaxableVars());
   }
 
   render(transform = scope.toScreenPosition, color?: string, depth = 0) {
@@ -277,6 +277,21 @@ export class Drawing {
     }
   }
 
+  dismemberAllInstances() {
+    while (true) {
+      let didSomething = false;
+      for (const t of this.things) {
+        if (t instanceof Instance) {
+          didSomething = true;
+          this.inline(t);
+        }
+      }
+      if (!didSomething) {
+        break;
+      }
+    }
+  }
+
   private inline(instance: Instance) {
     const { things, constraints } = instance.master;
     const handleMap = new Map<Handle, Handle>();
@@ -341,7 +356,7 @@ export class Drawing {
       const constraints = new ConstraintSet();
       const snappedPos = new Handle(pos);
       const vars = new Set<Var<number>>();
-      snappedPos.forEachVar((v) => vars.add(v));
+      snappedPos.forEachRelaxableVar((v) => vars.add(v));
 
       for (const thing of this.things) {
         if (
@@ -492,10 +507,20 @@ export class Drawing {
     return ps;
   }
 
-  private getVars() {
+  forEachVar(fn: (v: Var<any>) => void) {
+    this.constraints.forEachVar(fn);
+    fn(this._things);
+    this.things.forEachVar(fn);
+    this.things.forEach((t) => t.forEachVar(fn));
+    fn(this._attachers);
+    this.attachers.forEachVar(fn);
+    this.attachers.forEach((a) => a.forEachVar(fn));
+  }
+
+  private getRelaxableVars() {
     const vars = new Set<Var<number>>();
     for (const thing of this.things) {
-      thing.forEachVar((v) => vars.add(v));
+      thing.forEachRelaxableVar((v) => vars.add(v));
     }
     return vars;
   }
@@ -533,3 +558,5 @@ export class Drawing {
     );
   }
 }
+
+(window as any).Drawing = Drawing;

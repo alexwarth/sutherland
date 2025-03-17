@@ -49,6 +49,8 @@ vite
   - To **zoom in / out**, press `+` / `-`
   - To **delete a line / arc / instance**, point at it and press backspace
   - To **toggle flicker on / off**, press `F`
+  - To **copy** the current drawing, press `SHIFT` + `C`
+  - To **paste** the copied drawing, press `P`
 - Masters and instances:
   - To **switch drawings**, press one of the digit keys
   - To **instantiate a drawing**, press `SHIFT` + one of the digit keys

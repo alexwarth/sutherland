@@ -2,10 +2,6 @@ import * as canvas from './canvas';
 import config from './config';
 import { isTablet, pointDist, Position } from './helpers';
 
-// TODO: make this work when auto-solve is on
-// right now it's creating too many worlds b/c we always tweak every variable's value +/- 1,
-// most of the time only to change it back to the orig. value.
-
 const circleSize = isTablet() ? 12 : 6;
 const addlXPaddingForWorlds = isTablet() ? 190 : 0;
 
@@ -15,8 +11,38 @@ class World {
   readonly children = new Set<World>();
   private numWrites = 0;
   private sealed = false;
+  receivedPasteFrom: World | null = null;
 
   constructor(readonly parent?: World) {}
+
+  bookmark() {
+    _bookmarkedWorld = this;
+  }
+
+  pasteInto(dest: World) {
+    if (dest.sealed) {
+      dest = dest.sprout();
+    }
+    dest.receivedPasteFrom = this;
+    this.doInTempChild(() => {
+      const currDrawing = (window as any).drawing();
+      const d = new (window as any).Drawing();
+      d.addInstance(currDrawing, { x: 0, y: 0 }, currDrawing.size, 0);
+      (window as any).dismemberAllInstances(d);
+      d.forEachVar((v: Var<any>) => {
+        const value = v.value;
+        console.log('writing', v, value);
+        dest.do(() => (v.value = value));
+      });
+      for (const t of d.things) {
+        dest.do(() => (window as any).drawing().things.unshift(t));
+      }
+      d.constraints.forEach((c: any) => {
+        dest.do(() => (window as any).drawing().constraints.add(c));
+      });
+    });
+    dest.goInto();
+  }
 
   set<T>(v: Var<T>, newValue: T) {
     if (newValue === this.get(v)) {
@@ -184,7 +210,10 @@ class World {
       w._render(x0 + xStep, y, xStep, yStep);
       y -= w.breadth * yStep;
     }
-    this.renderCircle('cornflowerblue');
+    if (this.receivedPasteFrom) {
+      canvas.drawDancingLine(this, this.receivedPasteFrom, this.rand, 'rgba(255, 165, 0, .7)');
+    }
+    this.renderCircle(this === _bookmarkedWorld ? 'rgb(255, 165, 0)' : 'cornflowerblue');
   }
 
   renderCircle(color: string) {
@@ -203,6 +232,9 @@ let _thisWorld = _topLevelWorld;
 export const thisWorld = () => _thisWorld;
 (window as any).thisWorld = thisWorld;
 export const topLevelWorld = () => _topLevelWorld;
+
+let _bookmarkedWorld: World | null = null;
+export const bookmarkedWorld = () => _bookmarkedWorld;
 
 export function maybeTimeTravelToWorldAt(p: Position) {
   let bestWorld: World | null = null;
@@ -227,7 +259,11 @@ export function maybeTimeTravelToWorldAt(p: Position) {
 //   constructor(public value: T) {}
 // }
 
+let nextVarId = 0;
+
 export class Var<T> {
+  readonly id = nextVarId++;
+
   constructor(value: T) {
     this.value = value;
   }
@@ -352,6 +388,15 @@ export class List<T> {
     }
   }
 
+  forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._first);
+    let curr = this.first;
+    while (curr) {
+      curr.forEachVar(fn);
+      curr = curr.next;
+    }
+  }
+
   forEach(fn: (x: T) => void) {
     let curr = this.first;
     while (curr) {
@@ -442,6 +487,11 @@ class ListNode<T> {
 
   set next(newNext: ListNode<T> | null) {
     this._next.value = newNext;
+  }
+
+  forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._value);
+    fn(this._next);
   }
 }
 

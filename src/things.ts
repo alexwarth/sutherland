@@ -28,7 +28,8 @@ export interface Thing {
   render(transform: Transform, color?: string, depth?: number): void;
   forEachHandle(fn: (h: Handle) => void): void;
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
-  forEachVar(fn: (v: Var<number>) => void): void;
+  forEachRelaxableVar(fn: (v: Var<number>) => void): void;
+  forEachVar(fn: (v: Var<any>) => void): void;
 }
 
 export class Handle implements Thing {
@@ -85,9 +86,13 @@ export class Handle implements Thing {
     throw new Error('should never call replace() on Handle');
   }
 
-  forEachVar(fn: (v: Var<number>) => void) {
+  forEachRelaxableVar(fn: (v: Var<number>) => void) {
     fn(this._x);
     fn(this._y);
+  }
+
+  forEachVar(fn: (v: Var<any>) => void) {
+    this.forEachRelaxableVar(fn);
   }
 
   toString() {
@@ -167,8 +172,14 @@ export class Line implements Thing {
     }
   }
 
-  forEachVar(fn: (v: Var<number>) => void): void {
-    this.forEachHandle((h) => h.forEachVar(fn));
+  forEachRelaxableVar(fn: (v: Var<number>) => void): void {
+    this.forEachHandle((h) => h.forEachRelaxableVar(fn));
+  }
+
+  forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a);
+    fn(this._b);
+    this.forEachRelaxableVar(fn);
   }
 }
 
@@ -283,8 +294,15 @@ export class Arc implements Thing {
     }
   }
 
-  forEachVar(fn: (v: Var<number>) => void): void {
-    this.forEachHandle((h) => h.forEachVar(fn));
+  forEachRelaxableVar(fn: (v: Var<number>) => void): void {
+    this.forEachHandle((h) => h.forEachRelaxableVar(fn));
+  }
+
+  forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._a);
+    fn(this._b);
+    fn(this._c);
+    this.forEachRelaxableVar(fn);
   }
 }
 
@@ -431,11 +449,17 @@ export class Instance implements Thing {
     this.attachers = this.attachers.map((h) => (h === oldHandle ? newHandle : h));
   }
 
-  forEachVar(fn: (v: Var<number>) => void): void {
+  forEachRelaxableVar(fn: (v: Var<number>) => void): void {
     fn(this._x);
     fn(this._y);
     fn(this._angleAndSizeVecX);
     fn(this._angleAndSizeVecY);
-    this.forEachHandle((h) => h.forEachVar(fn));
+    this.forEachHandle((h) => h.forEachRelaxableVar(fn));
+  }
+
+  forEachVar(fn: (v: Var<any>) => void) {
+    fn(this._attachers);
+    this.attachers.forEachVar(fn);
+    this.forEachRelaxableVar(fn);
   }
 }
