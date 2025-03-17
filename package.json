@@ -5,6 +5,7 @@
   "description": "",
   "main": "",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "format": "prettier --write ."
