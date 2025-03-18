@@ -36,6 +36,7 @@ class World {
       for (const t of d.things) {
         dest.do(() => (window as any).drawing().things.unshift(t));
       }
+      // TODO: attachers?
       d.constraints.forEach((c: any) => {
         dest.do(() => (window as any).drawing().constraints.add(c));
       });
