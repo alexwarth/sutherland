@@ -401,7 +401,11 @@ const mainScreen = new (class extends Screen {
 
   onFingerDown(screenPos: Position, id: number) {
     super.onFingerDown(screenPos, id);
-    if (this.timeButton.isDown && id !== this.timeButton.fingerId) {
+    if (this.fingerScreenPositions.size === 4 && app.pen.pos) {
+      app.copy();
+    } else if (this.fingerScreenPositions.size === 4) {
+      app.paste();
+    } else if (this.timeButton.isDown && id !== this.timeButton.fingerId) {
       this.timeTravelTo(screenPos);
     }
   }
