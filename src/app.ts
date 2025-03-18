@@ -452,7 +452,7 @@ export function panBy(dx: number, dy: number) {
 }
 
 export function copy() {
-  status.set('copy');
+  // status.set('copy');
   thisWorld().bookmark();
 }
 
