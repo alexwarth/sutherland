@@ -26,9 +26,10 @@ import { showHideConsole } from './console';
 // [x] Gaussian deposition of photons
 // [x] UI for experimenting with parameters
 // [x] lightpen tracking
-// [x] use 8 draw calls for interlaced rendering
+// [x] interlaced rendering
 // [ ] use for Sketchpad drawing
 // [ ] use >8bit textures for higher dynamic range
+// [ ] avoid uploading 8 buffers for interlacing (indexed or instancing maybe?)
 
 const MAX_SPOTS = 16348;     // TX-2 used 32K words for display table with double buffering
 
@@ -110,6 +111,9 @@ const params = {
 const uniforms = {
     spotSize: 12,
     fadeAmount: 0.3,
+    phosphorAmbient: 0.3,
+    phosphorSmoothness: 0.95,
+    phosphorGrain: 400,
     screenScale: [0, 0],    // set in resize()
     colorIdx: 0,
 };
@@ -137,18 +141,66 @@ export function demo() {
 ///////// IMPLEMENTATION //////////
 
 const FADE_VSHADER = `#version 300 es
-in      vec2 pos;
+in vec2 pos;
+out vec2 uv;
 void main() {
     gl_Position = vec4(pos, 0.0, 1.0);
+    uv = pos * 0.5 + 0.5;
 }`;
 
 const FADE_FSHADER = `#version 300 es
 precision mediump float;
 uniform float fadeAmount;
+uniform float phosphorAmbient;
+uniform float phosphorSmoothness;
+uniform float phosphorGrain;
+in vec2 uv;
 out vec4 photons;
+
+// Simplex Noise Function
+vec2 mod289(vec2 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec3 mod289(vec3 x) {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+
+vec3 permute(vec3 x) {
+    return mod289(((x*34.0)+1.0)*x);
+}
+
+float simplexNoise(vec2 v) {
+    const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+    vec2 i  = floor(v + dot(v, C.yy) );
+    vec2 x0 = v -   i + dot(i, C.xx);
+    vec2 i1;
+    i1.x = step( x0.y, x0.x );
+    i1.y = 1.0 - i1.x;
+    vec4 x12 = x0.xyxy + C.xxzz;
+    x12.xy -= i1;
+    i = mod289(i);
+    vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+            + i.x + vec3(0.0, i1.x, 1.0 ));
+    vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+    m = m*m ;
+    m = m*m ;
+    vec3 x = 2.0 * fract(p * C.www) - 1.0;
+    vec3 h = abs(x) - 0.5;
+    vec3 ox = floor(x + 0.5);
+    vec3 a0 = x - ox;
+    m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+    vec3 g;
+    g.x  = a0.x  * x0.x  + h.x  * x0.y;
+    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+    return 130.0 * dot(m, g);
+}
+
 void main() {
-    // used with dst*(1-src.a)) blending to fade out
-    photons = vec4(0.0, 0.0, 0.0, fadeAmount);
+    // noise to simulate phosphor roughness
+    float p = phosphorAmbient * mix(simplexNoise(uv * phosphorGrain) * 2.0, 1.0, phosphorSmoothness);
+    // used with src * src.a + dst*(1-src.a)) blending to fade out
+    photons = vec4(p, p, p, fadeAmount);
 }`;
 
 const SPOT_VSHADER = `#version 300 es
@@ -243,6 +295,9 @@ function startup(canvas: HTMLCanvasElement) {
     gui.add(params, 'spotsPerSec', 1000, 500000);
     gui.add(uniforms, 'spotSize', 1, 256);
     gui.add(uniforms, 'fadeAmount', 0, 1);
+    gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
+    gui.add(uniforms, 'phosphorSmoothness', 0, 1);
+    gui.add(uniforms, 'phosphorGrain', 100, 2000);
     gui.add(params, 'interlace');
     gui.add(params, 'twinkle');
     gui.add(params, 'penTracker').onChange((on: boolean) => {
@@ -353,7 +408,7 @@ function startup(canvas: HTMLCanvasElement) {
 
         // render phosphor fade
         gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.useProgram(fadeProg.program);
         twgl.setBuffersAndAttributes(gl, fadeProg, fadeBuffer);
         twgl.setUniforms(fadeProg, uniforms);
