@@ -79,7 +79,8 @@ window.onpointerup = (e: PointerEvent) => pointerEvent(e, 'ended');
 
 // Block the "swipe in to go back/forward" gesture in mobile safari
 const blockSwipe = (e: TouchEvent) => e.preventDefault();
-window.addEventListener('touchstart', blockSwipe, { passive: false });
+// canvas.addEventListener('touchstart', blockSwipe, { passive: false });
+// (disabled because it was blocking interaction with the GUI --codefrau)
 
 // The Wrapper will call a function named "wrapperEvent" on window.
 // The first time we receive a call from the wrapper, we can
