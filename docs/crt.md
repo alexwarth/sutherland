@@ -9,8 +9,9 @@ According to [Ivan Sutherland's thesis](https://dspace.mit.edu/handle/1721.1/149
 * 10 bit horizontal and 10 bit vertical deflection of ray, origin at center, "signed fraction of full scope deflection" (pg. 70)
 * 16 bit tag (to identify what part of the drawing is sensed by the light pen)
 
-This means it had a "resolution" of 1024x1024 spot positions, which some reports incorrectly call a 1024x1024 pixel display. But this was not a raster display, it displayed individual points. Normally the spots bleed into each other visually, but they can be drawn apart too, in some cases due to interlaced rendering to reduce flicker (as in this screenshot from the later Sketchpad-3D):
+This means it had a "resolution" of 1024x1024 spot positions, which some reports incorrectly call a 1024x1024 pixel display. But this was not a display showing pixels in scanlines. It also was not a line-drawing vector display as in old arcade machines, where the electronics made the beam trace a line between coordinates on the screen.
 
+Instead, it displayed up to 16,000 individual points in a 1024x1024 grid. The spot radius is a bit larger than the grid so the spots bleed into each other visually, giving the illusion of continuous lines or arcs. But they can be drawn apart too, in some cases due to interlaced rendering to reduce flicker (as in this screenshot from the later Sketchpad-III):
 ![interlaced spot rendering](crt2.jpg)
 
 ## Display Speed
