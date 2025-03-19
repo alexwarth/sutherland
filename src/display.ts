@@ -94,6 +94,18 @@ export function addSpot(x: number | Spot, y?: number, id?: number) {
     spotsChanged = true;
 }
 
+export function getSpotCount() {
+    return spotCount;
+}
+
+export function getSpots() {
+    const spots: Spot[] = [];
+    for (let i = 0; i < spotCount; i++) {
+        spots.push({ x: displayTable[2*i] >> 16, y: displayTable[2*i+1] >> 16, id: displayTable[2*i] & 65535 });
+    }
+    return spots;
+}
+
 export function getSeenSpots() {
     return spotsSeen;
 }
@@ -144,12 +156,16 @@ export function demo() {
     // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
 
     function lissajous(w: number, h: number, phaseX: number, phaseY: number, a: number, b: number, nSpots: number) {
+        let prevX = 0;
+        let prevY = 0;
         for (let i = 0; i < nSpots; i++) {
             const angle = i * Math.PI * 2 / nSpots;
-            addSpot(
-                Math.sin(a * angle + phaseX) * w,
-                Math.cos(b * angle + phaseY) * h,
-            );
+            const x = Math.sin(a * angle + phaseX) * w | 0;
+            const y = Math.cos(b * angle + phaseY) * h | 0;
+            if (x === prevX && y === prevY) continue;
+            addSpot(x, y);
+            prevX = x;
+            prevY = y;
         }
     }
 }
@@ -308,6 +324,9 @@ function startup(canvas: HTMLCanvasElement) {
     onresize = () => resize();
     resize();
 
+    config().console = params.showConsole;
+    showHideConsole();
+
     const gui = new dat.GUI();
     gui.add(params, 'spotsPerSec', 1000, 500000);
     gui.add(uniforms, 'spotSize', 1, 256);
@@ -336,8 +355,6 @@ function startup(canvas: HTMLCanvasElement) {
     });
     if (!params.showGui) gui.hide();
     if (!params.openGui) gui.close();
-    config().console = params.showConsole;
-    showHideConsole();
     canvas.style.cursor = params.penTracker ? 'none' : 'default';
 
     const pen: {
