@@ -1,11 +1,3 @@
-import 'webgl-lint'; // for debugging
-import * as twgl from 'twgl.js';
-import * as dat from 'dat.gui';
-import * as wrapper from './wrapper';
-import * as NativeEvents from './NativeEvents';
-import config from './config';
-import { showHideConsole } from './console';
-
 // Simulate a CRT's glow by drawing into a phosphor texture,
 // thereby "depositing" photons into the phosphor, and then
 // drawing the texture to the screen, thereby "emitting"
@@ -31,18 +23,33 @@ import { showHideConsole } from './console';
 // [ ] use >8bit textures for higher dynamic range
 // [ ] avoid uploading 8 buffers for interlacing (indexed or instancing maybe?)
 
-const MAX_SPOTS = 16348;     // TX-2 used 32K words for display table with double buffering
+import 'webgl-lint'; // for debugging
+import * as twgl from 'twgl.js';
+import * as dat from 'dat.gui';
+import * as wrapper from './wrapper';
+import * as NativeEvents from './NativeEvents';
+import config from './config';
+import { showHideConsole } from './console';
 
-// Sketchpad used 36 bit words for spot locations in the display table:
+export type Spot = {
+    x: number,
+    y: number,
+    id?: number,
+};
+
+// Sketchpad used 36 bit words for spot locations in the display table
+// (which Ivan called "display file" in the thesis):
 // 10 bits from each of the two half-words for x and y,
-// plus the remaining 16 bits as ID for lightpen
+// plus the remaining 16 bits as ID for the lightpen
 
 // we will use 16 bits out of the two half-words in a 64 bit word for x and y
 // and 16 more bits in the x word for the spot id. The 16 bits in the y word
 // are used for a spot index, which can be used to colorize spots
-let displayTable = new Int32Array(MAX_SPOTS*2 + 64);  // 64 extra for interlaced rendering
+const MAX_SPOTS = 16348;     // TX-2 used 32K words for display table with double buffering
+let displayTable = new Int32Array(MAX_SPOTS*2 + 64);   // 64 extra for interlaced rendering
 let spotCount = 0;         // number of spots in display table
 let penSpotCount = 0;      // number of spots at the end of the table for penTracker
+let spotsSeen: Spot[] = [];   // spots seen by the lightpen
 let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
 let spotsChanged = false;  // true if spots have changed since last frame
 
@@ -61,7 +68,13 @@ export function clearSpots() {
     spotsChanged = true;
 }
 
-export function addSpot(x: number, y: number, id: number = 0) {
+export function addSpot(x: number | Spot, y?: number, id?: number) {
+    if (typeof x === 'object') {
+        const s: Spot = x as Spot;
+        return addSpot(s.x, s.y, s.id);
+    }
+    if (typeof x !== 'number' || typeof y !== 'number') throw Error('addSpot(x, y, id?) expects x, y as numbers');
+    if (!id) id = 0;
     if (spotCount >= MAX_SPOTS) {
         console.warn(`MAX_SPOTS (${MAX_SPOTS}) reached`);
         return;
@@ -81,6 +94,10 @@ export function addSpot(x: number, y: number, id: number = 0) {
     spotsChanged = true;
 }
 
+export function getSeenSpots() {
+    return spotsSeen;
+}
+
 export function setParams(p: Partial<typeof params>) {
     Object.assign(params, p);
 }
@@ -92,7 +109,7 @@ export function setParams(p: Partial<typeof params>) {
 const params = {
     interlace: false,       // interlaced rendering
     twinkle: false,         // scramble spots for less flicker
-    penTracker: true,       // draw pen tracker
+    penTracker: true,       // draw pen tracking cross
     scissor: false,         // only draw within 1024x1024 square
     spotsPerSec: 50000,     // draw speed in spots per second
     demo: false,            // run demo
@@ -504,7 +521,7 @@ function penTracker({ x, y }) {
     const origSpotCount = spotCount;
     const origTwinkle = params.twinkle;
     params.twinkle = false;
-    // log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
+    // trackin cross with log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
     const COUNT = 6;          // number of spots per arm
     const START = 2.5;        // inner opening
     const DENSITY = 0.25;      // density of spots
@@ -513,6 +530,7 @@ function penTracker({ x, y }) {
     const scale = Math.max(10, uniforms.spotSize) / 5;
     const pseudoRange = scale * PSEUDO;  // snap to spot this close
     // find closest spot, make it the pseudo pen location
+    spotsSeen.length = 0;
     let pseudoX = x, pseudoY = y, dist = Infinity;
     for (let i = 0; i < spotCount; i++) {
         const spotX = displayTable[2*i] >> 16;
@@ -521,6 +539,7 @@ function penTracker({ x, y }) {
         const spotY = displayTable[2*i+1] >> 16;
         const dy = Math.abs(y - spotY);
         if (dy > pseudoRange) continue;
+        spotsSeen.push({ x: spotX, y: spotY, id: displayTable[2*i] & 65535 });
         const d = Math.min(dx, dy);
         if (d < dist) {
             pseudoX = spotX;
