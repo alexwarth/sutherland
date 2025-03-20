@@ -125,7 +125,7 @@ const params = {
     scissor: false,         // only draw within 1024x1024 square
     spotsPerSec: 50000,     // draw speed in spots per second
     demo: false,            // run demo
-    demoSpots: 4000,
+    demoSpots: 2000,
     demoMulX: 3,
     demoMulY: 4,
     demoPhaseX: 1,
@@ -138,11 +138,12 @@ const params = {
 }
 
 const uniforms = {
-    spotSize: 12,
+    spotSize: 5,
     fadeAmount: 0.3,
     phosphorAmbient: 0.3,
     phosphorSmoothness: 0.95,
-    phosphorGrain: 400,
+    phosphorGrain: 3,
+    pixelRatio: devicePixelRatio,
     screenScale: [0, 0],    // set in resize()
     colorIdx: 0,
 };
@@ -153,7 +154,7 @@ const uniforms = {
 export function demo() {
     clearSpots();
     lissajous(400, 400, params.demoPhaseX, params.demoPhaseY, params.demoMulX|0, params.demoMulY|0, params.demoSpots);
-    // console.log('spotCount', spotCount, [...displayTable.slice(0, spotCount*2)].map((v, i) => v & 65535));
+    // console.log('spotCount', spotCount);
 
     function lissajous(w: number, h: number, phaseX: number, phaseY: number, a: number, b: number, nSpots: number) {
         let prevX = 0;
@@ -187,6 +188,7 @@ uniform float fadeAmount;
 uniform float phosphorAmbient;
 uniform float phosphorSmoothness;
 uniform float phosphorGrain;
+uniform float pixelRatio;
 in vec2 uv;
 out vec4 photons;
 
@@ -231,7 +233,7 @@ float simplexNoise(vec2 v) {
 
 void main() {
     // noise to simulate phosphor roughness
-    float p = phosphorAmbient * mix(simplexNoise(uv * phosphorGrain) * 2.0, 1.0, phosphorSmoothness);
+    float p = phosphorAmbient * mix(simplexNoise(uv * pixelRatio / phosphorGrain * 500.0) * 2.0, 1.0, phosphorSmoothness);
     // used with src * src.a + dst*(1-src.a)) blending to fade out
     photons = vec4(p, p, p, fadeAmount);
 }`;
@@ -239,12 +241,13 @@ void main() {
 const SPOT_VSHADER = `#version 300 es
 in      ivec2 xyIdIx;          // position in upper 16 bits, id in lower 16 bits
 uniform vec2  screenScale;     // half width/height of screen
+uniform float pixelRatio;      // device pixel ratio
 uniform float spotSize;        // size of spot
 
 void main() {
     ivec2 pos = xyIdIx >> ivec2(16, 16);                   // sign extend 16 bits to 32
     gl_Position = vec4(vec2(pos) / screenScale, 0.0, 1.0);
-    gl_PointSize = spotSize;
+    gl_PointSize = spotSize * pixelRatio;
 }`;
 
 const SPOT_FSHADER = `#version 300 es
@@ -252,7 +255,7 @@ precision mediump float;
 out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-15.0 * dist*dist);                  // -15 works well for 8 bit color components
+    float gauss = exp(-20.0 * dist*dist);                  // 20 works well for 8 bit color components
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = vec4(gauss, gauss, gauss, 1.0);
@@ -329,11 +332,11 @@ function startup(canvas: HTMLCanvasElement) {
 
     const gui = new dat.GUI();
     gui.add(params, 'spotsPerSec', 1000, 500000);
-    gui.add(uniforms, 'spotSize', 1, 256);
+    gui.add(uniforms, 'spotSize', 1, 100);
     gui.add(uniforms, 'fadeAmount', 0, 1);
     gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
     gui.add(uniforms, 'phosphorSmoothness', 0, 1);
-    gui.add(uniforms, 'phosphorGrain', 100, 2000);
+    gui.add(uniforms, 'phosphorGrain', 1, 10);
     gui.add(params, 'interlace');
     gui.add(params, 'twinkle');
     gui.add(params, 'penTracker').onChange((on: boolean) => {
@@ -342,7 +345,7 @@ function startup(canvas: HTMLCanvasElement) {
     });
     if (params.demo) {
         demo();
-        gui.add(params, 'demoSpots', 1, MAX_SPOTS-348); // leave room for penTracker
+        gui.add(params, 'demoSpots', 1, MAX_SPOTS-348).onChange(demo);
         gui.add(params, 'demoMulX', 1, 10);
         gui.add(params, 'demoMulY', 1, 10);
     }

@@ -24,7 +24,7 @@ export function showHideConsole() {
 
 function createConsole() {
     const builder = document.createElement('div');
-    builder.innerHTML = `<div style="position: absolute; right: 0; bottom: 0; padding: 5px; width: fit-content; white-space: pre; font-family: monospace; background: rgba(0,0,0,0.5); max-width: 50%;
+    builder.innerHTML = `<div style="position: absolute; right: 0; bottom:0; padding: 5px; width: fit-content; white-space: pre; font-family: monospace; background: rgba(0,0,0,0.5); max-width: 50%;
     white-space: break-spaces; pointer-events: none"></div>`;
     const el = builder.children[0] as HTMLElement;
     document.body.appendChild(el);
