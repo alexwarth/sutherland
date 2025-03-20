@@ -81,7 +81,7 @@ export function addSpot(x: number | Spot, y?: number, id?: number) {
     }
     const idx = spotCount;
     let i = idx;
-    if (params.twinkle) {
+    if (params.twinkleSpots) {
         const j = Math.random() * spotCount | 0;
         displayTable[2*i] = displayTable[2*j];
         displayTable[2*i+1] = displayTable[2*j+1];
@@ -119,10 +119,10 @@ export function setParams(p: Partial<typeof params>) {
 
 // you can override these defaults by passing options to init()
 const params = {
-    interlace: false,       // interlaced rendering
-    twinkle: false,         // scramble spots for less flicker
+    interlaceSpots: false,       // interlaced rendering
+    twinkleSpots: false,         // scramble spots for less flicker
     penTracker: true,       // draw pen tracking cross
-    scissor: false,         // only draw within 1024x1024 square
+    clipToSquare: false,         // only draw within 1024x1024 square
     spotsPerSec: 50000,     // draw speed in spots per second
     demo: false,            // run demo
     demoSpots: 2000,
@@ -138,8 +138,8 @@ const params = {
 }
 
 const uniforms = {
-    spotSize: 5,
-    fadeAmount: 0.3,
+    spotSize: 9,
+    phosphorSpeed: 0.5,
     phosphorAmbient: 0.3,
     phosphorSmoothness: 0.95,
     phosphorGrain: 3,
@@ -184,7 +184,7 @@ void main() {
 
 const FADE_FSHADER = `#version 300 es
 precision mediump float;
-uniform float fadeAmount;
+uniform float phosphorSpeed;
 uniform float phosphorAmbient;
 uniform float phosphorSmoothness;
 uniform float phosphorGrain;
@@ -235,7 +235,7 @@ void main() {
     // noise to simulate phosphor roughness
     float p = phosphorAmbient * mix(simplexNoise(uv * pixelRatio / phosphorGrain * 500.0) * 2.0, 1.0, phosphorSmoothness);
     // used with src * src.a + dst*(1-src.a)) blending to fade out
-    photons = vec4(p, p, p, fadeAmount);
+    photons = vec4(p, p, p, phosphorSpeed);
 }`;
 
 const SPOT_VSHADER = `#version 300 es
@@ -310,16 +310,20 @@ function startup(canvas: HTMLCanvasElement) {
 
     function resize() {
         twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
-        gl.viewport(0, 0, canvas.width, canvas.height);
         const scale = Math.min(canvas.width/512, canvas.height/512);
+        gl.viewport(0, 0, canvas.width, canvas.height);
         uniforms.screenScale = [canvas.width/scale, canvas.height/scale];
-        if (params.scissor) {
+        // clear outside of 1024x1024 square
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        if (params.clipToSquare) {
             // only draw inner square
             const ratio = canvas.width / canvas.height;
             const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
             const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
+            const size = ratio > 1 ? canvas.height : canvas.width;
+            gl.scissor(left, top, size, size);
             gl.enable(gl.SCISSOR_TEST);
-            gl.scissor( left, top, canvas.width - 2*left, canvas.height - 2*top);
         } else {
             gl.disable(gl.SCISSOR_TEST);
         }
@@ -331,14 +335,15 @@ function startup(canvas: HTMLCanvasElement) {
     showHideConsole();
 
     const gui = new dat.GUI();
-    gui.add(params, 'spotsPerSec', 1000, 500000);
     gui.add(uniforms, 'spotSize', 1, 100);
-    gui.add(uniforms, 'fadeAmount', 0, 1);
+    gui.add(params, 'spotsPerSec', 1000, 500000);
+    gui.add(uniforms, 'phosphorSpeed', 0, 1);
     gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
     gui.add(uniforms, 'phosphorSmoothness', 0, 1);
     gui.add(uniforms, 'phosphorGrain', 1, 10);
-    gui.add(params, 'interlace');
-    gui.add(params, 'twinkle');
+    gui.add(params, 'clipToSquare').onChange(() => resize());
+    gui.add(params, 'interlaceSpots');
+    gui.add(params, 'twinkleSpots');
     gui.add(params, 'penTracker').onChange((on: boolean) => {
         canvas.style.cursor = on ? 'none' : 'default';
         if (!on) clearPenSpots();
@@ -351,7 +356,6 @@ function startup(canvas: HTMLCanvasElement) {
     }
     gui.add(params, 'colorizeByIndex');
     gui.add(params, 'showConsole').onChange((on) => { config().console = on; showHideConsole(); });
-    gui.add(params, 'scissor').onChange(() => resize());
     gui.add(params, 'fullscreen').onChange((on: boolean) => {
         if (on) document.body.requestFullscreen();
         else document.exitFullscreen();
@@ -476,7 +480,7 @@ function startup(canvas: HTMLCanvasElement) {
         uniforms.colorIdx = spotsToDraw;
         twgl.setUniforms(spotsProg, uniforms);
 
-        if (params.interlace && spotsToDraw > 8) {
+        if (params.interlaceSpots && spotsToDraw > 8) {
             // stride was set to every 8th spot
             // render to end of non-pen spots in display table
             const drawInterlaced = spotsToDraw >> 3;
@@ -539,8 +543,8 @@ function penTracker({ x, y }) {
     // remove pen spots from the end of the display table
     clearPenSpots();
     const origSpotCount = spotCount;
-    const origTwinkle = params.twinkle;
-    params.twinkle = false;
+    const origTwinkle = params.twinkleSpots;
+    params.twinkleSpots = false;
     // trackin cross with log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
     const COUNT = 6;          // number of spots per arm
     const START = 2.5;        // inner opening
@@ -589,5 +593,5 @@ function penTracker({ x, y }) {
         }
     }
     penSpotCount = spotCount - origSpotCount;
-    params.twinkle = origTwinkle;
+    params.twinkleSpots = origTwinkle;
 }
