@@ -119,11 +119,13 @@ export function setParams(p: Partial<typeof params>) {
 
 // you can override these defaults by passing options to init()
 const params = {
-    interlaceSpots: false,       // interlaced rendering
-    twinkleSpots: false,         // scramble spots for less flicker
-    penTracker: true,       // draw pen tracking cross
-    clipToSquare: false,         // only draw within 1024x1024 square
     spotsPerSec: 50000,     // draw speed in spots per second
+    clipToSquare: false,    // only draw within 1024x1024 square
+    interlaceSpots: false,  // interlaced rendering
+    twinkleSpots: false,    // scramble spots for less flicker
+    penTracker: true,       // draw pen tracking cross
+    trackerSize: 5,        // size of tracking cross
+    trackerSnap: 5,         // snap distance for pseudo pen location
     demo: false,            // run demo
     demoSpots: 2000,
     demoMulX: 3,
@@ -348,6 +350,8 @@ function startup(canvas: HTMLCanvasElement) {
         canvas.style.cursor = on ? 'none' : 'default';
         if (!on) clearPenSpots();
     });
+    gui.add(params, 'trackerSize', 1, 20);
+    gui.add(params, 'trackerSnap', 1, 20);
     if (params.demo) {
         demo();
         gui.add(params, 'demoSpots', 1, MAX_SPOTS-348).onChange(demo);
@@ -549,10 +553,9 @@ function penTracker({ x, y }) {
     const COUNT = 6;          // number of spots per arm
     const START = 2.5;        // inner opening
     const DENSITY = 0.25;      // density of spots
-    const PSEUDO = 5;         // snap distance for pseudo pen location
     const BRIGHT = 0.4;       // bright dot size for pseudo pen location
-    const scale = Math.max(10, uniforms.spotSize) / 5;
-    const pseudoRange = scale * PSEUDO;  // snap to spot this close
+    const scale = Math.max(5, uniforms.spotSize) * devicePixelRatio * params.trackerSize / 30;
+    const pseudoRange = params.trackerSnap * 6;  // snap to spot this close
     // find closest spot, make it the pseudo pen location
     spotsSeen.length = 0;
     let pseudoX = x, pseudoY = y, dist = Infinity;
