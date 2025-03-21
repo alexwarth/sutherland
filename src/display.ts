@@ -131,7 +131,7 @@ export function setParams(p: Partial<typeof params>) {
   Object.assign(params, p);
 }
 
-export function getParam(p: keyof typeof params) {
+export function getParam<P extends keyof typeof params>(p: P): typeof params[P] {
   return params[p];
 }
 
