@@ -140,6 +140,7 @@ export function getParam(p: string) {
 // you can override these defaults by passing options to init()
 const params = {
   spotsPerSec: 50000, // draw speed in spots per second
+  spotDensity: 1, // spots per pixel
   clipToSquare: false, // only draw within 1024x1024 square
   interlaceSpots: false, // interlaced rendering
   twinkleSpots: false, // scramble spots for less flicker
@@ -155,6 +156,7 @@ const params = {
 
 const uniforms = {
   spotSize: 9,
+  spotBrightness: 0.3,
   phosphorSpeed: 0.5,
   phosphorAmbient: 0.3,
   phosphorSmoothness: 0.95,
@@ -244,10 +246,11 @@ void main() {
 
 const SPOT_FSHADER = `#version 300 es
 precision mediump float;
+uniform float spotBrightness;
 out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-20.0 * dist*dist);                  // 20 works well for 8 bit color components
+    float gauss = exp(-20.0 * dist*dist) * spotBrightness;          // 20 works well for 8 bit color components
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = vec4(gauss, gauss, gauss, 1.0);
@@ -327,6 +330,8 @@ function startup(canvas: HTMLCanvasElement) {
 
   const gui = new dat.GUI();
   gui.add(uniforms, 'spotSize', 1, 100);
+  gui.add(uniforms, 'spotBrightness', 0.1, 1);
+  gui.add(params, 'spotDensity', 0.1, 2);
   gui.add(params, 'spotsPerSec', 1000, 500000);
   gui.add(uniforms, 'phosphorSpeed', 0, 1);
   gui.add(uniforms, 'phosphorAmbient', 0, 0.5);

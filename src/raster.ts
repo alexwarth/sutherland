@@ -46,7 +46,7 @@ function line(a: Position, b: Position) {
   const delta = pointDiff(b, a);
   const dist = pointDist(a, b);
   // debugger;
-  const d = display.getParam('spotSize') * 0.8;
+  const d = display.getParam('spotSize') * display.getParam('spotDensity');
   // debugger;
   for (let i = 0; i < dist; i += d) {
     const x = a.x + (delta.x * i) / dist;
@@ -65,7 +65,7 @@ function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
   const radius = pointDist(c, a);
   const dTheta = direction === 'ccw' ? theta2 - theta1 : Math.PI * 2 - (theta2 - theta1);
   const circ = Math.abs(dTheta) * radius;
-  const d = display.getParam('spotSize') * 0.8;
+  const d = display.getParam('spotSize') * display.getParam('spotDensity');
   const delta = theta2 - theta1;
   // console.log('r', radius, 'dTheta', dTheta, circ, d, circ / d);
   for (let i = 0; i < circ; i += d) {

@@ -218,7 +218,7 @@ export function render() {
   const spotCount = display.getSpotCount();
   if (spotCount != prevSpotCount) {
     prevSpotCount = spotCount;
-    console.log(`${spotCount} spots`);
+    status.set(`${spotCount} spots`);
   }
 
   status.render();
