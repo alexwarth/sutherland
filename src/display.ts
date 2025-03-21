@@ -27,7 +27,6 @@ import 'webgl-lint'; // for debugging
 import * as twgl from 'twgl.js';
 import * as dat from 'dat.gui';
 import * as wrapper from './wrapper';
-import * as NativeEvents from './NativeEvents';
 import config from './config';
 import { showHideConsole } from './console';
 
@@ -58,7 +57,6 @@ let spotsChanged = false; // true if spots have changed since last frame
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
   if (options) setParams(options);
   startup(canvas);
-  return { clearSpots, addSpot, setParams, demo };
 }
 
 export function clearSpots() {
@@ -133,7 +131,6 @@ const params = {
   penTracker: true, // draw pen tracking cross
   trackerSize: 5, // size of tracking cross
   trackerSnap: 5, // snap distance for pseudo pen location
-  demo: false, // run demo
   demoSpots: 2000,
   demoMulX: 3,
   demoMulY: 4,
@@ -157,7 +154,6 @@ const uniforms = {
   colorIdx: 0,
 };
 
-///////// DEMO //////////
 
 export function demo() {
   clearSpots();
@@ -372,12 +368,6 @@ function startup(canvas: HTMLCanvasElement) {
   });
   gui.add(params, 'trackerSize', 1, 20);
   gui.add(params, 'trackerSnap', 1, 20);
-  if (params.demo) {
-    demo();
-    gui.add(params, 'demoSpots', 1, MAX_SPOTS - 348).onChange(demo);
-    gui.add(params, 'demoMulX', 1, 10);
-    gui.add(params, 'demoMulY', 1, 10);
-  }
   gui.add(params, 'colorizeByIndex');
   gui.add(params, 'showConsole').onChange((on) => {
     config().console = on;
@@ -390,43 +380,6 @@ function startup(canvas: HTMLCanvasElement) {
   if (!params.showGui) gui.hide();
   if (!params.openGui) gui.close();
   canvas.style.cursor = params.penTracker ? 'none' : 'default';
-
-  const pen: {
-    pos: { x: number; y: number };
-    downPos?: { x: number; y: number };
-    downPhase?: { x: number; y: number };
-  } = {
-    pos: { x: 0, y: 0 },
-  };
-  function updatePen(x, y) {
-    const b = canvas.getBoundingClientRect();
-    pen.pos.x = (((x - b.left - b.width / 2) / b.width) * 2 * uniforms.screenScale[0]) | 0;
-    pen.pos.y = (((y - b.top - b.height / 2) / b.height) * -2 * uniforms.screenScale[1]) | 0;
-    if (pen.downPos) {
-      params.demoPhaseX = pen.downPhase!.x + (pen.pos.x - pen.downPos.x) / 500;
-      params.demoPhaseY = pen.downPhase!.y + (pen.pos.y - pen.downPos.y) / 500;
-      params.demo && demo();
-    }
-  }
-  // canvas.onpointerdown = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = {...pen.pos}; pen.downPhase = params.demoPhase; };
-  canvas.onpointermove = (e) => updatePen(e.clientX, e.clientY);
-  // canvas.onpointermove = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = undefined; };
-  function processNativeEvents() {
-    for (const event of NativeEvents.getQueuedEvents()) {
-      if (event.type === 'pencil') {
-        updatePen(event.position.x, event.position.y);
-        switch (event.phase) {
-          case 'began':
-            pen.downPos = { ...pen.pos };
-            pen.downPhase = { x: params.demoPhaseX, y: params.demoPhaseY };
-            break;
-          case 'ended':
-            pen.downPos = undefined;
-            break;
-        }
-      }
-    }
-  }
 
   const fadeProg = twgl.createProgramInfo(gl, [FADE_VSHADER, FADE_FSHADER]);
   const fadeArrays: twgl.Arrays = {
@@ -469,7 +422,6 @@ function startup(canvas: HTMLCanvasElement) {
     let spotsBudget = ((Math.max(8, Math.min(delta, 30)) * params.spotsPerSec) / 1000) | 0;
     // console.log('spotsBudget', spotsBudget);
 
-    processNativeEvents();
     if (params.penTracker) penTracker(pen.pos);
 
     // render phosphor fade
