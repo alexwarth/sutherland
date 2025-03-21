@@ -203,17 +203,20 @@ export function onFrame() {
 // ---------- rendering ----------
 
 let prevSpotCount = 0;
-let inkSpotsPerSec = 1111;     // unique value
-let defaultSpotsPerSec = display.getParam('spotsPerSec');
+
+const inkCPUFraction = 0.02;
+const defaultCPUFraction = display.getParam('spotsCPUFraction');
 
 export function render() {
   display.clearSpots();
   raster.clear();
   if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
-    display.setParams({ spotsPerSec: inkSpotsPerSec });
-  } else if (display.getParam('spotsPerSec') === inkSpotsPerSec) {
-    display.setParams({ spotsPerSec: defaultSpotsPerSec });
+    if (display.getParam('spotsCPUFraction') === defaultCPUFraction) {
+      display.setParams({ spotsCPUFraction: inkCPUFraction });
+    }
+  } else if (display.getParam('spotsCPUFraction') === inkCPUFraction) {
+    display.setParams({ spotsCPUFraction: defaultCPUFraction });
   }
   renderDrawingInProgress();
   drawing().render();

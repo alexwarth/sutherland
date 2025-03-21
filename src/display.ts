@@ -140,29 +140,30 @@ export function getParam<P extends keyof typeof params>(p: P): typeof params[P] 
 // you can override these defaults by passing options to init()
 // or by calling setParams()
 const params = {
-  spotSize: 9,            // size of spot texture
-  spotBrightness: 0.3,    // like beam current
-  spotDensity: 1.5,       // spots on line/arc
-  spotsPerSec: 50000,     // draw speed in spots per second
-  phosphorSpeed: 0.5,
-  phosphorAmbient: 0.3,
-  phosphorSmoothness: 0.95,
-  phosphorGrain: 3,
-  clipToSquare: false,    // only draw within 1024x1024 square
-  interlaceSpots: false,  // interlaced rendering
-  twinkleSpots: false,    // scramble spots for less flicker
-  penTracker: true,       // draw pen tracking cross
-  trackerSize: 5,         // size of tracking cross
-  trackerSnap: 5,         // snap distance for pseudo pen location
-  colorizeByIndex: false, // colorize spots by ID
+  spotSize: 9,                    // size of spot texture
+  spotBrightness: 0.3,            // like beam current
+  spotDensity: devicePixelRatio,  // spots on line/arc
+  spotsPerSec: 100000,            // draw speed in spots per second
+  spotsCPUFraction: 0.5,          // fraction of CPU time for spots
+  phosphorSpeed: 0.5,             // fade amount per frame
+  phosphorAmbient: 0.3,           // base brightness
+  phosphorSmoothness: 0.95,       // 0: rough, 1: smooth
+  phosphorGrain: 3,               // size of graininess
+  clipToSquare: false,            // only draw within 1024x1024 square
+  interlaceSpots: false,          // interlaced rendering
+  twinkleSpots: false,            // scramble spots for less flicker
+  penTracker: true,               // draw pen tracking cross
+  trackerSize: 5,                 // size of tracking cross
+  trackerSnap: 5,                 // snap distance for pseudo pen location
+  colorizeByIndex: false,         // colorize spots by ID
   showConsole: config().console,
   fullscreen: false,
-  showGui: false,         // show GUI
-  openGui: false,         // open controls at start
+  showGui: false,                 // show GUI
+  openGui: false,                 // open controls at start
   // below just for internal use as uniforms
-  colorIdx: 0,
-  pixelRatio: devicePixelRatio,
-  screenScale: [0, 0],    // set in resize()
+  colorIdx: 0,                    // how many spots to color in frag shader
+  pixelRatio: devicePixelRatio,   // scale for pointSize
+  screenScale: [0, 0],            // set in resize()
 };
 
 ///////// IMPLEMENTATION //////////
@@ -332,6 +333,7 @@ function startup(canvas: HTMLCanvasElement) {
   gui.add(params, 'spotBrightness', 0.1, 1);
   gui.add(params, 'spotDensity', 0.1, 5);
   gui.add(params, 'spotsPerSec', 1000, 500000);
+  gui.add(params, 'spotsCPUFraction', 0.01, 1).listen(); // changed in app()
   gui.add(params, 'phosphorSpeed', 0, 1);
   gui.add(params, 'phosphorAmbient', 0, 0.5);
   gui.add(params, 'phosphorSmoothness', 0, 1);
@@ -396,7 +398,7 @@ function startup(canvas: HTMLCanvasElement) {
   function display(time: number) {
     const delta = time - prevTime;
     prevTime = time;
-    let spotsBudget = ((Math.max(8, Math.min(delta, 30)) * params.spotsPerSec) / 1000) | 0;
+    let spotsBudget = ((Math.max(8, Math.min(delta, 30)) * params.spotsPerSec * params.spotsCPUFraction) / 1000) | 0;
     // console.log('spotsBudget', spotsBudget);
 
     if (params.penTracker) penTracker();
