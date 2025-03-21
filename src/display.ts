@@ -51,7 +51,10 @@ let penSpotCount = 0; // number of spots at the end of the table for penTracker
 let spotsSeen: Spot[] = []; // spots seen by the lightpen
 let startSpot = 0; // start of current frame's spots in display table (50K/sec)
 let spotsChanged = false; // true if spots have changed since last frame
-
+let pen = { // pen location and pseudo pen location
+    pos: { x: 0, y: 0 },
+    pseudo: { x: 0, y: 0 },
+};
 ///////// PUBLIC API //////////
 
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
@@ -112,6 +115,15 @@ export function getSeenSpots() {
   return spotsSeen;
 }
 
+export function setPen(x: number, y: number) {
+  pen.pos.x = x | 0;
+  pen.pos.y = y | 0;
+}
+
+export function getPen() {
+  return pen;
+}
+
 export function setParams(p: Partial<typeof params>) {
   Object.assign(params, p);
 }
@@ -131,11 +143,6 @@ const params = {
   penTracker: true, // draw pen tracking cross
   trackerSize: 5, // size of tracking cross
   trackerSnap: 5, // snap distance for pseudo pen location
-  demoSpots: 2000,
-  demoMulX: 3,
-  demoMulY: 4,
-  demoPhaseX: 1,
-  demoPhaseY: 0,
   colorizeByIndex: false, // colorize spots by ID
   showGui: false, // show GUI
   openGui: false, // open controls at start
@@ -153,43 +160,6 @@ const uniforms = {
   screenScale: [0, 0], // set in resize()
   colorIdx: 0,
 };
-
-
-export function demo() {
-  clearSpots();
-  lissajous(
-    400,
-    400,
-    params.demoPhaseX,
-    params.demoPhaseY,
-    params.demoMulX | 0,
-    params.demoMulY | 0,
-    params.demoSpots,
-  );
-  // console.log('spotCount', spotCount);
-
-  function lissajous(
-    w: number,
-    h: number,
-    phaseX: number,
-    phaseY: number,
-    a: number,
-    b: number,
-    nSpots: number,
-  ) {
-    let prevX = 0;
-    let prevY = 0;
-    for (let i = 0; i < nSpots; i++) {
-      const angle = (i * Math.PI * 2) / nSpots;
-      const x = (Math.sin(a * angle + phaseX) * w) | 0;
-      const y = (Math.cos(b * angle + phaseY) * h) | 0;
-      if (x === prevX && y === prevY) continue;
-      addSpot(x, y);
-      prevX = x;
-      prevY = y;
-    }
-  }
-}
 
 ///////// IMPLEMENTATION //////////
 
@@ -422,7 +392,7 @@ function startup(canvas: HTMLCanvasElement) {
     let spotsBudget = ((Math.max(8, Math.min(delta, 30)) * params.spotsPerSec) / 1000) | 0;
     // console.log('spotsBudget', spotsBudget);
 
-    if (params.penTracker) penTracker(pen.pos);
+    if (params.penTracker) penTracker();
 
     // render phosphor fade
     gl.enable(gl.BLEND);
@@ -520,7 +490,8 @@ function clearPenSpots() {
 }
 
 let hadPseudoLoc = false;
-function penTracker({ x, y }) {
+function penTracker() {
+  const { x, y } = pen.pos;
   // remove pen spots from the end of the display table
   clearPenSpots();
   const origSpotCount = spotCount;
@@ -590,5 +561,9 @@ function penTracker({ x, y }) {
     }
   }
   penSpotCount = spotCount - origSpotCount;
+  if (hasPseudoLoc) {
+    pen.pseudo.x = pseudoX;
+    pen.pseudo.y = pseudoY;
+  }
   params.twinkleSpots = origTwinkle;
 }

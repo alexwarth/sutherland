@@ -2,6 +2,7 @@ import config, { updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
 import * as status from './status';
+import * as display from './display';
 import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
@@ -223,6 +224,9 @@ function onPointerMove(e: PointerEvent) {
 
   const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(e);
+
+  const displayPos = scope.toDisplayPosition(app.pen.pos!);
+  display.setPen(displayPos.x, displayPos.y);
 
   if (penDown && oldPos && !app.drawing().isEmpty() && !drawingInProgress && !drag) {
     app.panBy(app.pen.pos!.x - oldPos.x, app.pen.pos!.y - oldPos.y);

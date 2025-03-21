@@ -28,10 +28,10 @@ export default {
   },
 
   toDisplayPosition({ x, y }: Position) {
-    const displayScale = (scale * 1024) / innerWidth;
+    const displayScale = Math.min(innerWidth, innerHeight) / 1024;
     return {
-      x: (x - center.x) * displayScale + 1024 / 2,
-      y: (y - center.y) * displayScale + 1024 / 2,
+      x: (x - center.x) * scale / displayScale,
+      y: (y - center.y) * scale / displayScale,
     };
   },
   toScreenPosition({ x, y }: Position) {
