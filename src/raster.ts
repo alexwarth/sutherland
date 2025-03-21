@@ -19,7 +19,6 @@ export function addArc(a: Position, b: Position, c: Position, direction: 'cw' | 
 
 export function clear() {
   primitives = [];
-  addLine({ x: -100, y: -100 }, { x: 100, y: 100 });
 }
 
 export function rasterize() {
@@ -30,11 +29,10 @@ export function rasterize() {
   for (const p of primitives) {
     switch (p.type) {
       case 'line':
-        // line(scope.toDisplayPosition(p.a), scope.toDisplayPosition(p.b));
-        line(p.a, p.b);
+        line(scope.toDisplayPosition(p.a), scope.toDisplayPosition(p.b));
         break;
       case 'arc':
-        arc(p.a, p.b, p.c);
+        arc(scope.toDisplayPosition(p.a), scope.toDisplayPosition(p.b), scope.toDisplayPosition(p.c), p.direction);
         break;
     }
   }
@@ -50,7 +48,6 @@ function line(a: Position, b: Position) {
   // debugger;
   const d = display.getParam('spotSize') * 0.8;
   // debugger;
-  console.log(d);
   for (let i = 0; i < dist; i += d) {
     const x = a.x + (delta.x * i) / dist;
     const y = a.y + (delta.y * i) / dist;
@@ -70,7 +67,7 @@ function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
   const circ = Math.abs(dTheta) * radius;
   const d = display.getParam('spotSize') * 0.8;
   const delta = theta2 - theta1;
-  console.log('r', radius, 'dTheta', dTheta, circ, d, circ / d);
+  // console.log('r', radius, 'dTheta', dTheta, circ, d, circ / d);
   for (let i = 0; i < circ; i += d) {
     const angle = theta1 + (i / circ) * delta;
     const x = radius * Math.cos(angle);
@@ -80,7 +77,7 @@ function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
 }
 
 function addSpot(x: number, y: number) {
-  if (-512 <= x && x < 512 && -512 <= y && y < 512) {
+  // if (-512 <= x && x < 512 && -512 <= y && y < 512) {
     display.addSpot(x, y);
-  }
+  // }
 }

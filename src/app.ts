@@ -211,7 +211,7 @@ export function render() {
   }
   renderDrawingInProgress();
   raster.clear();
-  drawing().render((pos) => pos);
+  drawing().render();
   raster.rasterize();
   renderCrosshairs();
 
