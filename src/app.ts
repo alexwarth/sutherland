@@ -206,11 +206,11 @@ let prevSpotCount = 0;
 
 export function render() {
   display.clearSpots();
+  raster.clear();
   if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
   }
   renderDrawingInProgress();
-  raster.clear();
   drawing().render();
   raster.rasterize();
   renderCrosshairs();
@@ -231,15 +231,15 @@ function renderInk() {
     drawLine(p1, p2, flickeryWhite(), scope.toScreenPosition);
 
   // I
-  line({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
+  raster.addLine({ x: -7 * unit, y: -4 * unit }, { x: -7 * unit, y: 4 * unit });
   // N
-  line({ x: -3 * unit, y: -4 * unit }, { x: -3 * unit, y: 4 * unit });
-  line({ x: -3 * unit, y: 4 * unit }, { x: 2 * unit, y: -4 * unit });
-  line({ x: 2 * unit, y: -4 * unit }, { x: 2 * unit, y: 4 * unit });
+  raster.addLine({ x: -3 * unit, y: -4 * unit }, { x: -3 * unit, y: 4 * unit });
+  raster.addLine({ x: -3 * unit, y: 4 * unit }, { x: 2 * unit, y: -4 * unit });
+  raster.addLine({ x: 2 * unit, y: -4 * unit }, { x: 2 * unit, y: 4 * unit });
   // K
-  line({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
-  line({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
-  line({ x: 8 * unit, y: 2.4 * unit }, { x: 10 * unit, y: -4 * unit });
+  raster.addLine({ x: 6 * unit, y: -4 * unit }, { x: 6 * unit, y: 4 * unit });
+  raster.addLine({ x: 6 * unit, y: 1 * unit }, { x: 10 * unit, y: 4 * unit });
+  raster.addLine({ x: 8 * unit, y: 2.4 * unit }, { x: 10 * unit, y: -4 * unit });
 }
 
 function renderDrawingInProgress() {
@@ -283,12 +283,12 @@ function renderCrosshairs() {
   drawLine(
     { x: tpen.x - config().crosshairsSize, y: tpen.y },
     { x: tpen.x + config().crosshairsSize, y: tpen.y },
-    "red",
+    'red',
   );
   drawLine(
     { x: tpen.x, y: tpen.y - config().crosshairsSize },
     { x: tpen.x, y: tpen.y + config().crosshairsSize },
-    "red"
+    'red',
   );
 }
 
