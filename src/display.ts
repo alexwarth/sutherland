@@ -131,39 +131,38 @@ export function setParams(p: Partial<typeof params>) {
   Object.assign(params, p);
 }
 
-export function getParam(p: string) {
-  return params[p] ?? uniforms[p];
+export function getParam(p: keyof typeof params) {
+  return params[p];
 }
 
 ///////// CONFIG //////////
 
 // you can override these defaults by passing options to init()
+// or by calling setParams()
 const params = {
-  spotsPerSec: 50000, // draw speed in spots per second
-  spotDensity: 1, // spots per pixel
-  clipToSquare: false, // only draw within 1024x1024 square
-  interlaceSpots: false, // interlaced rendering
-  twinkleSpots: false, // scramble spots for less flicker
-  penTracker: true, // draw pen tracking cross
-  trackerSize: 5, // size of tracking cross
-  trackerSnap: 5, // snap distance for pseudo pen location
-  colorizeByIndex: false, // colorize spots by ID
-  showGui: false, // show GUI
-  openGui: false, // open controls at start
-  showConsole: config().console,
-  fullscreen: false,
-};
-
-const uniforms = {
-  spotSize: 9,
-  spotBrightness: 0.3,
+  spotSize: 9,            // size of spot texture
+  spotBrightness: 0.3,    // like beam current
+  spotDensity: 1.5,       // spots on line/arc
+  spotsPerSec: 50000,     // draw speed in spots per second
   phosphorSpeed: 0.5,
   phosphorAmbient: 0.3,
   phosphorSmoothness: 0.95,
   phosphorGrain: 3,
-  pixelRatio: devicePixelRatio,
-  screenScale: [0, 0], // set in resize()
+  clipToSquare: false,    // only draw within 1024x1024 square
+  interlaceSpots: false,  // interlaced rendering
+  twinkleSpots: false,    // scramble spots for less flicker
+  penTracker: true,       // draw pen tracking cross
+  trackerSize: 5,         // size of tracking cross
+  trackerSnap: 5,         // snap distance for pseudo pen location
+  colorizeByIndex: false, // colorize spots by ID
+  showConsole: config().console,
+  fullscreen: false,
+  showGui: false,         // show GUI
+  openGui: false,         // open controls at start
+  // below just for internal use as uniforms
   colorIdx: 0,
+  pixelRatio: devicePixelRatio,
+  screenScale: [0, 0],    // set in resize()
 };
 
 ///////// IMPLEMENTATION //////////
@@ -306,7 +305,7 @@ function startup(canvas: HTMLCanvasElement) {
     twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
     const scale = Math.min(canvas.width / 512, canvas.height / 512);
     gl.viewport(0, 0, canvas.width, canvas.height);
-    uniforms.screenScale = [canvas.width / scale, canvas.height / scale];
+    params.screenScale = [canvas.width / scale, canvas.height / scale];
     // clear outside of 1024x1024 square
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -329,14 +328,14 @@ function startup(canvas: HTMLCanvasElement) {
   showHideConsole();
 
   const gui = new dat.GUI();
-  gui.add(uniforms, 'spotSize', 1, 100);
-  gui.add(uniforms, 'spotBrightness', 0.1, 1);
-  gui.add(params, 'spotDensity', 0.1, 2);
+  gui.add(params, 'spotSize', 1, 100);
+  gui.add(params, 'spotBrightness', 0.1, 1);
+  gui.add(params, 'spotDensity', 0.1, 5);
   gui.add(params, 'spotsPerSec', 1000, 500000);
-  gui.add(uniforms, 'phosphorSpeed', 0, 1);
-  gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
-  gui.add(uniforms, 'phosphorSmoothness', 0, 1);
-  gui.add(uniforms, 'phosphorGrain', 1, 10);
+  gui.add(params, 'phosphorSpeed', 0, 1);
+  gui.add(params, 'phosphorAmbient', 0, 0.5);
+  gui.add(params, 'phosphorSmoothness', 0, 1);
+  gui.add(params, 'phosphorGrain', 1, 10);
   gui.add(params, 'clipToSquare').onChange(() => resize());
   gui.add(params, 'interlaceSpots');
   gui.add(params, 'twinkleSpots');
@@ -407,7 +406,7 @@ function startup(canvas: HTMLCanvasElement) {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.useProgram(fadeProg.program);
     twgl.setBuffersAndAttributes(gl, fadeProg, fadeBuffer);
-    twgl.setUniforms(fadeProg, uniforms);
+    twgl.setUniforms(fadeProg, params);
     twgl.drawBufferInfo(gl, fadeBuffer, gl.TRIANGLE_FAN);
 
     // update spots buffers
@@ -436,8 +435,8 @@ function startup(canvas: HTMLCanvasElement) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
     gl.useProgram(spotsProg.program);
-    uniforms.colorIdx = spotsToDraw;
-    twgl.setUniforms(spotsProg, uniforms);
+    params.colorIdx = spotsToDraw;
+    twgl.setUniforms(spotsProg, params);
 
     if (params.interlaceSpots && spotsToDraw > 8) {
       // stride was set to every 8th spot
@@ -481,8 +480,8 @@ function startup(canvas: HTMLCanvasElement) {
 
     // draw pen spots, which are beyond spotsToDraw
     if (penSpotCount > 0) {
-      uniforms.colorIdx = 0; // don't colorize pen spots
-      twgl.setUniforms(spotsProg, uniforms);
+      params.colorIdx = 0; // don't colorize pen spots
+      twgl.setUniforms(spotsProg, params);
       twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
       twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, penSpotCount, spotsToDraw);
     }
@@ -510,7 +509,7 @@ function penTracker() {
   const START = 2.5; // inner opening
   const DENSITY = 0.25; // density of spots
   const BRIGHT = 0.4; // bright dot size for pseudo pen location
-  const scale = (Math.max(5, uniforms.spotSize) * devicePixelRatio * params.trackerSize) / 30;
+  const scale = (Math.max(5, params.spotSize) * devicePixelRatio * params.trackerSize) / 30;
   const pseudoRange = params.trackerSnap * 6; // snap to spot this close
   // find closest spot, make it the pseudo pen location
   spotsSeen.length = 0;
