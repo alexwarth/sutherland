@@ -3,7 +3,7 @@ const defaultConfig = {
   console: false,
   flicker: true,
   baseAlphaMultiplier: 1.5,
-  lineWidth: 3.5,
+  lineWidth: 1,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
   masterSideAttacherColor: 'rgb(255,165,0)',

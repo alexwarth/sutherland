@@ -218,7 +218,7 @@ export function render() {
   const spotCount = display.getSpotCount();
   if (spotCount != prevSpotCount) {
     prevSpotCount = spotCount;
-    status.set(`${spotCount} spots`);
+    console.log(`${spotCount} spots`);
   }
 
   status.render();
@@ -283,12 +283,12 @@ function renderCrosshairs() {
   drawLine(
     { x: tpen.x - config().crosshairsSize, y: tpen.y },
     { x: tpen.x + config().crosshairsSize, y: tpen.y },
-    flickeryWhite('bold'),
+    "red",
   );
   drawLine(
     { x: tpen.x, y: tpen.y - config().crosshairsSize },
     { x: tpen.x, y: tpen.y + config().crosshairsSize },
-    flickeryWhite('bold'),
+    "red"
   );
 }
 
