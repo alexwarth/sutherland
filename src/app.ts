@@ -203,12 +203,17 @@ export function onFrame() {
 // ---------- rendering ----------
 
 let prevSpotCount = 0;
+let inkSpotsPerSec = 1111;     // unique value
+let defaultSpotsPerSec = display.getParam('spotsPerSec');
 
 export function render() {
   display.clearSpots();
   raster.clear();
   if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
+    display.setParams({ spotsPerSec: inkSpotsPerSec });
+  } else if (display.getParam('spotsPerSec') === inkSpotsPerSec) {
+    display.setParams({ spotsPerSec: defaultSpotsPerSec });
   }
   renderDrawingInProgress();
   drawing().render();
