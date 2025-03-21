@@ -153,7 +153,6 @@ export class Line implements Thing {
     }
     const style = this.isGuide ? config().guideLineColor : (color ?? flickeryWhite());
     drawLine(this.a, this.b, "red", transform);
-    // raster.addLine(transform(this.a), transform(this.b));
     raster.addLine(this.a, this.b);
   }
 
@@ -259,7 +258,7 @@ export class Arc implements Thing {
     //   drawPoint(p, this.contains(p) ? 'yellow' : 'red', transform);
     // }
 
-    raster.addArc(transform(this.a), transform(this.b), transform(this.c), this.direction);
+    raster.addArc(this.a, this.b, this.c, this.direction);
     drawArc(this.c, this.a, this.b, this.direction, "red", transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);

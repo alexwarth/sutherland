@@ -56,13 +56,13 @@ function line(a: Position, b: Position) {
 }
 
 function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
-  line(a, b);
-  line(b, c);
-  line(c, a);
+  // line(a, b);
+  // line(b, c);
+  // line(c, a);
 
   const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
   const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
-  const radius = pointDist(c, direction === 'cw' ? a : b);
+  const radius = pointDist(c, a);
   const dTheta = direction === 'ccw' ? theta2 - theta1 : Math.PI * 2 - (theta2 - theta1);
   const circ = Math.abs(dTheta) * radius;
   const d = display.getParam('spotSize') * 0.8;
@@ -70,8 +70,8 @@ function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
   // console.log('r', radius, 'dTheta', dTheta, circ, d, circ / d);
   for (let i = 0; i < circ; i += d) {
     const angle = theta1 + (i / circ) * delta;
-    const x = radius * Math.cos(angle);
-    const y = radius * Math.sin(angle);
+    const x = c.x + radius * Math.cos(angle);
+    const y = c.y + radius * Math.sin(angle);
     addSpot(x, y);
   }
 }
