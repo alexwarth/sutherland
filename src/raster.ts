@@ -51,7 +51,7 @@ function line(a: Position, b: Position) {
   for (let i = 0; i < dist; i += d) {
     const x = a.x + (delta.x * i) / dist;
     const y = a.y + (delta.y * i) / dist;
-    addSpot(x, y);
+    display.addSpot(x, y);
   }
 }
 
@@ -72,12 +72,6 @@ function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
     const angle = theta1 + (i / circ) * delta;
     const x = c.x + radius * Math.cos(angle);
     const y = c.y + radius * Math.sin(angle);
-    addSpot(x, y);
-  }
-}
-
-function addSpot(x: number, y: number) {
-  // if (-512 <= x && x < 512 && -512 <= y && y < 512) {
     display.addSpot(x, y);
-  // }
+  }
 }

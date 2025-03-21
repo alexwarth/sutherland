@@ -76,6 +76,9 @@ export function addSpot(x: number | Spot, y?: number, id?: number) {
   if (typeof x !== 'number' || typeof y !== 'number')
     throw Error('addSpot(x, y, id?) expects x, y as numbers');
   if (!id) id = 0;
+  if (params.clipToSquare && (x < -512 || x >= 512 || y < -512 || y >= 512)) {
+    return;
+  }
   if (spotCount >= MAX_SPOTS) {
     console.warn(`MAX_SPOTS (${MAX_SPOTS}) reached`);
     return;
