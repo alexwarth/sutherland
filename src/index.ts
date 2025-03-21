@@ -1,10 +1,8 @@
 // import './console';
 import * as display from './display';
 
-display.init(document.getElementById('canvas') as HTMLCanvasElement,
-  {showGui: true, openGui: true, showConsole: true, demo: true})
+display.init(document.getElementById('displayCanvas') as HTMLCanvasElement, { showGui: true });
 
-/*
 import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
@@ -47,4 +45,3 @@ onFrame();
 
 (window as any).app = app;
 (window as any).demos = demos;
-*/

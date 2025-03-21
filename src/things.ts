@@ -1,6 +1,7 @@
 import config from './config';
 import scope from './scope';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
+import * as display from './display';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
 import { List, Var } from './state';
@@ -16,6 +17,7 @@ import {
   TAU,
   pointDiff,
 } from './helpers';
+import * as raster from './raster';
 
 type Transform = (pos: Position) => Position;
 
@@ -150,7 +152,7 @@ export class Line implements Thing {
       return;
     }
     const style = this.isGuide ? config().guideLineColor : (color ?? flickeryWhite());
-    drawLine(this.a, this.b, style, transform);
+    raster.addLine(transform(this.a), transform(this.b));
   }
 
   forEachHandle(fn: (h: Handle) => void): void {
@@ -255,7 +257,8 @@ export class Arc implements Thing {
     //   drawPoint(p, this.contains(p) ? 'yellow' : 'red', transform);
     // }
 
-    drawArc(this.c, this.a, this.b, this.direction, color ?? flickeryWhite(), transform);
+    raster.addArc(transform(this.a), transform(this.b), transform(this.c), this.direction);
+    // drawArc(this.c, this.a, this.b, this.direction, color ?? flickeryWhite(), transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);

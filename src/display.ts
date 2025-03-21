@@ -32,9 +32,9 @@ import config from './config';
 import { showHideConsole } from './console';
 
 export type Spot = {
-    x: number,
-    y: number,
-    id?: number,
+  x: number;
+  y: number;
+  id?: number;
 };
 
 // Sketchpad used 36 bit words for spot locations in the display table
@@ -45,134 +45,155 @@ export type Spot = {
 // we will use 16 bits out of the two half-words in a 64 bit word for x and y
 // and 16 more bits in the x word for the spot id. The 16 bits in the y word
 // are used for a spot index, which can be used to colorize spots
-const MAX_SPOTS = 16348;     // TX-2 used 32K words for display table with double buffering
-let displayTable = new Int32Array(MAX_SPOTS*2 + 64);   // 64 extra for interlaced rendering
-let spotCount = 0;         // number of spots in display table
-let penSpotCount = 0;      // number of spots at the end of the table for penTracker
-let spotsSeen: Spot[] = [];   // spots seen by the lightpen
-let startSpot = 0;         // start of current frame's spots in display table (50K/sec)
-let spotsChanged = false;  // true if spots have changed since last frame
-
+const MAX_SPOTS = 16348; // TX-2 used 32K words for display table with double buffering
+let displayTable = new Int32Array(MAX_SPOTS * 2 + 64); // 64 extra for interlaced rendering
+let spotCount = 0; // number of spots in display table
+let penSpotCount = 0; // number of spots at the end of the table for penTracker
+let spotsSeen: Spot[] = []; // spots seen by the lightpen
+let startSpot = 0; // start of current frame's spots in display table (50K/sec)
+let spotsChanged = false; // true if spots have changed since last frame
 
 ///////// PUBLIC API //////////
 
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
-    if (options) setParams(options);
-    startup(canvas);
-    return { clearSpots, addSpot, setParams, demo };
+  if (options) setParams(options);
+  startup(canvas);
+  return { clearSpots, addSpot, setParams, demo };
 }
 
 export function clearSpots() {
-    spotCount = 0;
-    penSpotCount = 0;
-    spotsChanged = true;
+  spotCount = 0;
+  penSpotCount = 0;
+  spotsChanged = true;
 }
 
 export function addSpot(x: number | Spot, y?: number, id?: number) {
-    if (typeof x === 'object') {
-        const s: Spot = x as Spot;
-        return addSpot(s.x, s.y, s.id);
-    }
-    if (typeof x !== 'number' || typeof y !== 'number') throw Error('addSpot(x, y, id?) expects x, y as numbers');
-    if (!id) id = 0;
-    if (spotCount >= MAX_SPOTS) {
-        console.warn(`MAX_SPOTS (${MAX_SPOTS}) reached`);
-        return;
-    }
-    const idx = spotCount;
-    let i = idx;
-    if (params.twinkleSpots) {
-        const j = Math.random() * spotCount | 0;
-        displayTable[2*i] = displayTable[2*j];
-        displayTable[2*i+1] = displayTable[2*j+1];
-        i = j;
-    }
-    // putting pos in the upper half makes it easy to sign-extend in the shader
-    displayTable[2*i]   = x << 16 | (id & 65535);   // for pen tracking?
-    displayTable[2*i+1] = y << 16 | (idx & 65535);  // for colorizing spots
-    spotCount++;
-    spotsChanged = true;
+  if (typeof x === 'object') {
+    const s: Spot = x as Spot;
+    return addSpot(s.x, s.y, s.id);
+  }
+  if (typeof x !== 'number' || typeof y !== 'number')
+    throw Error('addSpot(x, y, id?) expects x, y as numbers');
+  if (!id) id = 0;
+  if (spotCount >= MAX_SPOTS) {
+    console.warn(`MAX_SPOTS (${MAX_SPOTS}) reached`);
+    return;
+  }
+  const idx = spotCount;
+  let i = idx;
+  if (params.twinkleSpots) {
+    const j = (Math.random() * spotCount) | 0;
+    displayTable[2 * i] = displayTable[2 * j];
+    displayTable[2 * i + 1] = displayTable[2 * j + 1];
+    i = j;
+  }
+  // putting pos in the upper half makes it easy to sign-extend in the shader
+  displayTable[2 * i] = (x << 16) | (id & 65535); // for pen tracking?
+  displayTable[2 * i + 1] = (y << 16) | (idx & 65535); // for colorizing spots
+  spotCount++;
+  spotsChanged = true;
 }
 
 export function getSpotCount() {
-    return spotCount;
+  return spotCount;
 }
 
 export function getSpots() {
-    const spots: Spot[] = [];
-    for (let i = 0; i < spotCount; i++) {
-        spots.push({ x: displayTable[2*i] >> 16, y: displayTable[2*i+1] >> 16, id: displayTable[2*i] & 65535 });
-    }
-    return spots;
+  const spots: Spot[] = [];
+  for (let i = 0; i < spotCount; i++) {
+    spots.push({
+      x: displayTable[2 * i] >> 16,
+      y: displayTable[2 * i + 1] >> 16,
+      id: displayTable[2 * i] & 65535,
+    });
+  }
+  return spots;
 }
 
 export function getSeenSpots() {
-    return spotsSeen;
+  return spotsSeen;
 }
 
 export function setParams(p: Partial<typeof params>) {
-    Object.assign(params, p);
+  Object.assign(params, p);
 }
 
+export function getParam(p: string) {
+  return params[p] ?? uniforms[p];
+}
 
 ///////// CONFIG //////////
 
 // you can override these defaults by passing options to init()
 const params = {
-    spotsPerSec: 50000,     // draw speed in spots per second
-    clipToSquare: false,    // only draw within 1024x1024 square
-    interlaceSpots: false,  // interlaced rendering
-    twinkleSpots: false,    // scramble spots for less flicker
-    penTracker: true,       // draw pen tracking cross
-    trackerSize: 5,        // size of tracking cross
-    trackerSnap: 5,         // snap distance for pseudo pen location
-    demo: false,            // run demo
-    demoSpots: 2000,
-    demoMulX: 3,
-    demoMulY: 4,
-    demoPhaseX: 1,
-    demoPhaseY: 0,
-    colorizeByIndex: false, // colorize spots by ID
-    showGui: false,         // show GUI
-    openGui: false,         // open controls at start
-    showConsole: config().console,
-    fullscreen: false,
-}
-
-const uniforms = {
-    spotSize: 9,
-    phosphorSpeed: 0.5,
-    phosphorAmbient: 0.3,
-    phosphorSmoothness: 0.95,
-    phosphorGrain: 3,
-    pixelRatio: devicePixelRatio,
-    screenScale: [0, 0],    // set in resize()
-    colorIdx: 0,
+  spotsPerSec: 50000, // draw speed in spots per second
+  clipToSquare: false, // only draw within 1024x1024 square
+  interlaceSpots: false, // interlaced rendering
+  twinkleSpots: false, // scramble spots for less flicker
+  penTracker: true, // draw pen tracking cross
+  trackerSize: 5, // size of tracking cross
+  trackerSnap: 5, // snap distance for pseudo pen location
+  demo: false, // run demo
+  demoSpots: 2000,
+  demoMulX: 3,
+  demoMulY: 4,
+  demoPhaseX: 1,
+  demoPhaseY: 0,
+  colorizeByIndex: false, // colorize spots by ID
+  showGui: false, // show GUI
+  openGui: false, // open controls at start
+  showConsole: config().console,
+  fullscreen: false,
 };
 
+const uniforms = {
+  spotSize: 9,
+  phosphorSpeed: 0.5,
+  phosphorAmbient: 0.3,
+  phosphorSmoothness: 0.95,
+  phosphorGrain: 3,
+  pixelRatio: devicePixelRatio,
+  screenScale: [0, 0], // set in resize()
+  colorIdx: 0,
+};
 
 ///////// DEMO //////////
 
 export function demo() {
-    clearSpots();
-    lissajous(400, 400, params.demoPhaseX, params.demoPhaseY, params.demoMulX|0, params.demoMulY|0, params.demoSpots);
-    // console.log('spotCount', spotCount);
+  clearSpots();
+  lissajous(
+    400,
+    400,
+    params.demoPhaseX,
+    params.demoPhaseY,
+    params.demoMulX | 0,
+    params.demoMulY | 0,
+    params.demoSpots,
+  );
+  // console.log('spotCount', spotCount);
 
-    function lissajous(w: number, h: number, phaseX: number, phaseY: number, a: number, b: number, nSpots: number) {
-        let prevX = 0;
-        let prevY = 0;
-        for (let i = 0; i < nSpots; i++) {
-            const angle = i * Math.PI * 2 / nSpots;
-            const x = Math.sin(a * angle + phaseX) * w | 0;
-            const y = Math.cos(b * angle + phaseY) * h | 0;
-            if (x === prevX && y === prevY) continue;
-            addSpot(x, y);
-            prevX = x;
-            prevY = y;
-        }
+  function lissajous(
+    w: number,
+    h: number,
+    phaseX: number,
+    phaseY: number,
+    a: number,
+    b: number,
+    nSpots: number,
+  ) {
+    let prevX = 0;
+    let prevY = 0;
+    for (let i = 0; i < nSpots; i++) {
+      const angle = (i * Math.PI * 2) / nSpots;
+      const x = (Math.sin(a * angle + phaseX) * w) | 0;
+      const y = (Math.cos(b * angle + phaseY) * h) | 0;
+      if (x === prevX && y === prevY) continue;
+      addSpot(x, y);
+      prevX = x;
+      prevY = y;
     }
+  }
 }
-
 
 ///////// IMPLEMENTATION //////////
 
@@ -305,296 +326,317 @@ void main() {
     photons = gauss * vec4(v_color, 1.0);
 }`;
 
-
 function startup(canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
-    if (!gl) throw new Error('No WebGL2 context found');
+  const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
+  if (!gl) throw new Error('No WebGL2 context found');
 
-    function resize() {
-        twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
-        const scale = Math.min(canvas.width/512, canvas.height/512);
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        uniforms.screenScale = [canvas.width/scale, canvas.height/scale];
-        // clear outside of 1024x1024 square
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        if (params.clipToSquare) {
-            // only draw inner square
-            const ratio = canvas.width / canvas.height;
-            const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
-            const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
-            const size = ratio > 1 ? canvas.height : canvas.width;
-            gl.scissor(left, top, size, size);
-            gl.enable(gl.SCISSOR_TEST);
-        } else {
-            gl.disable(gl.SCISSOR_TEST);
-        }
+  function resize() {
+    twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
+    const scale = Math.min(canvas.width / 512, canvas.height / 512);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    uniforms.screenScale = [canvas.width / scale, canvas.height / scale];
+    // clear outside of 1024x1024 square
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    if (params.clipToSquare) {
+      // only draw inner square
+      const ratio = canvas.width / canvas.height;
+      const left = ratio > 1 ? (canvas.width - canvas.height) / 2 : 0;
+      const top = ratio < 1 ? (canvas.height - canvas.width) / 2 : 0;
+      const size = ratio > 1 ? canvas.height : canvas.width;
+      gl.scissor(left, top, size, size);
+      gl.enable(gl.SCISSOR_TEST);
+    } else {
+      gl.disable(gl.SCISSOR_TEST);
     }
-    onresize = () => resize();
-    resize();
+  }
+  onresize = () => resize();
+  resize();
 
-    config().console = params.showConsole;
+  config().console = params.showConsole;
+  showHideConsole();
+
+  const gui = new dat.GUI();
+  gui.add(uniforms, 'spotSize', 1, 100);
+  gui.add(params, 'spotsPerSec', 1000, 500000);
+  gui.add(uniforms, 'phosphorSpeed', 0, 1);
+  gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
+  gui.add(uniforms, 'phosphorSmoothness', 0, 1);
+  gui.add(uniforms, 'phosphorGrain', 1, 10);
+  gui.add(params, 'clipToSquare').onChange(() => resize());
+  gui.add(params, 'interlaceSpots');
+  gui.add(params, 'twinkleSpots');
+  gui.add(params, 'penTracker').onChange((on: boolean) => {
+    canvas.style.cursor = on ? 'none' : 'default';
+    if (!on) clearPenSpots();
+  });
+  gui.add(params, 'trackerSize', 1, 20);
+  gui.add(params, 'trackerSnap', 1, 20);
+  if (params.demo) {
+    demo();
+    gui.add(params, 'demoSpots', 1, MAX_SPOTS - 348).onChange(demo);
+    gui.add(params, 'demoMulX', 1, 10);
+    gui.add(params, 'demoMulY', 1, 10);
+  }
+  gui.add(params, 'colorizeByIndex');
+  gui.add(params, 'showConsole').onChange((on) => {
+    config().console = on;
     showHideConsole();
+  });
+  gui.add(params, 'fullscreen').onChange((on: boolean) => {
+    if (on) document.body.requestFullscreen();
+    else document.exitFullscreen();
+  });
+  if (!params.showGui) gui.hide();
+  if (!params.openGui) gui.close();
+  canvas.style.cursor = params.penTracker ? 'none' : 'default';
 
-    const gui = new dat.GUI();
-    gui.add(uniforms, 'spotSize', 1, 100);
-    gui.add(params, 'spotsPerSec', 1000, 500000);
-    gui.add(uniforms, 'phosphorSpeed', 0, 1);
-    gui.add(uniforms, 'phosphorAmbient', 0, 0.5);
-    gui.add(uniforms, 'phosphorSmoothness', 0, 1);
-    gui.add(uniforms, 'phosphorGrain', 1, 10);
-    gui.add(params, 'clipToSquare').onChange(() => resize());
-    gui.add(params, 'interlaceSpots');
-    gui.add(params, 'twinkleSpots');
-    gui.add(params, 'penTracker').onChange((on: boolean) => {
-        canvas.style.cursor = on ? 'none' : 'default';
-        if (!on) clearPenSpots();
-    });
-    gui.add(params, 'trackerSize', 1, 20);
-    gui.add(params, 'trackerSnap', 1, 20);
-    if (params.demo) {
-        demo();
-        gui.add(params, 'demoSpots', 1, MAX_SPOTS-348).onChange(demo);
-        gui.add(params, 'demoMulX', 1, 10);
-        gui.add(params, 'demoMulY', 1, 10);
+  const pen: {
+    pos: { x: number; y: number };
+    downPos?: { x: number; y: number };
+    downPhase?: { x: number; y: number };
+  } = {
+    pos: { x: 0, y: 0 },
+  };
+  function updatePen(x, y) {
+    const b = canvas.getBoundingClientRect();
+    pen.pos.x = (((x - b.left - b.width / 2) / b.width) * 2 * uniforms.screenScale[0]) | 0;
+    pen.pos.y = (((y - b.top - b.height / 2) / b.height) * -2 * uniforms.screenScale[1]) | 0;
+    if (pen.downPos) {
+      params.demoPhaseX = pen.downPhase!.x + (pen.pos.x - pen.downPos.x) / 500;
+      params.demoPhaseY = pen.downPhase!.y + (pen.pos.y - pen.downPos.y) / 500;
+      params.demo && demo();
     }
-    gui.add(params, 'colorizeByIndex');
-    gui.add(params, 'showConsole').onChange((on) => { config().console = on; showHideConsole(); });
-    gui.add(params, 'fullscreen').onChange((on: boolean) => {
-        if (on) document.body.requestFullscreen();
-        else document.exitFullscreen();
-    });
-    if (!params.showGui) gui.hide();
-    if (!params.openGui) gui.close();
-    canvas.style.cursor = params.penTracker ? 'none' : 'default';
+  }
+  // canvas.onpointerdown = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = {...pen.pos}; pen.downPhase = params.demoPhase; };
+  canvas.onpointermove = (e) => updatePen(e.clientX, e.clientY);
+  // canvas.onpointermove = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = undefined; };
+  function processNativeEvents() {
+    for (const event of NativeEvents.getQueuedEvents()) {
+      if (event.type === 'pencil') {
+        updatePen(event.position.x, event.position.y);
+        switch (event.phase) {
+          case 'began':
+            pen.downPos = { ...pen.pos };
+            pen.downPhase = { x: params.demoPhaseX, y: params.demoPhaseY };
+            break;
+          case 'ended':
+            pen.downPos = undefined;
+            break;
+        }
+      }
+    }
+  }
 
-    const pen: {
-        pos: { x: number, y: number },
-        downPos?: { x: number, y: number },
-        downPhase?: { x: number, y: number },
-    } = {
-        pos: { x: 0, y: 0 },
+  const fadeProg = twgl.createProgramInfo(gl, [FADE_VSHADER, FADE_FSHADER]);
+  const fadeArrays: twgl.Arrays = {
+    pos: {
+      numComponents: 2,
+      data: [-1, -1, 1, -1, 1, 1, -1, 1],
+    },
+  };
+  const fadeBuffer = twgl.createBufferInfoFromArrays(gl, fadeArrays);
+
+  let simpleSpotsProg = twgl.createProgramInfo(gl, [SPOT_VSHADER, SPOT_FSHADER]);
+  let colorizeSpotsProg = twgl.createProgramInfo(gl, [
+    COLORIZE_SPOT_VSHADER,
+    COLORIZE_SPOT_FSHADER,
+  ]);
+  const spotsArrays: twgl.Arrays = {
+    xyIdIx: {
+      numComponents: 2,
+      data: displayTable,
+    },
+  };
+  const spotsBuffer = twgl.createBufferInfoFromArrays(gl, spotsArrays);
+  const interlacedBuffers: twgl.BufferInfo[] = [];
+  for (let i = 0; i < 8; i++) {
+    const interlacedArrays: twgl.Arrays = {
+      xyIdIx: {
+        numComponents: 2,
+        data: displayTable,
+        stride: 64, // every 8th spot, 8 bytes per spot
+        offset: 8 * i, // staggered by 8 bytes
+      },
     };
-    function updatePen(x, y) {
-        const b = canvas.getBoundingClientRect();
-        pen.pos.x = (x - b.left - b.width/2) / b.width * 2 * uniforms.screenScale[0] | 0;
-        pen.pos.y = (y - b.top - b.height/2) / b.height * -2 * uniforms.screenScale[1] | 0;
-        if (pen.downPos) {
-            params.demoPhaseX = pen.downPhase!.x + (pen.pos.x - pen.downPos.x) / 500;
-            params.demoPhaseY = pen.downPhase!.y + (pen.pos.y - pen.downPos.y) / 500;
-            params.demo && demo();
-        }
-    };
-    // canvas.onpointerdown = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = {...pen.pos}; pen.downPhase = params.demoPhase; };
-    canvas.onpointermove = (e) => updatePen(e.clientX, e.clientY);
-    // canvas.onpointermove = (e) => { updatePen(e.clientX, e.clientY); pen.downPos = undefined; };
-    function processNativeEvents() {
-        for (const event of NativeEvents.getQueuedEvents()) {
-            if (event.type === 'pencil') {
-                updatePen(event.position.x, event.position.y);
-                switch (event.phase) {
-                    case 'began':
-                        pen.downPos = {...pen.pos};
-                        pen.downPhase = { x: params.demoPhaseX, y: params.demoPhaseY };
-                        break;
-                    case 'ended':
-                        pen.downPos = undefined;
-                        break;
-                }
-            }
-        }
+    interlacedBuffers.push(twgl.createBufferInfoFromArrays(gl, interlacedArrays));
+  }
+
+  let prevTime = 0;
+  function display(time: number) {
+    const delta = time - prevTime;
+    prevTime = time;
+    let spotsBudget = ((Math.max(8, Math.min(delta, 30)) * params.spotsPerSec) / 1000) | 0;
+    // console.log('spotsBudget', spotsBudget);
+
+    processNativeEvents();
+    if (params.penTracker) penTracker(pen.pos);
+
+    // render phosphor fade
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.useProgram(fadeProg.program);
+    twgl.setBuffersAndAttributes(gl, fadeProg, fadeBuffer);
+    twgl.setUniforms(fadeProg, uniforms);
+    twgl.drawBufferInfo(gl, fadeBuffer, gl.TRIANGLE_FAN);
+
+    // update spots buffers
+    if (spotsChanged) {
+      twgl.setAttribInfoBufferFromArray(
+        gl,
+        spotsBuffer.attribs!.xyIdIx,
+        new Int32Array(displayTable.buffer, 0, spotCount * 2),
+      );
+      for (let i = 0; i < 8; i++) {
+        twgl.setAttribInfoBufferFromArray(
+          gl,
+          interlacedBuffers[i].attribs!.xyIdIx,
+          new Int32Array(displayTable.buffer, 0, spotCount * 2),
+        );
+      }
+      spotsChanged = false;
     }
 
-    const fadeProg = twgl.createProgramInfo(gl, [FADE_VSHADER, FADE_FSHADER]);
-    const fadeArrays: twgl.Arrays = {
-        pos: {
-            numComponents: 2,
-            data: [
-                -1, -1,
-                 1, -1,
-                 1,  1,
-                -1,  1,
-            ],
-        },
-    };
-    const fadeBuffer = twgl.createBufferInfoFromArrays(gl, fadeArrays);
+    // we can only render spotsBudget spots now.
+    // use startSpot to keep track of where we are
+    const spotsToDraw = spotCount - penSpotCount; // don't draw pen spots yet
+    if (startSpot >= spotsToDraw) startSpot = 0; // after spotCount reduction
 
-    let simpleSpotsProg = twgl.createProgramInfo(gl, [SPOT_VSHADER, SPOT_FSHADER]);
-    let colorizeSpotsProg = twgl.createProgramInfo(gl, [COLORIZE_SPOT_VSHADER, COLORIZE_SPOT_FSHADER]);
-    const spotsArrays: twgl.Arrays = {
-        xyIdIx: {
-            numComponents: 2,
-            data: displayTable,
-        },
-    };
-    const spotsBuffer = twgl.createBufferInfoFromArrays(gl, spotsArrays);
-    const interlacedBuffers: twgl.BufferInfo[] = [];
-    for (let i = 0; i < 8; i++) {
-        const interlacedArrays: twgl.Arrays = {
-            xyIdIx: {
-                numComponents: 2,
-                data: displayTable,
-                stride: 64,         // every 8th spot, 8 bytes per spot
-                offset: 8 * i,      // staggered by 8 bytes
-            },
-        };
-        interlacedBuffers.push(twgl.createBufferInfoFromArrays(gl, interlacedArrays));
+    let spotsProg = params.colorizeByIndex ? colorizeSpotsProg : simpleSpotsProg;
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE);
+    gl.useProgram(spotsProg.program);
+    uniforms.colorIdx = spotsToDraw;
+    twgl.setUniforms(spotsProg, uniforms);
+
+    if (params.interlaceSpots && spotsToDraw > 8) {
+      // stride was set to every 8th spot
+      // render to end of non-pen spots in display table
+      const drawInterlaced = spotsToDraw >> 3;
+      let spotsDrawn = 0; // draw until we exhaust spotsBudget
+      let from = startSpot >> 3; // decompose startSpot into from and i
+      let i = startSpot & 7;
+      while (spotsBudget > 0 && spotsToDraw > spotsDrawn) {
+        twgl.setBuffersAndAttributes(gl, spotsProg, interlacedBuffers[i]);
+        const segEnd = Math.min(from + spotsBudget, drawInterlaced);
+        const segSize = segEnd - from;
+        if (segSize <= 0) break;
+        twgl.drawBufferInfo(gl, interlacedBuffers[i], gl.POINTS, segSize, from);
+        spotsDrawn += segSize;
+        spotsBudget -= segSize;
+        from += segSize;
+        if (from === drawInterlaced) {
+          from = 0;
+          if (i++ === 7) i = 0;
+        }
+      }
+      startSpot = (from << 3) + i; // recompose from and i into startSpot
+      // console.log('startSpot', startSpot);
+    } else {
+      // first, draw up to end of non-pen spots in display table
+      twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
+      const segEnd = Math.min(startSpot + spotsBudget, spotsToDraw);
+      const segSize = segEnd - startSpot;
+      if (segSize > 0) twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, segSize, startSpot);
+      const spotsDrawn = segSize;
+      spotsBudget -= spotsDrawn;
+      startSpot = (startSpot + spotsDrawn) % spotsToDraw;
+      // then draw from start of display table to frame end
+      if (spotsBudget > 0 && spotsToDraw > spotsDrawn) {
+        const remaining = Math.min(spotsBudget, spotsToDraw - spotsDrawn);
+        twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, remaining);
+        startSpot = (startSpot + remaining) % spotsToDraw;
+      }
     }
 
-    let prevTime = 0;
-    function display(time: number) {
-        const delta = time - prevTime;
-        prevTime = time;
-        let spotsBudget = Math.max(8, Math.min(delta, 30)) * params.spotsPerSec/1000 | 0;
-        // console.log('spotsBudget', spotsBudget);
-
-        processNativeEvents();
-        if (params.penTracker) penTracker(pen.pos);
-
-        // render phosphor fade
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.useProgram(fadeProg.program);
-        twgl.setBuffersAndAttributes(gl, fadeProg, fadeBuffer);
-        twgl.setUniforms(fadeProg, uniforms);
-        twgl.drawBufferInfo(gl, fadeBuffer, gl.TRIANGLE_FAN);
-
-        // update spots buffers
-        if (spotsChanged) {
-            twgl.setAttribInfoBufferFromArray(gl,
-                spotsBuffer.attribs!.xyIdIx,
-                new Int32Array(displayTable.buffer, 0, spotCount*2));
-            for (let i = 0; i < 8; i++) {
-                twgl.setAttribInfoBufferFromArray(gl,
-                    interlacedBuffers[i].attribs!.xyIdIx,
-                    new Int32Array(displayTable.buffer, 0, spotCount*2));
-            }
-            spotsChanged = false;
-        }
-
-        // we can only render spotsBudget spots now.
-        // use startSpot to keep track of where we are
-        const spotsToDraw = spotCount - penSpotCount;           // don't draw pen spots yet
-        if (startSpot >= spotsToDraw) startSpot = 0;            // after spotCount reduction
-
-        let spotsProg = params.colorizeByIndex ? colorizeSpotsProg : simpleSpotsProg;
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE);
-        gl.useProgram(spotsProg.program);
-        uniforms.colorIdx = spotsToDraw;
-        twgl.setUniforms(spotsProg, uniforms);
-
-        if (params.interlaceSpots && spotsToDraw > 8) {
-            // stride was set to every 8th spot
-            // render to end of non-pen spots in display table
-            const drawInterlaced = spotsToDraw >> 3;
-            let spotsDrawn = 0; // draw until we exhaust spotsBudget
-            let from = startSpot >> 3;   // decompose startSpot into from and i
-            let i = startSpot & 7;
-            while (spotsBudget > 0 && spotsToDraw > spotsDrawn) {
-                twgl.setBuffersAndAttributes(gl, spotsProg, interlacedBuffers[i]);
-                const segEnd = Math.min(from + spotsBudget, drawInterlaced);
-                const segSize = segEnd - from;
-                if (segSize <= 0) break
-                twgl.drawBufferInfo(gl, interlacedBuffers[i], gl.POINTS, segSize, from);
-                spotsDrawn += segSize;
-                spotsBudget -= segSize;
-                from += segSize;
-                if (from === drawInterlaced) {
-                    from = 0;
-                    if (i++ === 7) i = 0;
-                }
-            }
-            startSpot = (from << 3) + i; // recompose from and i into startSpot
-            // console.log('startSpot', startSpot);
-        } else {
-            // first, draw up to end of non-pen spots in display table
-            twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
-            const segEnd = Math.min(startSpot + spotsBudget, spotsToDraw);
-            const segSize = segEnd - startSpot;
-            if (segSize > 0) twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, segSize, startSpot);
-            const spotsDrawn = segSize;
-            spotsBudget -= spotsDrawn;
-            startSpot = (startSpot + spotsDrawn) % spotsToDraw;
-            // then draw from start of display table to frame end
-            if (spotsBudget > 0 && spotsToDraw > spotsDrawn) {
-                const remaining = Math.min(spotsBudget, spotsToDraw - spotsDrawn);
-                twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, remaining);
-                startSpot = (startSpot + remaining) % spotsToDraw;
-            }
-        }
-
-        // draw pen spots, which are beyond spotsToDraw
-        if (penSpotCount > 0) {
-            uniforms.colorIdx = 0;                  // don't colorize pen spots
-            twgl.setUniforms(spotsProg, uniforms);
-            twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
-            twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, penSpotCount, spotsToDraw);
-        }
-
-        requestAnimationFrame(display);
+    // draw pen spots, which are beyond spotsToDraw
+    if (penSpotCount > 0) {
+      uniforms.colorIdx = 0; // don't colorize pen spots
+      twgl.setUniforms(spotsProg, uniforms);
+      twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
+      twgl.drawBufferInfo(gl, spotsBuffer, gl.POINTS, penSpotCount, spotsToDraw);
     }
+
     requestAnimationFrame(display);
+  }
+  requestAnimationFrame(display);
 }
 
 function clearPenSpots() {
-    spotCount -= penSpotCount;
-    penSpotCount = 0;
+  spotCount -= penSpotCount;
+  penSpotCount = 0;
 }
 
 let hadPseudoLoc = false;
 function penTracker({ x, y }) {
-    // remove pen spots from the end of the display table
-    clearPenSpots();
-    const origSpotCount = spotCount;
-    const origTwinkle = params.twinkleSpots;
-    params.twinkleSpots = false;
-    // trackin cross with log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
-    const COUNT = 6;          // number of spots per arm
-    const START = 2.5;        // inner opening
-    const DENSITY = 0.25;      // density of spots
-    const BRIGHT = 0.4;       // bright dot size for pseudo pen location
-    const scale = Math.max(5, uniforms.spotSize) * devicePixelRatio * params.trackerSize / 30;
-    const pseudoRange = params.trackerSnap * 6;  // snap to spot this close
-    // find closest spot, make it the pseudo pen location
-    spotsSeen.length = 0;
-    let pseudoX = x, pseudoY = y, dist = Infinity;
-    for (let i = 0; i < spotCount; i++) {
-        const spotX = displayTable[2*i] >> 16;
-        const dx = Math.abs(x - spotX);
-        if (dx > pseudoRange) continue;
-        const spotY = displayTable[2*i+1] >> 16;
-        const dy = Math.abs(y - spotY);
-        if (dy > pseudoRange) continue;
-        spotsSeen.push({ x: spotX, y: spotY, id: displayTable[2*i] & 65535 });
-        const d = Math.min(dx, dy);
-        if (d < dist) {
-            pseudoX = spotX;
-            pseudoY = spotY;
-            dist = d;
-        }
+  // remove pen spots from the end of the display table
+  clearPenSpots();
+  const origSpotCount = spotCount;
+  const origTwinkle = params.twinkleSpots;
+  params.twinkleSpots = false;
+  // trackin cross with log pattern from fig 4.4 of Sketchpad thesis (pg. 58)
+  const COUNT = 6; // number of spots per arm
+  const START = 2.5; // inner opening
+  const DENSITY = 0.25; // density of spots
+  const BRIGHT = 0.4; // bright dot size for pseudo pen location
+  const scale = (Math.max(5, uniforms.spotSize) * devicePixelRatio * params.trackerSize) / 30;
+  const pseudoRange = params.trackerSnap * 6; // snap to spot this close
+  // find closest spot, make it the pseudo pen location
+  spotsSeen.length = 0;
+  let pseudoX = x,
+    pseudoY = y,
+    dist = Infinity;
+  for (let i = 0; i < spotCount; i++) {
+    const spotX = displayTable[2 * i] >> 16;
+    const dx = Math.abs(x - spotX);
+    if (dx > pseudoRange) continue;
+    const spotY = displayTable[2 * i + 1] >> 16;
+    const dy = Math.abs(y - spotY);
+    if (dy > pseudoRange) continue;
+    spotsSeen.push({ x: spotX, y: spotY, id: displayTable[2 * i] & 65535 });
+    const d = Math.min(dx, dy);
+    if (d < dist) {
+      pseudoX = spotX;
+      pseudoY = spotY;
+      dist = d;
     }
-    // haptic feedback
-    const hasPseudoLoc = dist < Infinity;
-    if (hasPseudoLoc !== hadPseudoLoc) {
-        if (hasPseudoLoc) {
-            wrapper.send('prepareHaptics');
-            wrapper.send('hapticImpact');
-        }
-        hadPseudoLoc = hasPseudoLoc;
+  }
+  // haptic feedback
+  const hasPseudoLoc = dist < Infinity;
+  if (hasPseudoLoc !== hadPseudoLoc) {
+    if (hasPseudoLoc) {
+      wrapper.send('prepareHaptics');
+      wrapper.send('hapticImpact');
     }
-    // draw bright dot at pseudo pen location
-    const r = scale * BRIGHT;
-    for (const [ox, oy] of [[-2,-2], [-3,0], [-2,2], [0,-3], [0,0], [0,3], [2,-2], [3,0], [2,2]]) {
-        addSpot(pseudoX + ox * r, pseudoY + oy * r);
+    hadPseudoLoc = hasPseudoLoc;
+  }
+  // draw bright dot at pseudo pen location
+  const r = scale * BRIGHT;
+  for (const [ox, oy] of [
+    [-2, -2],
+    [-3, 0],
+    [-2, 2],
+    [0, -3],
+    [0, 0],
+    [0, 3],
+    [2, -2],
+    [3, 0],
+    [2, 2],
+  ]) {
+    addSpot(pseudoX + ox * r, pseudoY + oy * r);
+  }
+  // draw arms
+  for (let i = 0; i < COUNT; i++) {
+    const r = (Math.log(START + i) / DENSITY) * scale;
+    for (const [ox, oy] of [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ]) {
+      addSpot(x + ox * r, y + oy * r);
     }
-    // draw arms
-    for (let i = 0; i < COUNT; i++) {
-        const r = Math.log(START + i) / DENSITY * scale;
-        for (const [ox, oy] of [[-1,0], [1,0], [0,-1], [0,1]]) {
-            addSpot(x + ox * r, y + oy * r);
-        }
-    }
-    penSpotCount = spotCount - origSpotCount;
-    params.twinkleSpots = origTwinkle;
+  }
+  penSpotCount = spotCount - origSpotCount;
+  params.twinkleSpots = origTwinkle;
 }

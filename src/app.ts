@@ -1,6 +1,8 @@
 import config from './config';
 import scope from './scope';
 import * as status from './status';
+import * as display from './display';
+import * as raster from './raster';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
@@ -200,13 +202,25 @@ export function onFrame() {
 
 // ---------- rendering ----------
 
+let prevSpotCount = 0;
+
 export function render() {
+  display.clearSpots();
   if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
   }
   renderDrawingInProgress();
-  drawing().render();
+  raster.clear();
+  drawing().render((pos) => pos);
+  raster.rasterize();
   renderCrosshairs();
+
+  const spotCount = display.getSpotCount();
+  if (spotCount != prevSpotCount) {
+    prevSpotCount = spotCount;
+    status.set(`${spotCount} spots`);
+  }
+
   status.render();
   renderDebugInfo();
 }

@@ -27,6 +27,13 @@ export default {
     this.centerAt(newCenter);
   },
 
+  toDisplayPosition({ x, y }: Position) {
+    const displayScale = (scale * 1024) / innerWidth;
+    return {
+      x: (x - center.x) * displayScale + 1024 / 2,
+      y: (y - center.y) * displayScale + 1024 / 2,
+    };
+  },
   toScreenPosition({ x, y }: Position) {
     return {
       x: (x - center.x) * scale + innerWidth / 2,
