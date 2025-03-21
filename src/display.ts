@@ -454,7 +454,7 @@ function startup(canvas: HTMLCanvasElement) {
       }
       startSpot = (from << 3) + i; // recompose from and i into startSpot
       // console.log('startSpot', startSpot);
-    } else {
+    } else if (spotsToDraw > 0) {
       // first, draw up to end of non-pen spots in display table
       twgl.setBuffersAndAttributes(gl, spotsProg, spotsBuffer);
       const segEnd = Math.min(startSpot + spotsBudget, spotsToDraw);
