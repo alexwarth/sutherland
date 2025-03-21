@@ -116,16 +116,16 @@ function onKeyDown(e: KeyboardEvent) {
       }
       break;
     case 'ArrowUp':
-      app.panBy(0, -10);
+      app.panBy(0, -50 / scope.scale);
       break;
     case 'ArrowDown':
-      app.panBy(0, 10);
+      app.panBy(0, 50 / scope.scale);
       break;
     case 'ArrowLeft':
-      app.panBy(10, 0);
+      app.panBy(50 / scope.scale, 0);
       break;
     case 'ArrowRight':
-      app.panBy(-10, 0);
+      app.panBy(-50 / scope.scale, 0);
       break;
     case 'q':
       app.rotateInstanceBy((5 * Math.PI) / 180);
