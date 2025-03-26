@@ -251,7 +251,6 @@ out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     float gauss = exp(-20.0 * dist*dist) * spotIntensity;          // 20 works well for 8 bit color components
-    if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = vec4(gauss, gauss, gauss, 1.0);
 }`;
@@ -261,6 +260,7 @@ void main() {
 const COLORIZE_SPOT_VSHADER = `#version 300 es
 in      ivec2 xyIdIx;          // position in upper 16 bits, id and index in lower 16 bits
 uniform vec2  screenScale;     // half width/height of screen
+uniform float pixelRatio;      // device pixel ratio
 uniform float spotSize;        // size of spot
 uniform uint  colorIdx;        // start of spots in display table
 out     vec3  v_color;         // color of spot
@@ -283,7 +283,7 @@ void main() {
         v_color = vec3(1.0);                               // default: white
     }
     gl_Position = vec4(vec2(pos) / screenScale, 0.0, 1.0);
-    gl_PointSize = spotSize * 512.0 / max(screenScale.x, screenScale.y);
+    gl_PointSize = spotSize * pixelRatio;
 }`;
 
 const COLORIZE_SPOT_FSHADER = `#version 300 es
@@ -294,7 +294,6 @@ out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
     float gauss = exp(-20.0 * dist*dist) * spotIntensity;          // 20 works well for 8 bit color components
-    if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = gauss * vec4(v_color, 1.0);
 }`;
