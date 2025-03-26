@@ -59,7 +59,7 @@ let pen = { // pen location and pseudo pen location
 
 export function init(canvas: HTMLCanvasElement, options?: Partial<typeof params>) {
   if (options) setParams(options);
-  startup(canvas);
+  return startup(canvas);
 }
 
 export function clearSpots() {
@@ -141,7 +141,7 @@ export function getParam<P extends keyof typeof params>(p: P): typeof params[P] 
 // or by calling setParams()
 const params = {
   spotSize: 9,                    // size of spot texture
-  spotBrightness: 0.3,            // like beam current
+  spotIntensity: 0.3,            // like beam current
   spotDensity: devicePixelRatio,  // spots on line/arc
   spotsPerSec: 100000,            // draw speed in spots per second
   spotsCPUFraction: 0.5,          // fraction of CPU time for spots
@@ -246,11 +246,11 @@ void main() {
 
 const SPOT_FSHADER = `#version 300 es
 precision mediump float;
-uniform float spotBrightness;
+uniform float spotIntensity;
 out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-20.0 * dist*dist) * spotBrightness;          // 20 works well for 8 bit color components
+    float gauss = exp(-20.0 * dist*dist) * spotIntensity;          // 20 works well for 8 bit color components
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = vec4(gauss, gauss, gauss, 1.0);
@@ -289,10 +289,11 @@ void main() {
 const COLORIZE_SPOT_FSHADER = `#version 300 es
 precision mediump float;
 in vec3 v_color;
+uniform float spotIntensity;
 out vec4 photons;
 void main() {
     float dist = distance(gl_PointCoord, vec2(0.5));
-    float gauss = exp(-15.0 * dist*dist);                  // -15 works well for 8 bit color components
+    float gauss = exp(-20.0 * dist*dist) * spotIntensity;          // 20 works well for 8 bit color components
     if (gauss < 0.01) discard;
     // src+dst blending to accumulate photons
     photons = gauss * vec4(v_color, 1.0);
@@ -330,7 +331,7 @@ function startup(canvas: HTMLCanvasElement) {
 
   const gui = new dat.GUI();
   gui.add(params, 'spotSize', 1, 100);
-  gui.add(params, 'spotBrightness', 0.1, 1);
+  gui.add(params, 'spotIntensity', 0.1, 1);
   gui.add(params, 'spotDensity', 0.1, 5);
   gui.add(params, 'spotsPerSec', 1000, 500000);
   gui.add(params, 'spotsCPUFraction', 0.01, 1).listen(); // changed in app()
@@ -491,6 +492,8 @@ function startup(canvas: HTMLCanvasElement) {
     requestAnimationFrame(display);
   }
   requestAnimationFrame(display);
+
+  return { gui };
 }
 
 function clearPenSpots() {
