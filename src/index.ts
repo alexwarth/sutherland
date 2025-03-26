@@ -1,3 +1,7 @@
+import * as demo from './display-demo';
+demo.start(document.getElementById('canvas') as HTMLCanvasElement)
+
+/*
 // import './console';
 import * as display from './display';
 
@@ -45,3 +49,5 @@ onFrame();
 
 (window as any).app = app;
 (window as any).demos = demos;
+
+*/
