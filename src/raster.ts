@@ -32,7 +32,12 @@ export function rasterize() {
         line(scope.toDisplayPosition(p.a), scope.toDisplayPosition(p.b));
         break;
       case 'arc':
-        arc(scope.toDisplayPosition(p.a), scope.toDisplayPosition(p.b), scope.toDisplayPosition(p.c), p.direction);
+        arc(
+          scope.toDisplayPosition(p.a),
+          scope.toDisplayPosition(p.b),
+          scope.toDisplayPosition(p.c),
+          p.direction,
+        );
         break;
     }
   }
@@ -55,21 +60,34 @@ function line(a: Position, b: Position) {
   }
 }
 
-function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
-  // line(a, b);
-  // line(b, c);
-  // line(c, a);
+const TAU = 2 * Math.PI;
 
-  const theta1 = Math.atan2(a.y - c.y, a.x - c.x);
-  const theta2 = Math.atan2(b.y - c.y, b.x - c.x);
+function arc(a: Position, b: Position, c: Position, direction: 'cw' | 'ccw') {
   const radius = pointDist(c, a);
-  const dTheta = direction === 'ccw' ? theta2 - theta1 : Math.PI * 2 - (theta2 - theta1);
+
+  if (direction === 'ccw') {
+    // swap a and b
+    const tmp = a;
+    a = b;
+    b = tmp;
+  }
+
+  const theta1 = TAU + Math.atan2(a.y - c.y, a.x - c.x);
+  let theta2 = TAU + Math.atan2(b.y - c.y, b.x - c.x);
+  while (theta2 > theta1) {
+    theta2 -= TAU;
+  }
+
+  const thetasAreEqual = Math.abs(theta2 - theta1) < 0.05;
+  if (thetasAreEqual) {
+    theta2 = theta1 + TAU;
+  }
+
+  const dTheta = theta2 - theta1;
   const circ = Math.abs(dTheta) * radius;
   const d = display.getParam('spotSize') / display.getParam('spotDensity');
-  const delta = theta2 - theta1;
-  // console.log('r', radius, 'dTheta', dTheta, circ, d, circ / d);
   for (let i = 0; i < circ; i += d) {
-    const angle = theta1 + (i / circ) * delta;
+    const angle = theta1 + (i / circ) * dTheta;
     const x = c.x + radius * Math.cos(angle);
     const y = c.y + radius * Math.sin(angle);
     display.addSpot(x, y);
