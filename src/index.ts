@@ -1,7 +1,10 @@
 // import './console';
 import * as display from './display';
 
-display.init(document.getElementById('displayCanvas') as HTMLCanvasElement, { showGui: true });
+display.init(document.getElementById('displayCanvas') as HTMLCanvasElement, {
+  // showGui: true,
+  clipToSquare: true,
+});
 
 import { thisWorld } from './state';
 import * as canvas from './canvas';
@@ -24,7 +27,7 @@ function onFrame() {
   controller.onFrame();
   app.onFrame();
 
-  canvas.clear();
+  canvas.clear(controller.isInConfigScreen() ? 'rgba(0,0,0,.5)' : 'rgba(0,0,0,0)');
   controller.render();
   if (controller.isInConfigScreen()) {
     canvas.withGlobalAlpha(0.25, () => app.render());

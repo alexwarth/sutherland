@@ -26,7 +26,7 @@ const defaultConfig = {
   showImplicitConstraints: false,
   highlightReferents: true,
   maxDepth: 10,
-  tabletButtonWidth: 100,
+  tabletButtonWidth: 94,
   lefty: false,
   onionSkinAlpha: 0,
 };

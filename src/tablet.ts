@@ -5,6 +5,7 @@ import * as status from './status';
 import * as wrapper from './wrapper';
 import * as display from './display';
 import * as NativeEvents from './NativeEvents';
+import { drawLine, drawText as canvasDrawText } from './canvas';
 import { showHideConsole } from './console';
 import { pointDiff, pointDist, Position } from './helpers';
 import { Handle, Thing } from './things';
@@ -21,10 +22,10 @@ const SMALL_CAPS = 0.75;
 const letterHeight = () => config().fontScale * 8;
 
 function drawText(text: string, x: number, y: number, scale = 0.35) {
-  app.drawing().drawText(text, scale, {
+  canvasDrawText({
     x: x + config().tabletButtonWidth / 2,
-    y: y + letterHeight() / 2 + scale * config().fontScale * 3,
-  });
+    y: y + letterHeight() / 2,
+  }, text, "rgba(255, 255, 0, 0.5)", undefined, 24)
 }
 
 class Button {
@@ -48,6 +49,16 @@ class Button {
   }
 
   render() {
+    const outline = (this.isDown || (this.highlightPred && this.highlightPred()))
+      ? 'rgba(255, 255, 255, 1)'
+      : 'rgba(0, 0, 0, 0.5)';
+
+    drawLine({ x: this.leftX, y: this.topY }, { x: this.leftX + config().tabletButtonWidth, y: this.topY }, outline);
+    drawLine({ x: this.leftX, y: this.topY + letterHeight() }, { x: this.leftX + config().tabletButtonWidth, y: this.topY + letterHeight() }, outline);
+    drawLine({ x: this.leftX, y: this.topY }, { x: this.leftX, y: this.topY + letterHeight() }, outline);
+    drawLine({ x: this.leftX + config().tabletButtonWidth, y: this.topY }, { x: this.leftX + config().tabletButtonWidth, y: this.topY + letterHeight() }, outline);
+
+
     drawText(this.label, this.leftX, this.topY);
     if (this.isDown || (this.highlightPred && this.highlightPred())) {
       drawText(this.label, this.leftX, this.topY);
@@ -79,9 +90,12 @@ abstract class Screen {
   }
 
   renderButtons() {
+    const g = config().showGuideLines
+    config().showGuideLines = true;
     for (const b of this.buttons) {
       b.render();
     }
+    config().showGuideLines = g;
   }
 
   onPencilDown(screenPos: Position, pressure: number) {}
@@ -182,7 +196,7 @@ function isDrawingButton(b: Button) {
   return '1' <= b.label && b.label <= '9';
 }
 
-const mainScreen = new (class extends Screen {
+const mainScreen = new (class MainScreen extends Screen {
   readonly lineButton = new Button('LINE');
   readonly moveButton = new Button('MOVE');
   readonly horvButton = new Button('HORV');
@@ -193,7 +207,7 @@ const mainScreen = new (class extends Screen {
   readonly arcButton = new Button('ARC');
   readonly eqButton = new Button('EQ');
   readonly fixButton = new Button('FIX');
-  readonly weightButton = new Button('weight');
+  readonly weightButton = new Button('WEIGHT');
   readonly attacherButton = new Button('ATT');
   readonly clearButton = new Button('CLEAR');
   readonly timeButton = new Button('TIME');

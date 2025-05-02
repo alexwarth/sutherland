@@ -41,8 +41,10 @@ function updateCanvasSize() {
 
 window.addEventListener('resize', updateCanvasSize);
 
-export function clear() {
+export function clear(fillStyle: string) {
   ctx.clearRect(0, 0, el.width, el.height);
+  ctx.fillStyle = fillStyle;
+  ctx.fillRect(0, 0, el.width, el.height);
   ctx.lineWidth = config().lineWidth;
   ctx.lineCap = 'round';
 }
@@ -112,10 +114,11 @@ export function drawText(
   text: string,
   fillStyle = flickeryWhite(),
   transform = identity,
+  fontSize = 12,
 ) {
   ctx.fillStyle = fillStyle;
-  const fontSizeInPixels = 12;
-  ctx.font = `${fontSizeInPixels}px Major Mono Display`;
+  const fontSizeInPixels = fontSize;
+  ctx.font = `${fontSizeInPixels}px monospace`;
   const labelWidth = ctx.measureText(text).width;
   const { x, y } = transform(pos);
   ctx.fillText(text, x - labelWidth / 2, y + fontSizeInPixels / 2);

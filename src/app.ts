@@ -208,20 +208,28 @@ const inkCPUFraction = 0.02;
 const defaultCPUFraction = display.getParam('spotsCPUFraction');
 
 export function render() {
-  display.clearSpots();
+  // clear lines and arcs from rasterization list
   raster.clear();
+
   if (!drawingInProgress && drawing().isEmpty()) {
     renderInk();
+    // make INK flicker by limiting the CPU fraction
     if (display.getParam('spotsCPUFraction') === defaultCPUFraction) {
       display.setParams({ spotsCPUFraction: inkCPUFraction });
     }
-  } else if (display.getParam('spotsCPUFraction') === inkCPUFraction) {
-    display.setParams({ spotsCPUFraction: defaultCPUFraction });
+  } else {
+    renderDrawingInProgress();
+    drawing().render();
+    // if INK is not showing anymore, restore the CPU fraction
+    if (display.getParam('spotsCPUFraction') === inkCPUFraction) {
+      display.setParams({ spotsCPUFraction: defaultCPUFraction });
+    }
   }
-  renderDrawingInProgress();
-  drawing().render();
+
+  // rasterize lines and arcs to the display
+  display.clearSpots();
   raster.rasterize();
-  renderCrosshairs();
+  // renderCrosshairs();
 
   const spotCount = display.getSpotCount();
   if (spotCount != prevSpotCount) {
