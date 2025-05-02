@@ -3,6 +3,7 @@ import scope from './scope';
 import * as app from './app';
 import * as status from './status';
 import * as wrapper from './wrapper';
+import * as display from './display';
 import * as NativeEvents from './NativeEvents';
 import { showHideConsole } from './console';
 import { pointDiff, pointDist, Position } from './helpers';
@@ -258,6 +259,8 @@ const mainScreen = new (class extends Screen {
     }
 
     app.pen.moveToScreenPos(screenPos);
+    const displayPos = scope.toDisplayPosition(app.pen.pos!);
+    display.setPen(displayPos.x, displayPos.y);
     if (config().debug) console.log(`pen down ${app.pen.pos!.x|0}, ${app.pen.pos!.y|0}`);
     if (this.moveButton.isDown) {
       this.move();
@@ -272,6 +275,8 @@ const mainScreen = new (class extends Screen {
     }
 
     app.pen.moveToScreenPos(screenPos);
+    const displayPos = scope.toDisplayPosition(app.pen.pos!);
+    display.setPen(displayPos.x, displayPos.y);
     this.snap();
     const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
