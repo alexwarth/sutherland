@@ -262,7 +262,7 @@ function renderDrawingInProgress() {
   switch (drawingInProgress?.type) {
     case 'line':
       if (pen.pos) {
-        drawLine(drawingInProgress.start, pen.pos, flickeryWhite(), scope.toScreenPosition);
+        raster.addLine(drawingInProgress.start, pen.pos);
       }
       break;
     case 'arc':
@@ -277,13 +277,11 @@ function renderDrawingInProgress() {
         drawingInProgress.cummRotation !== undefined &&
         Math.abs(drawingInProgress.cummRotation) > 0.05
       ) {
-        drawArc(
-          drawingInProgress.positions[0],
+        raster.addArc(
           drawingInProgress.positions[1],
           pen.pos,
+          drawingInProgress.positions[0],
           drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
-          flickeryWhite(),
-          scope.toScreenPosition,
         );
       }
       break;
