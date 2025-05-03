@@ -3,7 +3,8 @@ import * as display from './display';
 
 display.init(document.getElementById('displayCanvas') as HTMLCanvasElement, {
   // showGui: true,
-  clipToSquare: true,
+  clipToSquare: true,        // limit number of spots to render
+  pseudoPenTracking: false,  // we provide our own pseudo pen position
 });
 
 import { thisWorld } from './state';

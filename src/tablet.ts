@@ -291,7 +291,13 @@ const mainScreen = new (class MainScreen extends Screen {
     app.pen.moveToScreenPos(screenPos);
     const displayPos = scope.toDisplayPosition(app.pen.pos!);
     display.setPen(displayPos.x, displayPos.y);
-    this.snap();
+    const snapPos = this.snap();
+    if (snapPos) {
+      const displayPseudoPos = scope.toDisplayPosition(app.pen.pos!);
+      display.setPseudoPen(displayPseudoPos.x, displayPseudoPos.y);
+    } else {
+      display.setPseudoPen(displayPos.x, displayPos.y);
+    }
     const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
     if (this.drag) {
@@ -514,6 +520,7 @@ const mainScreen = new (class MainScreen extends Screen {
       this.hapticBump();
     }
     this.lastSnap = snap;
+    return snap;
   }
 
   prepareHaptics() {

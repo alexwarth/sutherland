@@ -124,6 +124,11 @@ export function setPen(x: number, y: number) {
   pen.pos.y = y | 0;
 }
 
+export function setPseudoPen(x: number, y: number) {
+  pen.pseudo.x = x | 0;
+  pen.pseudo.y = y | 0;
+}
+
 export function getPen() {
   return pen;
 }
@@ -142,7 +147,7 @@ export function getParam<P extends keyof typeof params>(p: P): typeof params[P] 
 // or by calling setParams()
 const params = {
   spotSize: 9,                    // size of spot texture
-  spotIntensity: 0.3,            // like beam current
+  spotIntensity: 0.3,             // like beam current
   spotDensity: devicePixelRatio,  // spots on line/arc
   spotsPerSec: 100000,            // draw speed in spots per second
   spotsCPUFraction: 0.5,          // fraction of CPU time for spots
@@ -150,6 +155,7 @@ const params = {
   phosphorAmbient: 0.3,           // base brightness
   phosphorSmoothness: 0.95,       // 0: rough, 1: smooth
   phosphorGrain: 3,               // size of graininess
+  pseudoPenTracking: true,        // snap to closest spot
   clipToSquare: false,            // only draw within 1024x1024 square
   interlaceSpots: false,          // interlaced rendering
   twinkleSpots: false,            // scramble spots for less flicker
@@ -509,33 +515,38 @@ function penTracker() {
   const scale = (Math.max(5, params.spotSize) * devicePixelRatio * params.trackerSize) / 30;
   const pseudoRange = params.trackerSnap * 6; // snap to spot this close
   // find closest spot, make it the pseudo pen location
-  spotsSeen.length = 0;
-  let pseudoX = x,
-    pseudoY = y,
-    dist = Infinity;
-  for (let i = 0; i < spotCount; i++) {
-    const spotX = displayTable[2 * i] >> 16;
-    const dx = Math.abs(x - spotX);
-    if (dx > pseudoRange) continue;
-    const spotY = displayTable[2 * i + 1] >> 16;
-    const dy = Math.abs(y - spotY);
-    if (dy > pseudoRange) continue;
-    spotsSeen.push({ x: spotX, y: spotY, id: displayTable[2 * i] & 65535 });
-    const d = Math.min(dx, dy);
-    if (d < dist) {
-      pseudoX = spotX;
-      pseudoY = spotY;
-      dist = d;
+  let pseudoX = x;
+  let pseudoY = y;
+  if (params.pseudoPenTracking) {
+    spotsSeen.length = 0;
+    let dist = Infinity;
+    for (let i = 0; i < spotCount; i++) {
+      const spotX = displayTable[2 * i] >> 16;
+      const dx = Math.abs(x - spotX);
+      if (dx > pseudoRange) continue;
+      const spotY = displayTable[2 * i + 1] >> 16;
+      const dy = Math.abs(y - spotY);
+      if (dy > pseudoRange) continue;
+      spotsSeen.push({ x: spotX, y: spotY, id: displayTable[2 * i] & 65535 });
+      const d = Math.min(dx, dy);
+      if (d < dist) {
+        pseudoX = spotX;
+        pseudoY = spotY;
+        dist = d;
+      }
     }
-  }
-  // haptic feedback
-  const hasPseudoLoc = dist < Infinity;
-  if (hasPseudoLoc !== hadPseudoLoc) {
-    if (hasPseudoLoc) {
-      wrapper.send('prepareHaptics');
-      wrapper.send('hapticImpact');
+    // haptic feedback
+    const hasPseudoLoc = dist < Infinity;
+    if (hasPseudoLoc !== hadPseudoLoc) {
+      if (hasPseudoLoc) {
+        wrapper.send('prepareHaptics');
+        wrapper.send('hapticImpact');
+      }
+      hadPseudoLoc = hasPseudoLoc;
     }
-    hadPseudoLoc = hasPseudoLoc;
+  } else {
+    pseudoX = pen.pseudo.x;
+    pseudoY = pen.pseudo.y;
   }
   // draw bright dot at pseudo pen location
   const r = scale * BRIGHT;
@@ -565,7 +576,7 @@ function penTracker() {
     }
   }
   penSpotCount = spotCount - origSpotCount;
-  if (hasPseudoLoc) {
+  if (params.pseudoPenTracking) {
     pen.pseudo.x = pseudoX;
     pen.pseudo.y = pseudoY;
   }
