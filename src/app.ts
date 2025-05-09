@@ -1,10 +1,18 @@
 import config from './config';
 import scope from './scope';
 import * as status from './status';
-import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
+import {
+  drawArc,
+  drawArcControlPoint,
+  drawLine,
+  drawPoint,
+  drawText,
+  flickeryAccentColor,
+  flickeryWhite,
+} from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
-import { Position, TAU } from './helpers';
+import { pointDist, Position, rotateAround, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 import { bookmarkedWorld, thisWorld, Var } from './state';
@@ -88,9 +96,13 @@ const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
 // ---------- drawing in progress ----------
 
 let drawingInProgress:
-  | { type: 'line'; start: Position }
+  | { type: 'line'; start?: Position }
   | { type: 'arc'; positions: Position[]; prevAngle?: number; cummRotation?: number }
   | null = null;
+
+export function startLines() {
+  drawingInProgress = { type: 'line' };
+}
 
 export function moreLines() {
   if (!pen.pos) {
@@ -98,19 +110,28 @@ export function moreLines() {
   }
 
   const pos = { x: pen.pos.x, y: pen.pos.y };
-  if (drawingInProgress?.type === 'line') {
+
+  if (drawingInProgress?.type !== 'line') {
+    drawingInProgress = { type: 'line', start: pos };
+  } else if (drawingInProgress.start) {
     drawing().addLine(drawingInProgress.start, pos);
+    drawingInProgress = {
+      type: 'line',
+      start: pos,
+    };
+  } else {
+    drawingInProgress.start = pos;
   }
-  drawingInProgress = {
-    type: 'line',
-    start: pos,
-  };
 }
 
 export function endLines() {
   if (drawingInProgress?.type === 'line') {
     drawingInProgress = null;
   }
+}
+
+export function startArc() {
+  drawingInProgress = { type: 'arc', positions: [], cummRotation: 0 };
 }
 
 export function moreArc() {
@@ -232,49 +253,144 @@ function renderDrawingInProgress() {
   switch (drawingInProgress?.type) {
     case 'line':
       if (pen.pos) {
-        drawLine(drawingInProgress.start, pen.pos, flickeryWhite(), scope.toScreenPosition);
+        // drawArcControlPoint(scope.toScreenPosition(pen.pos));
+        if (drawingInProgress.start) {
+          drawLine(drawingInProgress.start, pen.pos, flickeryWhite(), scope.toScreenPosition);
+          // drawArcControlPoint(scope.toScreenPosition(drawingInProgress.start), false);
+        }
       }
       break;
     case 'arc':
-      if (config().showControlPoints) {
-        for (const cp of drawingInProgress.positions) {
-          drawPoint(cp, config().controlPointColor, scope.toScreenPosition);
+      // if (config().showControlPoints) {
+      //   for (const cp of drawingInProgress.positions) {
+      //     drawPoint(cp, config().controlPointColor, scope.toScreenPosition);
+      //   }
+      // }
+      for (const p of drawingInProgress.positions) {
+        drawArcControlPoint(scope.toScreenPosition(p), false);
+      }
+      if (pen.pos) {
+        drawArcControlPoint(scope.toScreenPosition(pen.pos));
+        if (drawingInProgress.positions.length >= 1) {
+          drawLine(
+            drawingInProgress.positions[0],
+            drawingInProgress.positions.length === 2
+              ? rotateAround(
+                  drawingInProgress.positions[1],
+                  drawingInProgress.positions[0],
+                  drawingInProgress.cummRotation!,
+                )
+              : pen.pos,
+            flickeryAccentColor('normal'),
+            scope.toScreenPosition,
+            10,
+            true,
+          );
         }
       }
-      if (
-        drawingInProgress.positions.length == 2 &&
-        pen.pos &&
-        drawingInProgress.cummRotation !== undefined &&
-        Math.abs(drawingInProgress.cummRotation) > 0.05
-      ) {
+      if (drawingInProgress.positions.length === 1 && pen.pos) {
+        const r = pointDist(pen.pos, drawingInProgress.positions[0]);
+        const dTheta = (1.5 * Math.PI) / Math.sqrt(r / 2);
+        const edgeTheta = Math.asin(10 / r);
+        // drawArc(
+        //   drawingInProgress.positions[0],
+        //   rotateAround(pen.pos, drawingInProgress.positions[0], -dTheta),
+        //   rotateAround(pen.pos, drawingInProgress.positions[0], dTheta),
+        //   'ccw',
+        //   flickeryWhite(),
+        //   scope.toScreenPosition,
+        // );
         drawArc(
           drawingInProgress.positions[0],
-          drawingInProgress.positions[1],
-          pen.pos,
-          drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
+          rotateAround(pen.pos, drawingInProgress.positions[0], edgeTheta),
+          rotateAround(pen.pos, drawingInProgress.positions[0], dTheta),
+          'ccw',
+          flickeryWhite(),
+          scope.toScreenPosition,
+        );
+        drawArc(
+          drawingInProgress.positions[0],
+          rotateAround(pen.pos, drawingInProgress.positions[0], -edgeTheta),
+          rotateAround(pen.pos, drawingInProgress.positions[0], -dTheta),
+          'cw',
           flickeryWhite(),
           scope.toScreenPosition,
         );
       }
+      if (drawingInProgress.positions.length === 2) {
+        drawLine(
+          drawingInProgress.positions[0],
+          drawingInProgress.positions[1],
+          flickeryAccentColor('normal'),
+          scope.toScreenPosition,
+          10,
+          true,
+        );
+        if (
+          pen.pos &&
+          drawingInProgress.cummRotation !== undefined &&
+          Math.abs(drawingInProgress.cummRotation) > 0.05
+        ) {
+          drawArc(
+            drawingInProgress.positions[0],
+            drawingInProgress.positions[1],
+            pen.pos,
+            drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
+            flickeryWhite(),
+            scope.toScreenPosition,
+          );
+        }
+      }
+      // } else if (
+      //   drawingInProgress.positions.length == 2 &&
+      //   pen.pos &&
+      //   drawingInProgress.cummRotation !== undefined &&
+      //   Math.abs(drawingInProgress.cummRotation) > 0.05
+      // ) {
+      //   drawArc(
+      //     drawingInProgress.positions[0],
+      //     drawingInProgress.positions[1],
+      //     pen.pos,
+      //     drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
+      //     flickeryAccentColor(),
+      //     scope.toScreenPosition,
+      //   );
+      // }
       break;
   }
 }
 
 function renderCrosshairs() {
-  if (!pen.pos) {
+  if (
+    !pen.pos ||
+    drawingInProgress?.type === 'arc'
+    // || drawingInProgress?.type === 'line'
+  ) {
     return;
   }
 
   const tpen = scope.toScreenPosition(pen.pos);
+  const gapPct = 0.5;
+  const color = flickeryAccentColor;
   drawLine(
     { x: tpen.x - config().crosshairsSize, y: tpen.y },
+    { x: tpen.x - config().crosshairsSize * gapPct, y: tpen.y },
+    color('bold'),
+  );
+  drawLine(
     { x: tpen.x + config().crosshairsSize, y: tpen.y },
-    flickeryWhite('bold'),
+    { x: tpen.x + config().crosshairsSize * gapPct, y: tpen.y },
+    color('bold'),
   );
   drawLine(
     { x: tpen.x, y: tpen.y - config().crosshairsSize },
+    { x: tpen.x, y: tpen.y - config().crosshairsSize * gapPct },
+    color('bold'),
+  );
+  drawLine(
     { x: tpen.x, y: tpen.y + config().crosshairsSize },
-    flickeryWhite('bold'),
+    { x: tpen.x, y: tpen.y + config().crosshairsSize * gapPct },
+    color('bold'),
   );
 }
 

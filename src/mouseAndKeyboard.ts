@@ -52,6 +52,10 @@ export function render() {
 }
 
 function onKeyDown(e: KeyboardEvent) {
+  if (keysDown[e.key]) {
+    return;
+  }
+
   keysDown[e.key] = true;
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
@@ -65,6 +69,12 @@ function onKeyDown(e: KeyboardEvent) {
   }
 
   switch (e.key) {
+    case 'a':
+      app.startArc();
+      break;
+    case 'Meta':
+      app.startLines();
+      break;
     case 'f':
       updateConfig({ flicker: !config().flicker });
       return;
@@ -137,6 +147,10 @@ function onKeyDown(e: KeyboardEvent) {
 }
 
 function onKeyUp(e: KeyboardEvent) {
+  if (!keysDown[e.key]) {
+    return;
+  }
+
   delete keysDown[e.key];
 
   switch (e.key) {

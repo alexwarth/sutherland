@@ -64,6 +64,8 @@ export function drawLine(
   b: Position,
   strokeStyle = flickeryWhite(),
   transform = identity,
+  marginPx = 0,
+  dashed = false,
 ) {
   const oldLineWidth = ctx.lineWidth;
   if (a.x === b.x && a.y === b.y) {
@@ -71,11 +73,32 @@ export function drawLine(
   }
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  const ta = transform(a);
-  const tb = transform(b);
-  ctx.moveTo(ta.x, ta.y);
-  ctx.lineTo(tb.x, tb.y);
+  if (dashed) {
+    ctx.setLineDash([5, 10]);
+  }
+  const ta = { ...transform(a) };
+  const tb = { ...transform(b) };
+  let reallyDraw = true;
+  if (marginPx > 0) {
+    const d = pointDist(ta, tb);
+    if (d > 2 * marginPx) {
+      const theta = Math.atan2(tb.y - ta.y, tb.x - ta.x);
+      ta.x += marginPx * Math.cos(theta);
+      ta.y += marginPx * Math.sin(theta);
+      tb.x -= marginPx * Math.cos(theta);
+      tb.y -= marginPx * Math.sin(theta);
+    } else {
+      reallyDraw = false;
+    }
+  }
+  if (reallyDraw) {
+    ctx.moveTo(ta.x, ta.y);
+    ctx.lineTo(tb.x, tb.y);
+  }
   ctx.stroke();
+  if (dashed) {
+    ctx.setLineDash([]);
+  }
   ctx.lineWidth = oldLineWidth;
 }
 
@@ -131,6 +154,14 @@ export function drawArc(
   ctx.stroke();
 }
 
+export function drawArcControlPoint(pos: Position, next = true) {
+  ctx.strokeStyle = flickeryAccentColor(next ? 'bold' : 'normal');
+  ctx.beginPath();
+  const radius = 10;
+  ctx.arc(pos.x, pos.y, radius, 0, TAU);
+  ctx.stroke();
+}
+
 export function drawCircle(x: number, y: number, radius: number, color: string) {
   ctx.fillStyle = color;
   ctx.beginPath();
@@ -170,4 +201,28 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
     ? Math.random() * multiplier + baseAlpha
     : 0.75 * multiplier + baseAlpha;
   return `rgba(255,255,255,${alpha})`;
+}
+
+export function flickeryAccentColor(weight: 'light' | 'normal' | 'bold' = 'normal') {
+  let baseAlpha: number;
+  let multiplier: number;
+  if (weight === 'normal') {
+    baseAlpha = 0.35;
+    multiplier = 0.3;
+  } else if (weight === 'light') {
+    baseAlpha = 0.1;
+    multiplier = 0.05;
+  } else {
+    baseAlpha = 0.7;
+    multiplier = 0.1;
+  }
+  baseAlpha *= config().baseAlphaMultiplier;
+  // const rand = Math.random();
+  const rand = 1;
+  const alpha = config().flicker ? rand * multiplier + baseAlpha : 0.75 * multiplier + baseAlpha;
+  // const alpha = 1;
+  return `rgba(255,255,0,${alpha})`;
+  // return `rgba(0,0,255,${alpha})`;
+  // return `rgba(50,50,255,${alpha})`;
+  // return `rgba(255,0,0,${alpha})`;
 }
