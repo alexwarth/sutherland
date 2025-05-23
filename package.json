@@ -24,5 +24,8 @@
     "trailingComma": "es5"
   },
   "dependencies": {
+    "@automerge/automerge-repo": "^1.2.1",
+    "@automerge/automerge-repo-network-websocket": "^1.2.1",
+    "@automerge/automerge-repo-storage-indexeddb": "^1.2.1"
   }
 }
