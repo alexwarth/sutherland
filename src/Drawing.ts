@@ -15,8 +15,25 @@ import {
 } from './constraints';
 import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
-import { Arc, Handle, Instance, Line, Thing } from './things';
+import {
+  Arc,
+  deserializeThing,
+  Handle,
+  Instance,
+  Line,
+  SerializedHandle,
+  SerializedThing,
+  Thing,
+} from './things';
 import { thisWorld, List, Var } from './state';
+
+export interface SerializedDrawing {
+  id: string;
+  handles: SerializedHandle[];
+  things: SerializedThing[];
+  // TODO: attachers
+  // TODO: constraints
+}
 
 export class Drawing {
   private readonly _things = new Var(new List<Thing>());
@@ -40,6 +57,13 @@ export class Drawing {
   }
 
   readonly constraints = new ConstraintSet();
+
+  constructor(
+    readonly id: string,
+    things: Thing[] = [],
+  ) {
+    this.things = new List(...things);
+  }
 
   clear() {
     this.things = new List();
@@ -556,6 +580,33 @@ export class Drawing {
         1,
       ),
     );
+  }
+
+  serialize(): SerializedDrawing {
+    const things = this.things.toArray();
+    if (things.length > 0) {
+      console.log('serializing drawing with things', things);
+    }
+
+    const handleSet = new Set<Handle>();
+    for (const thing of things) {
+      thing.forEachHandle((h) => handleSet.add(h));
+    }
+    const handles = [...handleSet];
+
+    return {
+      id: this.id,
+      handles: handles.map((h) => h.serialize()),
+      things: things.map((t) => t.serialize(handles)),
+    };
+  }
+
+  // TODO: break this up into deserialize(id), and loadFrom(sd)
+  // (b/c all of the drawings must be around before we load the things, b/c of instances)
+  static deserialize(sd: SerializedDrawing): Drawing {
+    const handles = sd.handles.map((h) => Handle.deserialize(h));
+    const things = sd.things.map((t) => deserializeThing(t, handles));
+    return new Drawing(sd.id, things);
   }
 }
 

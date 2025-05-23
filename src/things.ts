@@ -16,6 +16,7 @@ import {
   TAU,
   pointDiff,
 } from './helpers';
+import { drawing } from './app';
 
 type Transform = (pos: Position) => Position;
 
@@ -30,6 +31,19 @@ export interface Thing {
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachRelaxableVar(fn: (v: Var<number>) => void): void;
   forEachVar(fn: (v: Var<any>) => void): void;
+  serialize(handles: Handle[]): SerializedThing;
+}
+
+export type SerializedThing =
+  | SerializedHandle
+  | SerializedLine
+  | SerializedArc
+  | SerializedInstance;
+
+export interface SerializedHandle {
+  type: 'handle';
+  x: number;
+  y: number;
 }
 
 export class Handle implements Thing {
@@ -51,6 +65,10 @@ export class Handle implements Thing {
   }
   set y(newY: number) {
     this._y.value = newY;
+  }
+
+  static deserialize(h: SerializedHandle): Handle {
+    return new Handle(h);
   }
 
   constructor({ x, y }: Position) {
@@ -98,6 +116,21 @@ export class Handle implements Thing {
   toString() {
     return `handle(id=${this.id})`;
   }
+
+  serialize(): SerializedHandle {
+    return {
+      type: 'handle',
+      x: this.x,
+      y: this.y,
+    };
+  }
+}
+
+interface SerializedLine {
+  type: 'line';
+  aIdx: number;
+  bIdx: number;
+  isGuide: boolean;
 }
 
 export class Line implements Thing {
@@ -115,6 +148,15 @@ export class Line implements Thing {
   }
   set b(b: Handle) {
     this._b.value = b;
+  }
+
+  static deserialize(l: SerializedLine, handles: Handle[]): Line {
+    const a = handles[l.aIdx];
+    const b = handles[l.bIdx];
+    const line = new Line({ x: 0, y: 0 }, { x: 0, y: 0 }, l.isGuide);
+    line.a = a;
+    line.b = b;
+    return line;
   }
 
   constructor(
@@ -181,6 +223,23 @@ export class Line implements Thing {
     fn(this._b);
     this.forEachRelaxableVar(fn);
   }
+
+  serialize(handles: Handle[]): SerializedLine {
+    return {
+      type: 'line',
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+      isGuide: this.isGuide,
+    };
+  }
+}
+
+interface SerializedArc {
+  type: 'arc';
+  aIdx: number;
+  bIdx: number;
+  cIdx: number;
+  direction: 'cw' | 'ccw';
 }
 
 export class Arc implements Thing {
@@ -206,6 +265,17 @@ export class Arc implements Thing {
   }
   set c(c: Handle) {
     this._c.value = c;
+  }
+
+  static deserialize(l: SerializedArc, handles: Handle[]): Arc {
+    const a = handles[l.aIdx];
+    const b = handles[l.bIdx];
+    const c = handles[l.cIdx];
+    const arc = new Arc({ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, l.direction);
+    arc.a = a;
+    arc.b = b;
+    arc.c = c;
+    return arc;
   }
 
   constructor(
@@ -304,6 +374,26 @@ export class Arc implements Thing {
     fn(this._c);
     this.forEachRelaxableVar(fn);
   }
+
+  serialize(handles: Handle[]): SerializedArc {
+    return {
+      type: 'arc',
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+      cIdx: handles.indexOf(this.c),
+      direction: this.direction,
+    };
+  }
+}
+
+interface SerializedInstance {
+  type: 'instance';
+  masterDrawingId: string;
+  x: number;
+  y: number;
+  size: number;
+  angle: number;
+  parentDrawingId: string;
 }
 
 export class Instance implements Thing {
@@ -341,13 +431,24 @@ export class Instance implements Thing {
     this._attachers.value = newAttachers;
   }
 
+  static deserialize(i: SerializedInstance): Instance {
+    return new Instance(
+      drawing(i.masterDrawingId),
+      i.x,
+      i.y,
+      i.size,
+      i.angle,
+      drawing(i.parentDrawingId),
+    );
+  }
+
   constructor(
     readonly master: Drawing,
     x: number,
     y: number,
     size: number,
     angle: number,
-    parent: Drawing,
+    readonly parent: Drawing,
   ) {
     this._x = new Var(x);
     this._y = new Var(y);
@@ -461,5 +562,32 @@ export class Instance implements Thing {
     fn(this._attachers);
     this.attachers.forEachVar(fn);
     this.forEachRelaxableVar(fn);
+  }
+
+  serialize(): SerializedInstance {
+    return {
+      type: 'instance',
+      masterDrawingId: this.master.id,
+      x: this.x,
+      y: this.y,
+      size: this.size,
+      angle: this.angle,
+      parentDrawingId: this.parent.id,
+    };
+  }
+}
+
+export function deserializeThing(t: SerializedThing, handles: Handle[]): Thing {
+  switch (t.type) {
+    case 'handle':
+      return Handle.deserialize(t);
+    case 'line':
+      return Line.deserialize(t, handles);
+    case 'arc':
+      return Arc.deserialize(t, handles);
+    case 'instance':
+      return Instance.deserialize(t);
+    default:
+      throw new Error(`don't know how to deserialize a ${(t as any).type}!`);
   }
 }

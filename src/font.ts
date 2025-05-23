@@ -31,7 +31,7 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config().
           pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
           center,
-          0,
+          0, // TODO: fix this type error!
         );
         break;
       }
@@ -48,7 +48,7 @@ const commandsByLetter = new Map<string, Command[]>(rawJson.data.values as any);
 
 export const letterDrawings = new Map<string, Drawing>();
 for (const [letter, commands] of commandsByLetter) {
-  const drawing = new Drawing();
+  const drawing = new Drawing(letter);
   applyTo(drawing, commands, config().fontScale);
   const line = drawing.addLine(
     { x: -config().kerning * config().fontScale, y: 0 },

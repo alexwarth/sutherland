@@ -1,14 +1,12 @@
 import { isValidAutomergeUrl, Repo } from '@automerge/automerge-repo';
 import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb';
 import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
+import { drawing, drawings, switchToDrawing } from './app';
+import { Drawing, SerializedDrawing } from './Drawing';
 
 interface SerializedState {
-  drawings: { [id: number]: SerializedDrawing };
-}
-
-// TODO: flesh out this type
-interface SerializedDrawing {
-  id: number;
+  currentDrawingId: string;
+  drawings: SerializedDrawing[];
 }
 
 const repo = new Repo({
@@ -32,12 +30,23 @@ export function saveState() {
 }
 
 function loadState(state: SerializedState) {
-  console.log('TODO: load state', state);
+  console.log('load state', state);
+  for (const sd of state.drawings) {
+    const d = Drawing.deserialize(sd);
+    drawings[d.id] = d;
+  }
+  switchToDrawing(state.currentDrawingId);
 }
 
 function getSerializedState(): SerializedState {
-  // TODO: write this for real
-  return {
-    drawings: {},
-  };
+  const serializedDrawings: SerializedDrawing[] = [];
+  const currentDrawing = drawing();
+  let currentDrawingId = '1';
+  for (const d of Object.values(drawings)) {
+    serializedDrawings.push(d.serialize());
+    if (d === currentDrawing) {
+      currentDrawingId = d.id;
+    }
+  }
+  return { currentDrawingId, drawings: serializedDrawings };
 }
