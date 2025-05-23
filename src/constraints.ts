@@ -11,6 +11,14 @@ import {
 } from './helpers';
 import { Var } from './state';
 
+export type SerializedConstraint =
+  | SerializedFixedPointConstraint
+  | SerializedHorizontalOrVerticalConstraint
+  | SerializedFixedDistanceConstraint
+  | SerializedEqualDistanceConstraint
+  | SerializedPointOnLineConstraint
+  | SerializedPointOnArcConstraint;
+
 export abstract class Constraint {
   abstract get signature(): string;
   abstract computeError(): number;
@@ -44,6 +52,14 @@ export abstract class Constraint {
     });
     return valid;
   }
+
+  abstract serialize(handles: Handle[]): SerializedConstraint | null;
+}
+
+interface SerializedFixedPointConstraint {
+  type: 'fixed point';
+  pIdx: number;
+  pos: Position;
 }
 
 export class FixedPointConstraint extends Constraint {
@@ -56,6 +72,18 @@ export class FixedPointConstraint extends Constraint {
   }
 
   readonly pos: Position;
+
+  static deserialize(c: SerializedFixedPointConstraint, handles: Handle[]): FixedPointConstraint {
+    return new FixedPointConstraint(handles[c.pIdx], c.pos);
+  }
+
+  serialize(handles: Handle[]): SerializedFixedPointConstraint {
+    return {
+      type: 'fixed point',
+      pIdx: handles.indexOf(this.p),
+      pos: this.pos,
+    };
+  }
 
   constructor(p: Handle, { x, y }: Position) {
     super();
@@ -98,6 +126,12 @@ export class FixedPointConstraint extends Constraint {
   }
 }
 
+interface SerializedHorizontalOrVerticalConstraint {
+  type: 'horv';
+  aIdx: number;
+  bIdx: number;
+}
+
 export class HorizontalOrVerticalConstraint extends Constraint {
   private readonly _a: Var<Handle>;
   private get a() {
@@ -113,6 +147,21 @@ export class HorizontalOrVerticalConstraint extends Constraint {
   }
   private set b(newB: Handle) {
     this._b.value = newB;
+  }
+
+  static deserialize(
+    c: SerializedHorizontalOrVerticalConstraint,
+    handles: Handle[],
+  ): HorizontalOrVerticalConstraint {
+    return new HorizontalOrVerticalConstraint(handles[c.aIdx], handles[c.bIdx]);
+  }
+
+  serialize(handles: Handle[]): SerializedHorizontalOrVerticalConstraint {
+    return {
+      type: 'horv',
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+    };
   }
 
   constructor(a: Handle, b: Handle) {
@@ -159,6 +208,12 @@ export class HorizontalOrVerticalConstraint extends Constraint {
   }
 }
 
+interface SerializedFixedDistanceConstraint {
+  type: 'fixed distance';
+  aIdx: number;
+  bIdx: number;
+}
+
 export class FixedDistanceConstraint extends Constraint {
   private readonly _a: Var<Handle>;
   get a() {
@@ -177,6 +232,21 @@ export class FixedDistanceConstraint extends Constraint {
   }
 
   private readonly distance: number;
+
+  static deserialize(
+    c: SerializedFixedDistanceConstraint,
+    handles: Handle[],
+  ): FixedDistanceConstraint {
+    return new FixedDistanceConstraint(handles[c.aIdx], handles[c.bIdx]);
+  }
+
+  serialize(handles: Handle[]): SerializedFixedDistanceConstraint {
+    return {
+      type: 'fixed distance',
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+    };
+  }
 
   constructor(a: Handle, b: Handle) {
     super();
@@ -223,6 +293,14 @@ export class FixedDistanceConstraint extends Constraint {
   }
 }
 
+interface SerializedEqualDistanceConstraint {
+  type: 'equal distance';
+  a1Idx: number;
+  b1Idx: number;
+  a2Idx: number;
+  b2Idx: number;
+}
+
 export class EqualDistanceConstraint extends Constraint {
   private readonly _a1: Var<Handle>;
   private get a1() {
@@ -254,6 +332,28 @@ export class EqualDistanceConstraint extends Constraint {
   }
   private set b2(newB2: Handle) {
     this._b2.value = newB2;
+  }
+
+  static deserialize(
+    c: SerializedEqualDistanceConstraint,
+    handles: Handle[],
+  ): EqualDistanceConstraint {
+    return new EqualDistanceConstraint(
+      handles[c.a1Idx],
+      handles[c.b1Idx],
+      handles[c.a2Idx],
+      handles[c.b2Idx],
+    );
+  }
+
+  serialize(handles: Handle[]): SerializedEqualDistanceConstraint {
+    return {
+      type: 'equal distance',
+      a1Idx: handles.indexOf(this.a1),
+      b1Idx: handles.indexOf(this.b1),
+      a2Idx: handles.indexOf(this.a2),
+      b2Idx: handles.indexOf(this.b2),
+    };
   }
 
   constructor(a1: Handle, b1: Handle, a2: Handle, b2: Handle) {
@@ -315,6 +415,13 @@ export class EqualDistanceConstraint extends Constraint {
   }
 }
 
+interface SerializedPointOnLineConstraint {
+  type: 'point on line';
+  pIdx: number;
+  aIdx: number;
+  bIdx: number;
+}
+
 export class PointOnLineConstraint extends Constraint {
   private readonly _p: Var<Handle>;
   private get p() {
@@ -338,6 +445,19 @@ export class PointOnLineConstraint extends Constraint {
   }
   private set b(newB: Handle) {
     this._b.value = newB;
+  }
+
+  static deserialize(c: SerializedPointOnLineConstraint, handles: Handle[]): PointOnLineConstraint {
+    return new PointOnLineConstraint(handles[c.pIdx], handles[c.aIdx], handles[c.bIdx]);
+  }
+
+  serialize(handles: Handle[]): SerializedPointOnLineConstraint {
+    return {
+      type: 'point on line',
+      pIdx: handles.indexOf(this.p),
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+    };
   }
 
   constructor(p: Handle, a: Handle, b: Handle) {
@@ -392,6 +512,14 @@ export class PointOnLineConstraint extends Constraint {
   }
 }
 
+interface SerializedPointOnArcConstraint {
+  type: 'point on arc';
+  pIdx: number;
+  aIdx: number;
+  bIdx: number;
+  cIdx: number;
+}
+
 export class PointOnArcConstraint extends Constraint {
   private readonly _p: Var<Handle>;
   private get p() {
@@ -423,6 +551,25 @@ export class PointOnArcConstraint extends Constraint {
   }
   private set c(newC: Handle) {
     this._c.value = newC;
+  }
+
+  static deserialize(c: SerializedPointOnArcConstraint, handles: Handle[]): PointOnArcConstraint {
+    return new PointOnArcConstraint(
+      handles[c.pIdx],
+      handles[c.aIdx],
+      handles[c.bIdx],
+      handles[c.cIdx],
+    );
+  }
+
+  serialize(handles: Handle[]): SerializedPointOnArcConstraint {
+    return {
+      type: 'point on arc',
+      pIdx: handles.indexOf(this.p),
+      aIdx: handles.indexOf(this.a),
+      bIdx: handles.indexOf(this.b),
+      cIdx: handles.indexOf(this.c),
+    };
   }
 
   constructor(p: Handle, a: Handle, b: Handle, c: Handle) {
@@ -501,6 +648,11 @@ export class PointInstanceConstraint extends Constraint {
     this._masterPoint.value = newMasterPoint;
   }
 
+  serialize(handles: Handle[]) {
+    // TODO: write this
+    return null;
+  }
+
   constructor(
     instancePoint: Handle,
     readonly instance: Instance,
@@ -562,6 +714,11 @@ export class PointInstanceConstraint extends Constraint {
 }
 
 export class SizeConstraint extends Constraint {
+  serialize(handles: Handle[]) {
+    // TODO: write this
+    return null;
+  }
+
   constructor(
     readonly instance: Instance,
     readonly scale = 1,
@@ -607,6 +764,11 @@ export class WeightConstraint extends Constraint {
     this._a.value = newA;
   }
 
+  serialize(handles: Handle[]) {
+    // TODO: write this
+    return null;
+  }
+
   constructor(a: Handle) {
     super();
     this._a = new Var(a);
@@ -647,5 +809,28 @@ export class WeightConstraint extends Constraint {
     if (this.a === oldHandle) {
       this.a = newHandle;
     }
+  }
+}
+
+export function deserializeConstraint(
+  c: SerializedConstraint,
+  handles: Handle[],
+): Constraint | null {
+  switch (c.type) {
+    case 'fixed point':
+      return FixedPointConstraint.deserialize(c, handles);
+    case 'horv':
+      return HorizontalOrVerticalConstraint.deserialize(c, handles);
+    case 'fixed distance':
+      return FixedDistanceConstraint.deserialize(c, handles);
+    case 'equal distance':
+      return EqualDistanceConstraint.deserialize(c, handles);
+    case 'point on line':
+      return PointOnLineConstraint.deserialize(c, handles);
+    case 'point on arc':
+      return PointOnArcConstraint.deserialize(c, handles);
+    default:
+      console.error(`TODO: deserialize ${(c as any).type} constraints`);
+      return null;
   }
 }

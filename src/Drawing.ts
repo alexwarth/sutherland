@@ -3,6 +3,8 @@ import scope from './scope';
 import * as status from './status';
 import { lettersDo } from './font';
 import {
+  Constraint,
+  deserializeConstraint,
   EqualDistanceConstraint,
   FixedDistanceConstraint,
   FixedPointConstraint,
@@ -10,6 +12,7 @@ import {
   PointInstanceConstraint,
   PointOnArcConstraint,
   PointOnLineConstraint,
+  SerializedConstraint,
   SizeConstraint,
   WeightConstraint,
 } from './constraints';
@@ -31,8 +34,8 @@ export interface SerializedDrawing {
   id: string;
   handles: SerializedHandle[];
   things: SerializedThing[];
+  constraints: SerializedConstraint[];
   // TODO: attachers
-  // TODO: constraints
 }
 
 export class Drawing {
@@ -61,8 +64,12 @@ export class Drawing {
   constructor(
     readonly id: string,
     things: Thing[] = [],
+    constraints: Constraint[] = [],
   ) {
     this.things = new List(...things);
+    for (const c of constraints) {
+      this.constraints.add(c);
+    }
   }
 
   clear() {
@@ -584,9 +591,9 @@ export class Drawing {
 
   serialize(): SerializedDrawing {
     const things = this.things.toArray();
-    if (things.length > 0) {
-      console.log('serializing drawing with things', things);
-    }
+
+    console.log('serializing drawing with...');
+    console.log('  things', things);
 
     const handleSet = new Set<Handle>();
     for (const thing of things) {
@@ -594,10 +601,19 @@ export class Drawing {
     }
     const handles = [...handleSet];
 
+    const constraints: SerializedConstraint[] = [];
+    this.constraints.forEach((c) => {
+      const sc = c.serialize(handles);
+      if (sc != null) {
+        constraints.push(sc);
+      }
+    });
+
     return {
       id: this.id,
       handles: handles.map((h) => h.serialize()),
       things: things.map((t) => t.serialize(handles)),
+      constraints,
     };
   }
 
@@ -606,7 +622,10 @@ export class Drawing {
   static deserialize(sd: SerializedDrawing): Drawing {
     const handles = sd.handles.map((h) => Handle.deserialize(h));
     const things = sd.things.map((t) => deserializeThing(t, handles));
-    return new Drawing(sd.id, things);
+    const constraints = sd.constraints
+      .map((c) => deserializeConstraint(c, handles))
+      .filter((c) => c != null);
+    return new Drawing(sd.id, things, constraints);
   }
 }
 
