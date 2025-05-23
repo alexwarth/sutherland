@@ -1,12 +1,14 @@
 import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
+import * as persistence from './persistence';
 import * as tablet from './tablet';
 import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
 import { isTablet } from './helpers';
 
 canvas.init(document.getElementById('canvas') as HTMLCanvasElement);
+persistence.init();
 
 const controller = isTablet() ? tablet : mouseAndKeyboard;
 controller.init();

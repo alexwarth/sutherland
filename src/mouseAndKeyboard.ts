@@ -6,6 +6,7 @@ import { el as canvasEl } from './canvas';
 import { Handle, Thing } from './things';
 import { pointDiff } from './helpers';
 import { maybeTimeTravelToWorldAt, topLevelWorld, thisWorld, bookmarkedWorld } from './state';
+import { saveState } from './persistence';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -61,6 +62,12 @@ function onKeyDown(e: KeyboardEvent) {
     } else {
       app.switchToDrawing(id);
     }
+    return;
+  }
+
+  if (e.key === 's' && e.metaKey) {
+    e.preventDefault();
+    saveState();
     return;
   }
 
