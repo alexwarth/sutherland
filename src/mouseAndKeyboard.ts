@@ -228,12 +228,18 @@ function onPointerMove(e: PointerEvent) {
   const displayPos = scope.toDisplayPosition(app.pen.pos!);
   display.setPen(displayPos.x, displayPos.y);
 
+  const snap = app.pen.snapPos(drag?.thing);
+  if (snap) {
+    const displayPseudoPos = scope.toDisplayPosition(app.pen.pos!);
+    display.setPseudoPen(displayPseudoPos.x, displayPseudoPos.y);
+  } else {
+    display.setPseudoPen(displayPos.x, displayPos.y);
+  }
+
   if (penDown && oldPos && !app.drawing().isEmpty() && !drawingInProgress && !drag) {
     app.panBy(app.pen.pos!.x - oldPos.x, app.pen.pos!.y - oldPos.y);
     return;
   }
-
-  app.pen.snapPos(drag?.thing);
 
   if (drag) {
     const newX = app.pen.pos!.x - drag.offset.x;
