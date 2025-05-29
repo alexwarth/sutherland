@@ -1,4 +1,4 @@
-import { isValidAutomergeUrl, Repo } from '@automerge/automerge-repo';
+import { AutomergeUrl, isValidAutomergeUrl, Repo } from '@automerge/automerge-repo';
 import { IndexedDBStorageAdapter } from '@automerge/automerge-repo-storage-indexeddb';
 import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket';
 import { drawing, drawings, switchToDrawing } from './app';
@@ -15,8 +15,8 @@ const repo = new Repo({
 });
 
 export async function init() {
-  const docUrl = document.location.hash.substring(1);
-  if (isValidAutomergeUrl(docUrl)) {
+  const docUrl = getDocUrl();
+  if (docUrl != null) {
     console.log('loading existing doc');
     const handle = repo.find(docUrl);
     loadState((await handle.doc()) as SerializedState);
@@ -49,4 +49,9 @@ function getSerializedState(): SerializedState {
     }
   }
   return { currentDrawingId, drawings: serializedDrawings };
+}
+
+function getDocUrl(): AutomergeUrl | null {
+  const docUrl = document.location.hash.substring(1);
+  return isValidAutomergeUrl(docUrl) ? docUrl : null;
 }
