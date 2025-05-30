@@ -592,9 +592,6 @@ export class Drawing {
   serialize(): SerializedDrawing {
     const things = this.things.toArray();
 
-    console.log('serializing drawing with...');
-    console.log('  things', things);
-
     const handleSet = new Set<Handle>();
     for (const thing of things) {
       thing.forEachHandle((h) => handleSet.add(h));
