@@ -290,8 +290,8 @@ function renderDrawingInProgress() {
       }
       if (drawingInProgress.positions.length === 1 && pen.pos) {
         const r = pointDist(pen.pos, drawingInProgress.positions[0]);
-        const dTheta = (1.5 * Math.PI) / Math.sqrt(r / 2);
         const edgeTheta = Math.asin(10 / r);
+        const dTheta = Math.PI * 2 - edgeTheta; // (1.5 * Math.PI) / Math.sqrt(r / 2);
         // drawArc(
         //   drawingInProgress.positions[0],
         //   rotateAround(pen.pos, drawingInProgress.positions[0], -dTheta),
@@ -305,7 +305,7 @@ function renderDrawingInProgress() {
           rotateAround(pen.pos, drawingInProgress.positions[0], edgeTheta),
           rotateAround(pen.pos, drawingInProgress.positions[0], dTheta),
           'ccw',
-          flickeryWhite(),
+          flickeryWhite('light'),
           scope.toScreenPosition,
         );
         drawArc(
@@ -313,7 +313,7 @@ function renderDrawingInProgress() {
           rotateAround(pen.pos, drawingInProgress.positions[0], -edgeTheta),
           rotateAround(pen.pos, drawingInProgress.positions[0], -dTheta),
           'cw',
-          flickeryWhite(),
+          flickeryWhite('light'),
           scope.toScreenPosition,
         );
       }
@@ -326,6 +326,30 @@ function renderDrawingInProgress() {
           10,
           true,
         );
+
+        // -----
+        const r = pointDist(drawingInProgress.positions[0], drawingInProgress.positions[1]);
+        const edgeTheta = Math.asin(10 / r);
+        drawArc(
+          drawingInProgress.positions[0],
+          rotateAround(
+            drawingInProgress.positions[1],
+            drawingInProgress.positions[0],
+            (drawingInProgress.cummRotation! > 0 ? -1 : 1) * edgeTheta,
+          ),
+          rotateAround(
+            drawingInProgress.positions[1],
+            drawingInProgress.positions[0],
+            // 2 * Math.PI - drawingInProgress.cummRotation! - edgeTheta,
+            drawingInProgress.cummRotation! -
+              (drawingInProgress.cummRotation! > 0 ? -1 : 1) * edgeTheta,
+          ),
+          drawingInProgress.cummRotation! > 0 ? 'cw' : 'ccw',
+          flickeryWhite('light'),
+          scope.toScreenPosition,
+        );
+        // -----
+
         if (
           pen.pos &&
           drawingInProgress.cummRotation !== undefined &&
