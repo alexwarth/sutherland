@@ -36,7 +36,7 @@ export function saveState() {
     handle.change((doc) => doc.versions.unshift(state));
   } else {
     const handle = repo.create<SketchpadDoc>({ versions: [state] });
-    document.location.hash = handle.url;
+    window.parent.document.location.hash = handle.url;
   }
 }
 
@@ -63,6 +63,6 @@ function getSerializedState(): SerializedState {
 }
 
 function getDocUrl(): AutomergeUrl | null {
-  const docUrl = document.location.hash.substring(1);
+  const docUrl = window.parent.document.location.hash.substring(1);
   return isValidAutomergeUrl(docUrl) ? docUrl : null;
 }

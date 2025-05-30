@@ -14,8 +14,11 @@ let drawingInProgress = false;
 let drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
 
 export function init() {
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
+  // window.parent is just window if we're not in an iframe
+  // but if we are, then it's the one that contains this
+  // sketchpad
+  window.parent.addEventListener('keydown', onKeyDown);
+  window.parent.addEventListener('keyup', onKeyUp);
   canvasEl.addEventListener('pointerdown', onPointerDown);
   canvasEl.addEventListener('pointermove', onPointerMove);
   canvasEl.addEventListener('pointerup', onPointerUp);
