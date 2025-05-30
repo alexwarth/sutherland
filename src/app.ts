@@ -267,10 +267,13 @@ function renderDrawingInProgress() {
       //   }
       // }
       for (const p of drawingInProgress.positions) {
+        if (pen.pos && pointDist(pen.pos, p) === 0) {
+          continue;
+        }
         drawArcControlPoint(scope.toScreenPosition(p), false);
       }
       if (pen.pos) {
-        drawArcControlPoint(scope.toScreenPosition(pen.pos));
+        drawArcControlPoint(scope.toScreenPosition(pen.pos), true);
         if (drawingInProgress.positions.length >= 1) {
           drawLine(
             drawingInProgress.positions[0],

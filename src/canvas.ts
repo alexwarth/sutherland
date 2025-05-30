@@ -155,7 +155,7 @@ export function drawArc(
 }
 
 export function drawArcControlPoint(pos: Position, next = true) {
-  ctx.strokeStyle = flickeryAccentColor(next ? 'bold' : 'normal');
+  ctx.strokeStyle = flickeryAccentColor(next ? 'bold' : 'light');
   ctx.beginPath();
   const radius = 10;
   ctx.arc(pos.x, pos.y, radius, 0, TAU);
@@ -210,7 +210,7 @@ export function flickeryAccentColor(weight: 'light' | 'normal' | 'bold' = 'norma
     baseAlpha = 0.35;
     multiplier = 0.3;
   } else if (weight === 'light') {
-    baseAlpha = 0.1;
+    baseAlpha = 0.25;
     multiplier = 0.05;
   } else {
     baseAlpha = 0.7;

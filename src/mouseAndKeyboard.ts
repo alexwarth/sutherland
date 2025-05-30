@@ -245,7 +245,7 @@ function onPointerUp(e: PointerEvent) {
   canvasEl.releasePointerCapture(e.pointerId);
 
   penDown = false;
-  if (!keysDown['Meta']) {
+  if (!keysDown['Meta'] && !keysDown['a']) {
     app.pen.clearPos();
   }
 
