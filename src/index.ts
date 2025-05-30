@@ -42,3 +42,29 @@ onFrame();
 
 (window as any).app = app;
 (window as any).demos = demos;
+
+// messaging
+
+window.addEventListener('message', (e) => {
+  const msg = e.data;
+  if (msg.source !== 'container') {
+    return;
+  }
+
+  console.log('sketchpad received', msg);
+  switch (msg.command) {
+    case 'switchToDrawing':
+      app.switchToDrawing(msg.id);
+      break;
+    case 'getDrawings':
+      window.parent.postMessage({
+        source: 'sketchpad',
+        event: 'drawings',
+        drawings: [...Object.values(app.drawings).map((d) => ({ id: d.id, thumbnail: 'TODO' }))],
+      });
+      break;
+    default:
+      console.error('unrecognized command from container:', msg.command);
+      break;
+  }
+});

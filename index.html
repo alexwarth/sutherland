@@ -5,6 +5,7 @@
   </head>
   <body>
     <iframe
+      id="sketchpad"
       width="800"
       height="600"
       srcdoc='
@@ -23,5 +24,43 @@
 </html>
 '
     ></iframe>
+
+    <div>
+      <button
+        onclick="sketchpad.contentWindow.postMessage({ source: 'container', command: 'getDrawings' })"
+      >
+        get drawings
+      </button>
+    </div>
+    <div id="drawings"></div>
+    <script>
+      window.addEventListener('message', (e) => {
+        const msg = e.data;
+        if (e.data.source !== 'sketchpad') {
+          return;
+        }
+
+        console.log('container received', msg);
+        switch (msg.event) {
+          case 'drawings':
+            drawings.textContent = '';
+            for (const d of msg.drawings) {
+              const b = document.createElement('button');
+              b.appendChild(document.createTextNode(` ${d.id} `));
+              b.onclick = () =>
+                sketchpad.contentWindow.postMessage({
+                  source: 'container',
+                  command: 'switchToDrawing',
+                  id: d.id,
+                });
+              drawings.appendChild(b);
+            }
+            break;
+          default:
+            console.error('unrecognized event from sketchpad:', msg.event);
+            break;
+        }
+      });
+    </script>
   </body>
 </html>
