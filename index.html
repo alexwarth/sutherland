@@ -13,6 +13,7 @@
         }
         frame.setAttribute('width', width);
         frame.setAttribute('height', height);
+        const url = 'src/index.ts';
         frame.setAttribute(
           'srcdoc',
           '<html lang="en"><head><meta charset="UTF-8" />' +
@@ -20,7 +21,9 @@
             '<link rel="stylesheet" href="style.css" />' +
             '<meta name="viewport" content="width=device-width, initial-scale=1.0" />' +
             '<title>Sutherland</title>' +
-            '<script type="module" src="src/index.ts"></' +
+            '<script type="module" src="' +
+            url +
+            '"></' +
             'script>' +
             '</head><body><canvas id="canvas"> </canvas></body></html>',
         );
@@ -50,7 +53,9 @@
           case 'drawings':
             drawings.textContent = '';
             for (const d of msg.drawings) {
+              const s = document.createElement('span');
               const b = document.createElement('button');
+              s.appendChild(b);
               b.appendChild(document.createTextNode(` ${d.id} `));
               b.onclick = () =>
                 sketchpad.contentWindow.postMessage({
@@ -58,7 +63,8 @@
                   command: 'switchToDrawing',
                   id: d.id,
                 });
-              drawings.appendChild(b);
+              drawings.appendChild(s);
+              drawings.appendChild(makeSketchpad(100, 100));
             }
             break;
           default:
