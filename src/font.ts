@@ -31,7 +31,8 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config().
           pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
           center,
-          0,
+          'ccw',
+          false,
         );
         break;
       }
