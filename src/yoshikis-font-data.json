@@ -436,10 +436,10 @@
         "+",
         [
           { "command": "line", "end": { "x": 4, "y": 4 }, "start": { "x": 0, "y": 4 } },
-          { "command": "line", "end": { "x": 2, "y": 1 }, "start": { "x": 2, "y": 7 } }
+          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 6 } }
         ]
       ],
-      [",", [{ "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 2, "y": 2 } }]],
+      [",", [{ "command": "line", "end": { "x": 0, "y": 0 }, "start": { "x": 0.25, "y": 0.5 } }]],
       ["-", [{ "command": "line", "end": { "x": 4, "y": 4 }, "start": { "x": 0, "y": 4 } }]],
       [".", [{ "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 1, "y": 0.5 } }]],
       ["/", [{ "command": "line", "end": { "x": 4, "y": 8 }, "start": { "x": 0, "y": 0 } }]],
@@ -642,14 +642,20 @@
         "?",
         [
           {
-            "center": { "x": 2, "y": 6 },
+            "center": { "x": 2, "y": 4.5 },
             "command": "arc",
-            "end": 3.141592653589793,
-            "radius": 2,
-            "start": -1.5437654884752583
+            "start": 2.748893571891069,
+            "radius": 1.5,
+            "end": -1.1780972450961724
           },
-          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 4 } },
-          { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 2, "y": 0 } }
+          {
+            "center": { "x": 4, "y": 1.5 },
+            "command": "arc",
+            "end": 2.0943951023931953,
+            "radius": 2,
+            "start": 3.141592653589793
+          },
+          { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 2, "y": 0.5 } }
         ]
       ],
       [
