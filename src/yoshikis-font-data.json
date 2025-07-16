@@ -317,8 +317,8 @@
       [
         "!",
         [
-          { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 2, "y": 0 } },
-          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 8 } }
+          { "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 1, "y": 0.5 } },
+          { "command": "line", "end": { "x": 1, "y": 2 }, "start": { "x": 1, "y": 6 } }
         ]
       ],
       [
@@ -427,22 +427,23 @@
       [
         "*",
         [
-          { "command": "line", "end": { "x": 2, "y": 1 }, "start": { "x": 2, "y": 7 } },
-          { "command": "line", "end": { "x": 4, "y": 2 }, "start": { "x": 0, "y": 6 } },
-          { "command": "line", "end": { "x": 4, "y": 6 }, "start": { "x": 0, "y": 2 } }
+          { "command": "line", "end": { "x": 4, "y": 3 }, "start": { "x": 0, "y": 3 } },
+          { "command": "line", "end": { "x": 2, "y": 1 }, "start": { "x": 2, "y": 5 } },
+          { "command": "line", "end": { "x": 3.5, "y": 4.5 }, "start": { "x": 0.5, "y": 1.5 } },
+          { "command": "line", "end": { "x": 3.5, "y": 1.5 }, "start": { "x": 0.5, "y": 4.5 } }
         ]
       ],
       [
         "+",
         [
-          { "command": "line", "end": { "x": 4, "y": 4 }, "start": { "x": 0, "y": 4 } },
-          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 6 } }
+          { "command": "line", "end": { "x": 4, "y": 3 }, "start": { "x": 0, "y": 3 } },
+          { "command": "line", "end": { "x": 2, "y": 1 }, "start": { "x": 2, "y": 5 } }
         ]
       ],
       [",", [{ "command": "line", "end": { "x": 0, "y": 0 }, "start": { "x": 0.25, "y": 0.5 } }]],
-      ["-", [{ "command": "line", "end": { "x": 4, "y": 4 }, "start": { "x": 0, "y": 4 } }]],
+      ["-", [{ "command": "line", "end": { "x": 4, "y": 3 }, "start": { "x": 0, "y": 3 } }]],
       [".", [{ "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 1, "y": 0.5 } }]],
-      ["/", [{ "command": "line", "end": { "x": 4, "y": 8 }, "start": { "x": 0, "y": 0 } }]],
+      ["/", [{ "command": "line", "end": { "x": 3, "y": 6 }, "start": { "x": 1, "y": 0 } }]],
       [
         "0",
         [
@@ -666,7 +667,7 @@
           { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 0, "y": 0 } }
         ]
       ],
-      ["\\", [{ "command": "line", "end": { "x": 4, "y": 0 }, "start": { "x": 0, "y": 8 } }]],
+      ["\\", [{ "command": "line", "end": { "x": 1, "y": 6 }, "start": { "x": 3, "y": 0 } }]],
       [
         "]",
         [
@@ -713,16 +714,16 @@
           {
             "center": { "x": 3, "y": 5.5 },
             "command": "arc",
-            "end": -1.0844660924940577,
+            "start": -1.0844660924940577,
             "radius": 2,
-            "start": -2.067404489817248
+            "end": -2.067404489817248
           },
           {
             "center": { "x": 1, "y": 2 },
             "command": "arc",
-            "end": 2.0727269753613857,
+            "start": 2.0727269753613857,
             "radius": 2,
-            "start": 1.0592589879552556
+            "end": 1.0592589879552556
           }
         ]
       ],
