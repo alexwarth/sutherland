@@ -70,6 +70,22 @@ export function drawing(id?: string) {
 }
 (window as any).drawing = drawing;
 
+export function drawingId(d: Drawing) {
+  for (const [id, dWithId] of Object.entries(drawings)) {
+    if (dWithId === d) {
+      return id;
+    }
+  }
+
+  for (const [id, dWithId] of letterDrawings.entries()) {
+    if (dWithId === d) {
+      return id;
+    }
+  }
+
+  return null;
+}
+
 export function switchToDrawing(id: string) {
   const d = drawing(id);
   if (!d || d === drawing()) {
@@ -82,6 +98,29 @@ export function switchToDrawing(id: string) {
   endEqualLength();
   status.set('drawing #' + id);
 }
+
+function addGround(scale: number) {
+  drawing('2').addLine({ x: 0, y: 0 }, { x: 0, y: scale });
+  drawing('2').addLine({ x: -scale * 10, y: 0 }, { x: scale * 10, y: 0 });
+  for (let x = -scale * 10; x <= scale * 10; x += scale * 4) {
+    drawing('2').addLine({ x, y: 0 }, { x: x - scale * 3, y: -scale * 4 });
+  }
+}
+addGround(7.5);
+
+function addTruss(scale: number) {
+  drawing('1').addLine({ x: -scale * 10, y: scale * 10 }, { x: scale * 10, y: scale * 10 });
+  drawing('1').addLine({ x: scale * 10, y: scale * 10 }, { x: scale * 10, y: -scale * 10 });
+  drawing('1').addLine({ x: scale * 10, y: -scale * 10 }, { x: -scale * 10, y: -scale * 10 });
+  drawing('1').addLine({ x: -scale * 10, y: -scale * 10 }, { x: scale * 10, y: scale * 10 });
+  drawing('1').addLine({ x: scale * 10, y: -scale * 10 }, { x: -scale * 10, y: scale * 10 });
+  drawing('1').fixedDistance({ x: 0, y: scale * 10 });
+  drawing('1').fixedDistance({ x: 0, y: -scale * 10 });
+  drawing('1').fixedDistance({ x: scale * 10, y: 0 });
+  drawing('1').fixedDistance({ x: -scale * 5, y: scale * 5 });
+  drawing('1').fixedDistance({ x: -scale * 5, y: -scale * 5 });
+}
+addTruss(20);
 
 const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
 

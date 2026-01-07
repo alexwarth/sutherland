@@ -317,8 +317,8 @@
       [
         "!",
         [
-          { "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 1, "y": 0.5 } },
-          { "command": "line", "end": { "x": 1, "y": 2 }, "start": { "x": 1, "y": 6 } }
+          { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 2, "y": 0.5 } },
+          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 8 } }
         ]
       ],
       [
@@ -443,7 +443,7 @@
       [",", [{ "command": "line", "end": { "x": 0, "y": 0 }, "start": { "x": 0.25, "y": 0.5 } }]],
       ["-", [{ "command": "line", "end": { "x": 4, "y": 3 }, "start": { "x": 0, "y": 3 } }]],
       [".", [{ "command": "line", "end": { "x": 1, "y": 0 }, "start": { "x": 1, "y": 0.5 } }]],
-      ["/", [{ "command": "line", "end": { "x": 3, "y": 6 }, "start": { "x": 1, "y": 0 } }]],
+      ["/", [{ "command": "line", "end": { "x": 3, "y": 8 }, "start": { "x": 1, "y": 0 } }]],
       [
         "0",
         [
@@ -477,9 +477,9 @@
         "2",
         [
           {
-            "center": { "x": 2, "y": 5.9 },
+            "center": { "x": 2, "y": 5.845 },
             "command": "arc",
-            "end": -1.47079632679,
+            "end": -1.27079632679,
             "radius": 2.2,
             "start": 2.74889357189
           },
@@ -509,7 +509,7 @@
           {
             "center": { "x": 2, "y": 2.5 },
             "command": "arc",
-            "start": 1.57079632679,
+            "start": 1.76714586764,
             "radius": 2.5,
             "end": 4.141592653589793
           }
@@ -527,7 +527,7 @@
         "5",
         [
           { "command": "line", "end": { "x": 4, "y": 8 }, "start": { "x": 0, "y": 8 } },
-          { "command": "line", "end": { "x": 0, "y": 5 }, "start": { "x": 0, "y": 8 } },
+          { "command": "line", "end": { "x": 0, "y": 4.5 }, "start": { "x": 0, "y": 8 } },
           {
             "center": { "x": 1.5, "y": 2.5 },
             "command": "arc",
@@ -643,19 +643,20 @@
         "?",
         [
           {
-            "center": { "x": 2, "y": 4.5 },
+            "center": { "x": 2, "y": 5.95 },
             "command": "arc",
             "start": 2.748893571891069,
-            "radius": 1.5,
-            "end": -1.1780972450961724
+            "radius": 2,
+            "end": -1
           },
           {
-            "center": { "x": 4, "y": 1.5 },
+            "center": { "x": 4, "y": 2.5 },
             "command": "arc",
-            "end": 2.0943951023931953,
+            "end": 2.05,
             "radius": 2,
             "start": 3.141592653589793
           },
+          { "command": "line", "end": { "x": 2, "y": 2 }, "start": { "x": 2, "y": 2.5 } },
           { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 2, "y": 0.5 } }
         ]
       ],
@@ -667,7 +668,7 @@
           { "command": "line", "end": { "x": 2, "y": 0 }, "start": { "x": 0, "y": 0 } }
         ]
       ],
-      ["\\", [{ "command": "line", "end": { "x": 1, "y": 6 }, "start": { "x": 3, "y": 0 } }]],
+      ["\\", [{ "command": "line", "end": { "x": 1, "y": 8 }, "start": { "x": 3, "y": 0 } }]],
       [
         "]",
         [

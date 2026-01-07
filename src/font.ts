@@ -51,14 +51,34 @@ export const letterDrawings = new Map<string, Drawing>();
 for (const [letter, commands] of commandsByLetter) {
   const drawing = new Drawing();
   applyTo(drawing, commands, config().fontScale);
-  const line = drawing.addLine(
+  const topLine = drawing.addLine(
+    { x: -config().kerning * config().fontScale, y: 8 * config().fontScale },
+    { x: (4 + config().kerning) * config().fontScale, y: 8 * config().fontScale },
+    true,
+    false,
+  );
+  const baseLine = drawing.addLine(
     { x: -config().kerning * config().fontScale, y: 0 },
     { x: (4 + config().kerning) * config().fontScale, y: 0 },
     true,
+    false,
   );
-  drawing.attachers.unshift(line.a);
-  drawing.attachers.unshift(line.b);
+  // drawing.attachers.unshift(baseLine.a);
+  // drawing.attachers.unshift(baseLine.b);
+  const leftLine = drawing.addLine(
+    { x: -config().kerning * config().fontScale, y: 0 },
+    { x: -config().kerning * config().fontScale, y: 8 * config().fontScale },
+    true,
+    false,
+  );
+  const rightLine = drawing.addLine(
+    { x: (4 + config().kerning) * config().fontScale, y: 0 },
+    { x: (4 + config().kerning) * config().fontScale, y: 8 * config().fontScale },
+    true,
+    false,
+  );
   letterDrawings.set(letter, drawing);
+  drawing.leave();
 }
 
 export function lettersDo(

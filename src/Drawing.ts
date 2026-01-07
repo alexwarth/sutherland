@@ -71,7 +71,7 @@ export class Drawing {
           }
           this.drawText(
             e,
-            config().distanceConstraintTextScale,
+            config().distanceConstraintTextScale /** pointDist(c.a, c.b)) / 250*/,
             transform({
               x: c.a.x + config().distanceConstraintLabelPct * (c.b.x - c.a.x),
               y: c.a.y + config().distanceConstraintLabelPct * (c.b.y - c.a.y),
@@ -203,12 +203,16 @@ export class Drawing {
   delete(pointerPos: Position) {
     const deletedThing = this.thingAt(pointerPos);
     if (deletedThing) {
-      this.things = this.things.filter((thing) => thing !== deletedThing);
-      status.set('delete', deletedThing);
-      return true;
+      return this.deleteThing(deletedThing);
     } else {
       return false;
     }
+  }
+
+  deleteThing(deletedThing: Thing) {
+    this.things = this.things.filter((thing) => thing !== deletedThing);
+    status.set('delete', deletedThing);
+    return true;
   }
 
   fixedPoint(pointerPos: Position) {

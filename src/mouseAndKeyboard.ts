@@ -3,9 +3,10 @@ import scope from './scope';
 import * as app from './app';
 import * as status from './status';
 import { el as canvasEl } from './canvas';
-import { Handle, Thing } from './things';
-import { pointDiff } from './helpers';
+import { Handle, Instance, Thing } from './things';
+import { pointDiff, Position } from './helpers';
 import { maybeTimeTravelToWorldAt, topLevelWorld, thisWorld, bookmarkedWorld } from './state';
+import { letterDrawings } from './font';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -51,7 +52,14 @@ export function render() {
   }
 }
 
+let typing = false;
+
 function onKeyDown(e: KeyboardEvent) {
+  if (typing) {
+    handleTyped(e);
+    return;
+  }
+
   keysDown[e.key] = true;
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
@@ -77,6 +85,9 @@ function onKeyDown(e: KeyboardEvent) {
       return;
     case 'p':
       app.paste();
+      return;
+    case 'T':
+      enterTypingMode();
       return;
   }
 
@@ -169,7 +180,20 @@ function onPointerDown(e: PointerEvent) {
   app.pen.snapPos();
   penDown = true;
 
-  if (keysDown['Meta']) {
+  if (keysDown['Alt']) {
+    if (!app.pen.pos) {
+      return;
+    }
+    const thing = app.drawing().thingAt(app.pen.pos);
+    if (!(thing instanceof Instance)) {
+      return;
+    }
+    const id = app.drawingId(thing.master);
+    if (id) {
+      app.switchToDrawing(id);
+    }
+    return;
+  } else if (keysDown['Meta']) {
     app.moreLines();
     drawingInProgress = true;
     return;
@@ -240,6 +264,70 @@ function onPointerUp(e: PointerEvent) {
   }
 
   drag = null;
+}
+
+// typing mode
+
+let origTypingPos: Position | null = null;
+let typed: [Instance | 'newline', Position][] = [];
+
+function enterTypingMode() {
+  if (!app.pen.pos) {
+    // don't do it!
+    return;
+  }
+
+  status.set('typing');
+  typing = true;
+  origTypingPos = { ...app.pen.pos };
+  typed = [];
+}
+
+function handleTyped(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    // exit typing mode
+    typing = false;
+    origTypingPos = null;
+    typed = [];
+    return;
+  }
+
+  if (e.key === 'Backspace') {
+    if (typed.length > 0) {
+      const letter = typed[typed.length - 1][0];
+      if (letter !== 'newline') {
+        app.drawing().deleteThing(letter);
+      }
+      typed.pop();
+    }
+    return;
+  }
+
+  const pos = typed.length > 0 ? typed[typed.length - 1][1] : origTypingPos!;
+  const letterWidth = config().fontScale * (4 + config().kerning * 2);
+  const letterHeight = config().fontScale * 14;
+
+  if (e.key === 'Enter') {
+    typed.push(['newline', { x: origTypingPos!.x, y: pos.y - letterHeight }]);
+    return;
+  }
+
+  if (e.key.length !== 1) {
+    // ignore
+    return;
+  }
+
+  const master = letterDrawings.get(e.key.toUpperCase());
+  if (!master) {
+    // ignore
+    return;
+  }
+
+  // THIS IS HOW WE MAKE ALL THE TEXT
+  // CHARACTERS AND NUMBERS (0123456789)
+
+  const instance = app.drawing().addInstance(master, pos, master.size, 0)!;
+  typed.push([instance, { x: pos.x + letterWidth, y: pos.y }]);
 }
 
 export const isInConfigScreen = () => false;

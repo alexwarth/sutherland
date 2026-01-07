@@ -1,15 +1,15 @@
 import * as app from './app';
 import scope from './scope';
-import { SizeConstraint } from './constraints';
 import { lettersDo } from './font';
 import { Instance } from './things';
+import * as config from './config';
 
 export function write(msg: string, scale = 1): Instance[] {
   const drawing = app.drawing();
   const instances: Instance[] = [];
   lettersDo(msg, scale, (letter, x, ls) => {
     const instance = drawing.addInstance(letter, { x, y: scope.center.y }, letter.size * ls, 0)!;
-    drawing.constraints.add(new SizeConstraint(instance, ls));
+    // drawing.constraints.add(new SizeConstraint(instance, ls));
     const lastInstance = instances.at(-1);
     if (lastInstance) {
       drawing.replaceHandle(instance.attachers[0], lastInstance.attachers[1]);
@@ -31,3 +31,6 @@ export function wanderingLetters(msg: string, scale = 1) {
     instance.x = pos.y;
   }
 }
+
+export const switchToDrawing = app.switchToDrawing;
+export const updateConfig = config.updateConfig;
