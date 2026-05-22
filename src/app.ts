@@ -99,6 +99,7 @@ export function switchToDrawing(id: string) {
   status.set('drawing #' + id);
 }
 
+/*
 function addGround(scale: number) {
   drawing('2').addLine({ x: 0, y: 0 }, { x: 0, y: scale });
   drawing('2').addLine({ x: -scale * 10, y: 0 }, { x: scale * 10, y: 0 });
@@ -121,6 +122,7 @@ function addTruss(scale: number) {
   drawing('1').fixedDistance({ x: -scale * 5, y: -scale * 5 });
 }
 addTruss(20);
+*/
 
 const allDrawings = [...Object.values(drawings), ...letterDrawings.values()];
 
