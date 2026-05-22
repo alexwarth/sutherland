@@ -273,6 +273,10 @@ const mainScreen = new (class extends Screen {
     this.snap();
     const pos = { x: app.pen.pos!.x, y: app.pen.pos!.y };
 
+    if (app.instance() && !this.drag) {
+      this.move();
+    }
+
     if (this.drag) {
       const newX = pos.x - this.drag.offset.x;
       const newY = pos.y - this.drag.offset.y;
@@ -284,7 +288,7 @@ const mainScreen = new (class extends Screen {
       this.onPencilClick();
     }
     if (this.pencilClickInProgress && pressure < 1) {
-      this.endDragEtc();
+      this.pencilClickInProgress = false;
     }
   }
 
