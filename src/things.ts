@@ -5,6 +5,7 @@ import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
 import { List, Var } from './state';
 import {
+  pointIsOnArc,
   Position,
   pointDist,
   pointDistToLineSegment,
@@ -208,12 +209,7 @@ export class Arc implements Thing {
     this._c.value = c;
   }
 
-  constructor(
-    aPos: Position,
-    bPos: Position,
-    cPos: Position,
-    readonly direction: 'cw' | 'ccw',
-  ) {
+  constructor(aPos: Position, bPos: Position, cPos: Position) {
     this._a = new Var(new Handle(aPos));
     this._b = new Var(pointDist(aPos, bPos) === 0 ? this.a : new Handle(bPos));
     this._c = new Var(new Handle(cPos));
@@ -232,22 +228,7 @@ export class Arc implements Thing {
       return false;
     }
 
-    const a = this.direction === 'cw' ? this.a : this.b;
-    const b = this.direction === 'cw' ? this.b : this.a;
-    const va = pointDiff(a, this.c);
-    const vb = pointDiff(b, this.c);
-    const vp = pointDiff(pos, this.c);
-
-    const relAngleB = ccwAngle(vb, va);
-    const relAngleP = ccwAngle(vp, va);
-    // console.log(`P ${relAngleP.toFixed(2)}, B ${relAngleB.toFixed(2)}`);
-    return 0 <= relAngleP && relAngleP <= relAngleB;
-
-    function ccwAngle(vFrom: Position, vTo: Position) {
-      const dot = vFrom.x * vTo.x + vFrom.y * vTo.y;
-      const det = vFrom.x * vTo.y - vFrom.y * vTo.x;
-      return (Math.atan2(det, dot) + TAU) % TAU;
-    }
+    return pointIsOnArc(pos, this.c, this.a, this.b);
   }
 
   distanceTo(pos: Position) {
@@ -259,14 +240,7 @@ export class Arc implements Thing {
   }
 
   render(transform: Transform, color?: string, depth = 0) {
-    // for debugging arc's contains()
-    // const r = pointDist(this.c, this.a);
-    // for (let theta = 0; theta < TAU; theta += TAU / 100) {
-    //   const p = { x: this.c.x + Math.cos(theta) * r, y: this.c.y + Math.sin(theta) * r };
-    //   drawPoint(p, this.contains(p) ? 'yellow' : 'red', transform);
-    // }
-
-    drawArc(this.c, this.a, this.b, this.direction, color ?? flickeryWhite(), transform);
+    drawArc(this.c, this.a, this.b, color ?? flickeryWhite(), transform);
     if (depth === 1 && config().showControlPoints) {
       drawPoint(this.a, config().controlPointColor, transform);
       drawPoint(this.b, config().controlPointColor, transform);

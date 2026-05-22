@@ -147,8 +147,8 @@ export class Drawing {
     return line;
   }
 
-  addArc(aPos: Position, bPos: Position, cPos: Position, direction: 'cw' | 'ccw', snap = true) {
-    const arc = new Arc(aPos, bPos, cPos, direction);
+  addArc(aPos: Position, bPos: Position, cPos: Position, snap = true) {
+    const arc = new Arc(aPos, bPos, cPos);
     if (snap) {
       this.mergeAndAddImplicitConstraints(arc.c);
       this.mergeAndAddImplicitConstraints(arc.a);
@@ -314,7 +314,6 @@ export class Drawing {
           instance.transform(thing.a),
           instance.transform(thing.b),
           instance.transform(thing.c),
-          thing.direction,
         );
         handleMap.set(thing.a, arc.a);
         handleMap.set(thing.b, arc.b);

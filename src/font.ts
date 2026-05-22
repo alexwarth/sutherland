@@ -1,19 +1,19 @@
 import config from './config';
 import scope from './scope';
 import { Drawing } from './Drawing';
-import { Position } from './helpers';
+import { pointPlusPolarVector, Position } from './helpers';
 
 import rawJson from './yoshikis-font-data.json';
 
 type Command =
   | { command: 'line'; start: Position; end: Position }
   | {
-      command: 'arc';
-      center: Position;
-      radius: number;
-      start: number;
-      end: number;
-    };
+    command: 'arc';
+    center: Position;
+    radius: number;
+    start: number;
+    end: number;
+  };
 
 export function applyTo(drawing: Drawing, commands: Command[], scale = config().fontScale) {
   for (const command of commands) {
@@ -28,10 +28,9 @@ export function applyTo(drawing: Drawing, commands: Command[], scale = config().
         const center = pointTimes(command.center, scale);
         const radius = command.radius * scale;
         drawing.addArc(
-          pointPlusPolarVector(center, command.end, radius),
           pointPlusPolarVector(center, command.start, radius),
+          pointPlusPolarVector(center, command.end, radius),
           center,
-          'ccw',
           false,
         );
         break;
@@ -105,11 +104,4 @@ export function lettersDo(
 
 function pointTimes({ x, y }: Position, m: number): Position {
   return { x: x * m, y: y * m };
-}
-
-function pointPlusPolarVector({ x, y }: Position, theta: number, dist: number): Position {
-  return {
-    x: x + dist * Math.cos(theta),
-    y: y + dist * Math.sin(theta),
-  };
 }

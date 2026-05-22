@@ -110,24 +110,25 @@ export function drawDancingLine(
   ctx.stroke();
 }
 
+/** Draw the arc clockwise from a to b around center c. */
 export function drawArc(
   c: Position,
   a: Position,
   b: Position,
-  direction: 'cw' | 'ccw',
   strokeStyle = flickeryWhite(),
   transform = identity,
+  counterClockwise = false,
 ) {
-  const ta = transform(direction === 'cw' ? a : b);
-  const tb = transform(direction === 'cw' ? b : a);
   const tc = transform(c);
+  const ta = transform(a);
+  const tb = transform(b);
   const theta1 = Math.atan2(ta.y - tc.y, ta.x - tc.x);
   const theta2 = Math.atan2(tb.y - tc.y, tb.x - tc.x);
   const thetasAreEqual = Math.abs(theta2 - theta1) < 0.05;
-  const radius = pointDist(tc, direction === 'cw' ? ta : tb);
+  const radius = pointDist(tc, ta);
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  ctx.arc(tc.x, tc.y, radius, theta1, thetasAreEqual ? theta1 + TAU : theta2);
+  ctx.arc(tc.x, tc.y, radius, theta1, thetasAreEqual ? theta1 + TAU : theta2, counterClockwise);
   ctx.stroke();
 }
 

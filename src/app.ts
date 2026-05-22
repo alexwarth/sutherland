@@ -4,12 +4,11 @@ import * as status from './status';
 import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { letterDrawings } from './font';
 import { Drawing } from './Drawing';
-import { Position, TAU } from './helpers';
+import { pointDist, pointPlusPolarVector, Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 import { bookmarkedWorld, thisWorld, Var } from './state';
 
-// TODO: finish direction-based improvements to arcs
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
 // TODO: use hover for drawing lines, pencil down starts new segment (marcel)
 // TODO: refactor so that we can make more than one sketchpad
@@ -164,8 +163,16 @@ export function moreArc() {
   }
   drawingInProgress.positions.push({ x: pen.pos.x, y: pen.pos.y });
   if (drawingInProgress.positions.length === 3) {
-    const [c, a, b] = drawingInProgress.positions;
-    drawing().addArc(a, b, c, drawingInProgress.cummRotation! < 0 ? 'cw' : 'ccw');
+    const [c, p1, p2] = drawingInProgress.positions;
+    const swap = drawingInProgress.cummRotation! > 0;
+    if (drawingInProgress.cummRotation! < 0) {
+      // clockwise
+      drawing().addArc(p1, p2, c);
+    } else {
+      // counter-clockwise
+      // TODO: revisit this, I don't love the way that feels in the UI but I've got bigger fish to fry!
+      drawing().addArc(pointPlusPolarVector(c, Math.atan2(p2.y - c.y, p2.x - c.x), pointDist(c, p1)), p1, c);
+    }
     drawingInProgress = null;
   }
 }
@@ -190,10 +197,6 @@ function maybeUpdateArcDirection() {
     return;
   }
 
-  // prevAngle = pi - .0001
-  // angle = -pi + .0001
-  // naive diff = -2pi + .0002
-  // want diff to be .0002
   let diff = angle - drawingInProgress.prevAngle;
   if (diff > Math.PI) {
     diff -= TAU;
@@ -292,9 +295,9 @@ function renderDrawingInProgress() {
           drawingInProgress.positions[0],
           drawingInProgress.positions[1],
           pen.pos,
-          drawingInProgress.cummRotation < 0 ? 'cw' : 'ccw',
           flickeryWhite(),
           scope.toScreenPosition,
+          drawingInProgress.cummRotation > 0,
         );
       }
       break;

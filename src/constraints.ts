@@ -4,6 +4,7 @@ import {
   Position,
   origin,
   pointDist,
+  pointDistToArc,
   pointDistToLineSegment,
   rotateAround,
   scaleAround,
@@ -25,7 +26,7 @@ export abstract class Constraint {
   abstract replaceHandle(oldHandle: Handle, newHandle: Handle): void;
 
   // override in subclasses like weight constraint
-  preRelax(): void {}
+  preRelax(): void { }
 
   // TODO: consider returning false in certain constraint type-specific conditions
   // e.g., point-on-line(p, a, b) where p == a or p == b
@@ -438,7 +439,7 @@ export class PointOnArcConstraint extends Constraint {
   }
 
   override computeError() {
-    return pointDist(this.p, this.c) - pointDist(this.a, this.c);
+    return pointDistToArc(this.p, this.c, this.a, this.b);
   }
 
   override map(thingMap: Map<Thing, Thing>, handleMap: Map<Handle, Handle>) {

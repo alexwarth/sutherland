@@ -24,6 +24,13 @@ export function pointDiff(a: Position, b: Position) {
   return { x: a.x - b.x, y: a.y - b.y };
 }
 
+export function pointPlusPolarVector({ x, y }: Position, theta: number, dist: number): Position {
+  return {
+    x: x + dist * Math.cos(theta),
+    y: y + dist * Math.sin(theta),
+  };
+}
+
 export const origin = Object.freeze({ x: 0, y: 0 });
 
 export function translate({ x, y }: Position, { x: dx, y: dy }: Position) {
@@ -89,6 +96,40 @@ function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
 
   const t = Math.max(0, Math.min(((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l, 1));
   return pointDist2(p, { x: v.x + t * (w.x - v.x), y: v.y + t * (w.y - v.y) });
+}
+
+/**
+ * Whether p lies on the arc clockwise from a to b around c (y-up model coordinates).
+ * atan2 increases counterclockwise, so clockwise a→b uses a decreasing angle sweep.
+ */
+export function pointIsOnArc(p: Position, c: Position, a: Position, b: Position) {
+  const thetaStart = Math.atan2(a.y - c.y, a.x - c.x);
+  const thetaEnd = Math.atan2(b.y - c.y, b.x - c.x);
+  const thetaP = Math.atan2(p.y - c.y, p.x - c.x);
+  const sweep = (thetaStart - thetaEnd + TAU) % TAU;
+  const rel = (thetaStart - thetaP + TAU) % TAU;
+  return rel <= sweep;
+}
+
+/** Shortest distance from p to the arc clockwise from a to b around c. */
+export function pointDistToArc(p: Position, c: Position, a: Position, b: Position) {
+  const r = pointDist(a, c);
+  if (r === 0) {
+    return pointDist(p, a);
+  }
+
+  const dx = p.x - c.x;
+  const dy = p.y - c.y;
+  const distPC = Math.hypot(dx, dy);
+  if (distPC === 0) {
+    return Math.min(pointDist(p, a), pointDist(p, b));
+  }
+
+  const q = { x: c.x + (dx * r) / distPC, y: c.y + (dy * r) / distPC };
+  if (pointIsOnArc(q, c, a, b)) {
+    return pointDist(p, q);
+  }
+  return Math.min(pointDist(p, a), pointDist(p, b));
 }
 
 // easing functions
