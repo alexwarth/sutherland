@@ -6,7 +6,7 @@
   "main": "",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode deploy",
     "format": "prettier --write ."
   },
   "keywords": [],
