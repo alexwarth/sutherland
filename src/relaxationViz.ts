@@ -13,7 +13,6 @@ const PLOT_AXIS = 'rgba(180, 180, 180, 0.75)';
 const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
 
 const ARROW_LENGTH = 22;
-const SAMPLE_COUNT = 80;
 const AXIS_LABEL_PAD = 18;
 const AXIS_LABEL_FONT = '11px system-ui, sans-serif';
 
@@ -125,8 +124,8 @@ function renderHoverPlots(
   const xPlotTop = margin;
   const yPlotTop = margin + plotChartSize + xLabelSpace + plotGap;
 
-  const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
-  const span = Math.max(epsilon * 80, 1);
+  const xRange = screenXRange();
+  const yRange = screenYRange();
 
   drawValueVsErrorPlot({
     left: panelLeft + margin,
@@ -139,8 +138,9 @@ function renderHoverPlots(
     currentValue: handle.x,
     delta: deltas.get(xVar) ?? 0,
     constraints,
-    minValue: handle.x - span,
-    maxValue: handle.x + span,
+    minValue: xRange.min,
+    maxValue: xRange.max,
+    sampleCount: xRange.sampleCount,
     arrowAxis: 0,
   });
 
@@ -155,9 +155,26 @@ function renderHoverPlots(
     currentValue: handle.y,
     delta: deltas.get(yVar) ?? 0,
     constraints,
-    minValue: handle.y - span,
-    maxValue: handle.y + span,
+    minValue: yRange.min,
+    maxValue: yRange.max,
+    sampleCount: yRange.sampleCount,
   });
+}
+
+function screenXRange() {
+  return {
+    min: scope.fromScreenPosition({ x: 0, y: 0 }).x,
+    max: scope.fromScreenPosition({ x: innerWidth, y: 0 }).x,
+    sampleCount: innerWidth,
+  };
+}
+
+function screenYRange() {
+  return {
+    min: scope.fromScreenPosition({ x: 0, y: innerHeight }).y,
+    max: scope.fromScreenPosition({ x: 0, y: 0 }).y,
+    sampleCount: innerHeight,
+  };
 }
 
 function sampleSquaredError(
@@ -203,6 +220,7 @@ function drawValueVsErrorPlot({
   constraints,
   minValue,
   maxValue,
+  sampleCount,
   arrowAxis,
 }: {
   left: number;
@@ -217,9 +235,10 @@ function drawValueVsErrorPlot({
   constraints: ConstraintSet;
   minValue: number;
   maxValue: number;
+  sampleCount: number;
   arrowAxis: 0 | 1;
 }) {
-  const samples = sampleSquaredError(constraints, v, minValue, maxValue, SAMPLE_COUNT);
+  const samples = sampleSquaredError(constraints, v, minValue, maxValue, sampleCount);
   const currentError = constraints.totalSquaredError();
   const { minError, maxError } = errorBounds(samples, currentError);
 
@@ -264,6 +283,7 @@ function drawErrorVsValuePlot({
   constraints,
   minValue,
   maxValue,
+  sampleCount,
 }: {
   left: number;
   top: number;
@@ -277,8 +297,9 @@ function drawErrorVsValuePlot({
   constraints: ConstraintSet;
   minValue: number;
   maxValue: number;
+  sampleCount: number;
 }) {
-  const samples = sampleSquaredError(constraints, v, minValue, maxValue, SAMPLE_COUNT);
+  const samples = sampleSquaredError(constraints, v, minValue, maxValue, sampleCount);
   const currentError = constraints.totalSquaredError();
   const { minError, maxError } = errorBounds(samples, currentError);
 
