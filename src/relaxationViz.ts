@@ -16,6 +16,7 @@ const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
 const ARROW_LENGTH = 22;
 const AXIS_LABEL_PAD = 18;
 const AXIS_LABEL_FONT = '11px system-ui, sans-serif';
+const AXIS_SUBSCRIPT_FONT = '8px system-ui, sans-serif';
 const ONION_SKIN_FRAMES = 6;
 const MAX_RELAX_STEPS = 5000;
 const GHOST_PLOT_SAMPLES = 100;
@@ -312,7 +313,8 @@ function drawHoverPlotLayer({
     top: layout.xPlotTop,
     width: layout.width,
     height: layout.height,
-    valueLabel: 'x',
+    valueLabel: 'p',
+    valueSubscript: 'x',
     errorLabel: 'Σe²',
     var: xVar,
     currentValue: handle.x,
@@ -331,7 +333,8 @@ function drawHoverPlotLayer({
     top: layout.yPlotTop,
     width: layout.width,
     height: layout.height,
-    valueLabel: 'y',
+    valueLabel: 'p',
+    valueSubscript: 'y',
     errorLabel: 'Σe²',
     var: yVar,
     currentValue: handle.y,
@@ -434,6 +437,7 @@ function drawValueVsErrorPlot({
   width,
   height,
   valueLabel,
+  valueSubscript,
   errorLabel,
   var: v,
   currentValue,
@@ -451,6 +455,7 @@ function drawValueVsErrorPlot({
   width: number;
   height: number;
   valueLabel: string;
+  valueSubscript?: string;
   errorLabel: string;
   var: Var<number>;
   currentValue: number;
@@ -479,6 +484,7 @@ function drawValueVsErrorPlot({
       plotWidth,
       plotHeight,
       horizontalLabel: valueLabel,
+      horizontalSubscript: valueSubscript,
       verticalLabel: errorLabel,
     });
   }
@@ -503,6 +509,7 @@ function drawPlotAxes({
   plotWidth,
   plotHeight,
   horizontalLabel,
+  horizontalSubscript,
   verticalLabel,
 }: {
   plotLeft: number;
@@ -510,6 +517,7 @@ function drawPlotAxes({
   plotWidth: number;
   plotHeight: number;
   horizontalLabel: string;
+  horizontalSubscript?: string;
   verticalLabel: string;
 }) {
   const oldLineWidth = ctx.lineWidth;
@@ -523,22 +531,51 @@ function drawPlotAxes({
   ctx.lineWidth = oldLineWidth;
 
   ctx.fillStyle = PLOT_AXIS;
-  ctx.font = AXIS_LABEL_FONT;
   const oldTextAlign = ctx.textAlign;
   const oldTextBaseline = ctx.textBaseline;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'top';
-  ctx.fillText(horizontalLabel, plotLeft + plotWidth, plotTop + plotHeight + 4);
+  drawHorizontalAxisLabel(
+    plotLeft + plotWidth,
+    plotTop + plotHeight + 4,
+    horizontalLabel,
+    horizontalSubscript,
+  );
 
   ctx.save();
   ctx.translate(plotLeft - 10, plotTop);
   ctx.rotate(-Math.PI / 2);
+  ctx.font = AXIS_LABEL_FONT;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText(verticalLabel, 0, 0);
   ctx.restore();
   ctx.textAlign = oldTextAlign;
   ctx.textBaseline = oldTextBaseline;
+}
+
+function drawHorizontalAxisLabel(
+  rightX: number,
+  y: number,
+  label: string,
+  subscript?: string,
+) {
+  if (!subscript) {
+    ctx.font = AXIS_LABEL_FONT;
+    ctx.fillText(label, rightX, y);
+    return;
+  }
+
+  ctx.font = AXIS_LABEL_FONT;
+  const baseWidth = ctx.measureText(label).width;
+  ctx.font = AXIS_SUBSCRIPT_FONT;
+  const subWidth = ctx.measureText(subscript).width;
+  const totalWidth = baseWidth + subWidth;
+
+  ctx.font = AXIS_LABEL_FONT;
+  ctx.fillText(label, rightX - totalWidth, y);
+  ctx.font = AXIS_SUBSCRIPT_FONT;
+  ctx.fillText(subscript, rightX - totalWidth + baseWidth, y + 4);
 }
 
 function drawCurve(samples: { value: number; error: number }[], toPoint: (sample: { value: number; error: number }) => Position) {
