@@ -12,7 +12,6 @@ import { bookmarkedWorld, thisWorld, Var } from './state';
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
 // TODO: use hover for drawing lines, pencil down starts new segment (marcel)
 // TODO: refactor so that we can make more than one sketchpad
-// TODO: vcr-like undo interface (w/ worlds)
 
 // ---------- pen ----------
 
