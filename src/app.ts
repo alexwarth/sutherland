@@ -8,6 +8,7 @@ import { pointDist, pointPlusPolarVector, Position, TAU } from './helpers';
 import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 import { bookmarkedWorld, thisWorld, Var } from './state';
+import * as relaxationViz from './relaxationViz';
 
 // TODO: equal length should work for lines and arcs (and combinations!) (el)
 // TODO: use hover for drawing lines, pencil down starts new segment (marcel)
@@ -252,6 +253,7 @@ export function render() {
   renderCrosshairs();
   status.render();
   renderDebugInfo();
+  relaxationViz.render(drawing(), pen.pos);
 }
 
 function renderInk() {

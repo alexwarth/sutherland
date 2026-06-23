@@ -7,6 +7,7 @@ import { Handle, Instance, Thing } from './things';
 import { pointDiff, Position } from './helpers';
 import { maybeTimeTravelToWorldAt, topLevelWorld, thisWorld, bookmarkedWorld } from './state';
 import { letterDrawings } from './font';
+import * as relaxationViz from './relaxationViz';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -88,6 +89,9 @@ function onKeyDown(e: KeyboardEvent) {
       return;
     case 'T':
       enterTypingMode();
+      return;
+    case 'r':
+      status.set(`relaxation viz ${relaxationViz.toggle() ? 'on' : 'off'}`);
       return;
   }
 

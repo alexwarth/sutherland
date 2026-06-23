@@ -63,7 +63,33 @@ export default class ConstraintSet {
     return ans;
   }
 
+  totalSquaredError() {
+    return this.computeError();
+  }
+
+  probeRelaxationDeltas(vars: Iterable<Var<number>>) {
+    this.forEach((c) => c.preRelax());
+    const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
+    const minWorthwhileErrorImprovement = config().minWorthwhileErrorImprovement * epsilon;
+    const deltas = new Map<Var<number>, number>();
+    for (const v of vars) {
+      deltas.set(v, this.relaxationStep(v, epsilon, minWorthwhileErrorImprovement));
+    }
+    return deltas;
+  }
+
   private relaxWithVar(v: Var<number>, epsilon: number, minWorthwhileErrorImprovement: number) {
+    const origValue = v.value;
+    const step = this.relaxationStep(v, epsilon, minWorthwhileErrorImprovement);
+    if (step !== 0) {
+      v.value = origValue + step;
+      return true;
+    }
+    v.value = origValue;
+    return false;
+  }
+
+  private relaxationStep(v: Var<number>, epsilon: number, minWorthwhileErrorImprovement: number) {
     const origValue = v.value;
     const errorToBeat = this.computeError() - minWorthwhileErrorImprovement;
 
@@ -73,16 +99,14 @@ export default class ConstraintSet {
     v.value = origValue - epsilon;
     const eMinusEpsilon = this.computeError();
 
+    v.value = origValue;
+
     if (ePlusEpsilon < Math.min(errorToBeat, eMinusEpsilon)) {
-      v.value = origValue + epsilon;
-      return true;
+      return epsilon;
     } else if (eMinusEpsilon < Math.min(errorToBeat, ePlusEpsilon)) {
-      v.value = origValue - epsilon;
-      return true;
-    } else {
-      v.value = origValue;
-      return false;
+      return -epsilon;
     }
+    return 0;
   }
 
   private computeError() {
