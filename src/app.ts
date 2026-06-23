@@ -249,6 +249,8 @@ export function render() {
     renderInk();
   }
   renderDrawingInProgress();
+  relaxationViz.prepare(drawing());
+  relaxationViz.renderOnionSkin(drawing());
   drawing().render();
   renderCrosshairs();
   status.render();

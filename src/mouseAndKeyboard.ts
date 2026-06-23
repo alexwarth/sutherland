@@ -91,7 +91,12 @@ function onKeyDown(e: KeyboardEvent) {
       enterTypingMode();
       return;
     case 'r':
-      status.set(`relaxation viz ${relaxationViz.toggle() ? 'on' : 'off'}`);
+      relaxationViz.setMode(false);
+      status.set(relaxationViz.toggleStatusLabel());
+      return;
+    case 'R':
+      relaxationViz.setMode(true);
+      status.set(relaxationViz.toggleStatusLabel());
       return;
   }
 

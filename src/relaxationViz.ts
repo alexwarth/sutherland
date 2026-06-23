@@ -1,5 +1,5 @@
 import scope from './scope';
-import { ctx, drawLine } from './canvas';
+import { ctx, drawLine, flickeryWhiteEquivalentGray, withGlobalAlpha } from './canvas';
 import ConstraintSet from './ConstraintSet';
 import { Drawing } from './Drawing';
 import { Position } from './helpers';
@@ -8,6 +8,7 @@ import { Var } from './state';
 
 const ARROW_YELLOW = 'rgba(255, 220, 50, 0.85)';
 const ARROW_BLUE = 'rgba(80, 160, 255, 0.95)';
+const PANEL_BG = 'rgba(0, 0, 0, 0.55)';
 const PLOT_CURVE = 'rgba(255, 200, 60, 0.95)';
 const PLOT_AXIS = 'rgba(180, 180, 180, 0.75)';
 const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
@@ -15,16 +16,85 @@ const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
 const ARROW_LENGTH = 22;
 const AXIS_LABEL_PAD = 18;
 const AXIS_LABEL_FONT = '11px system-ui, sans-serif';
+const ONION_SKIN_FRAMES = 6;
+const MAX_RELAX_STEPS = 5000;
+const GHOST_PLOT_SAMPLES = 100;
 
 let enabled = false;
+let onionSkinEnabled = false;
+let futureStates: Map<Var<unknown>, unknown>[] = [];
 
 export function isEnabled() {
   return enabled;
 }
 
-export function toggle() {
-  enabled = !enabled;
+export function setMode(onionSkin: boolean) {
+  if (enabled && onionSkinEnabled === onionSkin) {
+    enabled = false;
+  } else {
+    enabled = true;
+    onionSkinEnabled = onionSkin;
+  }
   return enabled;
+}
+
+function statusLabel() {
+  if (!enabled) {
+    return 'relaxation viz off';
+  }
+  return onionSkinEnabled ? 'relaxation viz on (future)' : 'relaxation viz on';
+}
+
+export function toggleStatusLabel() {
+  return statusLabel();
+}
+
+export function prepare(drawing: Drawing) {
+  if (!enabled || !onionSkinEnabled || drawing.isEmpty()) {
+    futureStates = [];
+    return;
+  }
+  const saved = snapshotVars(drawing);
+  futureStates = [];
+  try {
+    const trajectory: Map<Var<unknown>, unknown>[] = [];
+    let steps = 0;
+    while (steps < MAX_RELAX_STEPS && drawing.relax()) {
+      steps++;
+      trajectory.push(snapshotVars(drawing));
+    }
+    if (trajectory.length === 0) {
+      return;
+    }
+    const frameCount = Math.min(ONION_SKIN_FRAMES, trajectory.length);
+    for (let i = 1; i <= frameCount; i++) {
+      const idx = Math.min(
+        trajectory.length - 1,
+        Math.round((i / frameCount) * trajectory.length) - 1,
+      );
+      futureStates.push(trajectory[idx]);
+    }
+  } finally {
+    restoreVars(saved);
+  }
+}
+
+export function renderOnionSkin(drawing: Drawing) {
+  if (!enabled || !onionSkinEnabled || drawing.isEmpty() || futureStates.length === 0) {
+    return;
+  }
+
+  const saved = snapshotVars(drawing);
+  try {
+    for (let i = futureStates.length - 1; i >= 0; i--) {
+      restoreVars(futureStates[i]);
+      withGlobalAlpha(ghostAlpha(i, futureStates.length), () =>
+        drawing.render(scope.toScreenPosition, flickeryWhiteEquivalentGray()),
+      );
+    }
+  } finally {
+    restoreVars(saved);
+  }
 }
 
 export function render(drawing: Drawing, penPos: Position | null) {
@@ -33,19 +103,46 @@ export function render(drawing: Drawing, penPos: Position | null) {
   }
 
   const hovered = penPos ? drawing.handleAt(penPos) : null;
-  const deltas = collectDeltas(drawing);
+  const saved = snapshotVars(drawing);
 
+  try {
+    restoreVars(saved);
+    renderArrows(drawing, hovered, true);
+    if (hovered) {
+      const [xVar, yVar] = handleVars(hovered);
+      renderHoverPlots(drawing, hovered, xVar, yVar, saved);
+    }
+  } finally {
+    restoreVars(saved);
+  }
+}
+
+function snapshotVars(drawing: Drawing) {
+  const snap = new Map<Var<unknown>, unknown>();
+  drawing.forEachVar((v) => snap.set(v, v.value));
+  return snap;
+}
+
+function restoreVars(snap: Map<Var<unknown>, unknown>) {
+  for (const [v, value] of snap) {
+    v.value = value;
+  }
+}
+
+function ghostAlpha(i: number, total: number) {
+  const t = i / Math.max(total - 1, 1);
+  return 0.25 + 0.45 * (1 - t);
+}
+
+function renderArrows(drawing: Drawing, hovered: Handle | null, highlightHovered: boolean) {
+  const deltas = collectDeltas(drawing);
   forEachHandle(drawing, (handle) => {
     const [xVar, yVar] = handleVars(handle);
-    const color = handle === hovered ? ARROW_BLUE : ARROW_YELLOW;
+    const color =
+      highlightHovered && handle === hovered ? ARROW_BLUE : ARROW_YELLOW;
     drawAxisArrow(handle, deltas.get(xVar) ?? 0, 0, color);
     drawAxisArrow(handle, deltas.get(yVar) ?? 0, 1, color);
   });
-
-  if (hovered) {
-    const [xVar, yVar] = handleVars(hovered);
-    renderHoverPlots(drawing.constraints, hovered, xVar, yVar, deltas);
-  }
 }
 
 function collectDeltas(drawing: Drawing) {
@@ -106,32 +203,108 @@ function drawArrow(start: Position, end: Position, color: string) {
 }
 
 function renderHoverPlots(
-  constraints: ConstraintSet,
+  drawing: Drawing,
   handle: Handle,
   xVar: Var<number>,
   yVar: Var<number>,
-  deltas: Map<Var<number>, number>,
+  currentState: Map<Var<unknown>, unknown>,
 ) {
-  const size = Math.min(innerWidth, innerHeight);
-  const panelWidth = size / 3;
-  const panelLeft = innerWidth - panelWidth;
-  const margin = 12;
-  const xLabelSpace = 16;
-  const plotGap = 28;
-  const plotOuterWidth = panelWidth - margin * 2;
-  const plotChartSize = plotOuterWidth - AXIS_LABEL_PAD;
-
-  const xPlotTop = margin;
-  const yPlotTop = margin + plotChartSize + xLabelSpace + plotGap;
-
+  const constraints = drawing.constraints;
+  const layout = plotLayout();
   const xRange = screenXRange();
   const yRange = screenYRange();
+  const xErrorBounds = sharedErrorBounds(
+    constraints,
+    xVar,
+    xRange.min,
+    xRange.max,
+    onionSkinEnabled ? futureStates : [],
+    currentState,
+  );
+  const yErrorBounds = sharedErrorBounds(
+    constraints,
+    yVar,
+    yRange.min,
+    yRange.max,
+    onionSkinEnabled ? futureStates : [],
+    currentState,
+  );
+
+  if (onionSkinEnabled) {
+    for (let i = futureStates.length - 1; i >= 0; i--) {
+      restoreVars(futureStates[i]);
+      const deltas = collectDeltas(drawing);
+      withGlobalAlpha(ghostAlpha(i, futureStates.length), () => {
+        drawHoverPlotLayer({
+          layout,
+          constraints,
+          handle,
+          xVar,
+          yVar,
+          deltas,
+          xRange,
+          yRange,
+          xErrorBounds,
+          yErrorBounds,
+          ghost: true,
+        });
+      });
+    }
+  }
+
+  restoreVars(currentState);
+  const deltas = collectDeltas(drawing);
+
+  ctx.fillStyle = PANEL_BG;
+  ctx.fillRect(layout.panelLeft, 0, layout.panelWidth, layout.panelHeight);
+
+  drawHoverPlotLayer({
+    layout,
+    constraints,
+    handle,
+    xVar,
+    yVar,
+    deltas,
+    xRange,
+    yRange,
+    xErrorBounds,
+    yErrorBounds,
+    ghost: false,
+  });
+}
+
+function drawHoverPlotLayer({
+  layout,
+  constraints,
+  handle,
+  xVar,
+  yVar,
+  deltas,
+  xRange,
+  yRange,
+  xErrorBounds,
+  yErrorBounds,
+  ghost,
+}: {
+  layout: ReturnType<typeof plotLayout>;
+  constraints: ConstraintSet;
+  handle: Handle;
+  xVar: Var<number>;
+  yVar: Var<number>;
+  deltas: Map<Var<number>, number>;
+  xRange: { min: number; max: number; sampleCount: number };
+  yRange: { min: number; max: number; sampleCount: number };
+  xErrorBounds: { minError: number; maxError: number };
+  yErrorBounds: { minError: number; maxError: number };
+  ghost: boolean;
+}) {
+  const plotSamples = ghost ? GHOST_PLOT_SAMPLES : undefined;
 
   drawValueVsErrorPlot({
-    left: panelLeft + margin,
-    top: xPlotTop,
-    width: plotOuterWidth,
-    height: plotChartSize,
+    left: layout.left,
+    top: layout.xPlotTop,
+    width: layout.width,
+    height: layout.height,
     valueLabel: 'x',
     errorLabel: 'Σe²',
     var: xVar,
@@ -140,15 +313,17 @@ function renderHoverPlots(
     constraints,
     minValue: xRange.min,
     maxValue: xRange.max,
-    sampleCount: xRange.sampleCount,
+    sampleCount: plotSamples ?? xRange.sampleCount,
+    errorBounds: xErrorBounds,
     arrowAxis: 0,
+    ghost,
   });
 
   drawErrorVsValuePlot({
-    left: panelLeft + margin,
-    top: yPlotTop,
-    width: plotOuterWidth,
-    height: plotChartSize,
+    left: layout.left,
+    top: layout.yPlotTop,
+    width: layout.width,
+    height: layout.height,
     valueLabel: 'y',
     errorLabel: 'Σe²',
     var: yVar,
@@ -157,8 +332,57 @@ function renderHoverPlots(
     constraints,
     minValue: yRange.min,
     maxValue: yRange.max,
-    sampleCount: yRange.sampleCount,
+    sampleCount: plotSamples ?? yRange.sampleCount,
+    errorBounds: yErrorBounds,
+    ghost,
   });
+}
+
+function sharedErrorBounds(
+  constraints: ConstraintSet,
+  v: Var<number>,
+  minValue: number,
+  maxValue: number,
+  states: Map<Var<unknown>, unknown>[],
+  currentState: Map<Var<unknown>, unknown>,
+) {
+  let maxError = 0;
+  for (const state of [...states, currentState]) {
+    restoreVars(state);
+    const samples = sampleSquaredError(constraints, v, minValue, maxValue, GHOST_PLOT_SAMPLES);
+    maxError = Math.max(maxError, constraints.totalSquaredError());
+    for (const { error } of samples) {
+      maxError = Math.max(maxError, error);
+    }
+  }
+  if (maxError <= 0) {
+    maxError = 1;
+  }
+  return { minError: 0, maxError };
+}
+
+function plotLayout() {
+  const size = Math.min(innerWidth, innerHeight);
+  const panelWidth = size / 3;
+  const panelLeft = innerWidth - panelWidth;
+  const margin = 12;
+  const xLabelSpace = 16;
+  const plotGap = 28;
+  const plotOuterWidth = panelWidth - margin * 2;
+  const plotChartSize = plotOuterWidth - AXIS_LABEL_PAD;
+  const panelHeight = margin * 2 + plotChartSize * 2 + xLabelSpace + plotGap;
+
+  return {
+    panelLeft,
+    panelWidth,
+    panelHeight,
+    left: panelLeft + margin,
+    top: margin,
+    xPlotTop: margin,
+    yPlotTop: margin + plotChartSize + xLabelSpace + plotGap,
+    width: plotOuterWidth,
+    height: plotChartSize,
+  };
 }
 
 function screenXRange() {
@@ -196,17 +420,6 @@ function sampleSquaredError(
   return samples;
 }
 
-function errorBounds(samples: { error: number }[], currentError: number) {
-  let maxError = currentError;
-  for (const { error } of samples) {
-    maxError = Math.max(maxError, error);
-  }
-  if (maxError <= 0) {
-    maxError = 1;
-  }
-  return { minError: 0, maxError };
-}
-
 function drawValueVsErrorPlot({
   left,
   top,
@@ -221,7 +434,9 @@ function drawValueVsErrorPlot({
   minValue,
   maxValue,
   sampleCount,
+  errorBounds: bounds,
   arrowAxis,
+  ghost,
 }: {
   left: number;
   top: number;
@@ -236,27 +451,31 @@ function drawValueVsErrorPlot({
   minValue: number;
   maxValue: number;
   sampleCount: number;
+  errorBounds: { minError: number; maxError: number };
   arrowAxis: 0 | 1;
+  ghost: boolean;
 }) {
   const samples = sampleSquaredError(constraints, v, minValue, maxValue, sampleCount);
   const currentError = constraints.totalSquaredError();
-  const { minError, maxError } = errorBounds(samples, currentError);
+  const { minError, maxError } = bounds;
 
   const plotTop = top;
   const plotHeight = height;
   const plotLeft = left + AXIS_LABEL_PAD;
   const plotWidth = width - AXIS_LABEL_PAD;
 
-  drawPlotAxes({
-    plotLeft,
-    plotTop,
-    plotWidth,
-    plotHeight,
-    horizontalLabel: valueLabel,
-    verticalLabel: errorLabel,
-    xAxis: 'bottom',
-    verticalLabelAt: 'top',
-  });
+  if (!ghost) {
+    drawPlotAxes({
+      plotLeft,
+      plotTop,
+      plotWidth,
+      plotHeight,
+      horizontalLabel: valueLabel,
+      verticalLabel: errorLabel,
+      xAxis: 'bottom',
+      verticalLabelAt: 'top',
+    });
+  }
 
   const toX = (value: number) =>
     plotLeft + ((value - minValue) / (maxValue - minValue)) * plotWidth;
@@ -267,7 +486,9 @@ function drawValueVsErrorPlot({
 
   const marker = { x: toX(currentValue), y: toY(currentError) };
   drawMarker(marker);
-  drawPlotArrow(marker, delta, arrowAxis, ARROW_BLUE);
+  if (!ghost) {
+    drawPlotArrow(marker, delta, arrowAxis, ARROW_BLUE);
+  }
 }
 
 function drawErrorVsValuePlot({
@@ -284,6 +505,8 @@ function drawErrorVsValuePlot({
   minValue,
   maxValue,
   sampleCount,
+  errorBounds: bounds,
+  ghost,
 }: {
   left: number;
   top: number;
@@ -298,26 +521,30 @@ function drawErrorVsValuePlot({
   minValue: number;
   maxValue: number;
   sampleCount: number;
+  errorBounds: { minError: number; maxError: number };
+  ghost: boolean;
 }) {
   const samples = sampleSquaredError(constraints, v, minValue, maxValue, sampleCount);
   const currentError = constraints.totalSquaredError();
-  const { minError, maxError } = errorBounds(samples, currentError);
+  const { minError, maxError } = bounds;
 
   const plotTop = top;
   const plotHeight = height;
   const plotLeft = left + AXIS_LABEL_PAD;
   const plotWidth = width - AXIS_LABEL_PAD;
 
-  drawPlotAxes({
-    plotLeft,
-    plotTop,
-    plotWidth,
-    plotHeight,
-    horizontalLabel: errorLabel,
-    verticalLabel: valueLabel,
-    xAxis: 'top',
-    verticalLabelAt: 'bottom',
-  });
+  if (!ghost) {
+    drawPlotAxes({
+      plotLeft,
+      plotTop,
+      plotWidth,
+      plotHeight,
+      horizontalLabel: errorLabel,
+      verticalLabel: valueLabel,
+      xAxis: 'top',
+      verticalLabelAt: 'bottom',
+    });
+  }
 
   const toX = (error: number) =>
     plotLeft + ((error - minError) / (maxError - minError)) * plotWidth;
@@ -328,7 +555,9 @@ function drawErrorVsValuePlot({
 
   const marker = { x: toX(currentError), y: toY(currentValue) };
   drawMarker(marker);
-  drawPlotArrow(marker, delta, 1, ARROW_BLUE);
+  if (!ghost) {
+    drawPlotArrow(marker, delta, 1, ARROW_BLUE);
+  }
 }
 
 function drawPlotAxes({

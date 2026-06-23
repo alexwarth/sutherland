@@ -172,3 +172,24 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
     : 0.75 * multiplier + baseAlpha;
   return `rgba(255,255,255,${alpha})`;
 }
+
+export function flickeryWhiteEquivalentGray(weight: 'light' | 'normal' | 'bold' = 'normal') {
+  let baseAlpha: number;
+  let multiplier: number;
+  if (weight === 'normal') {
+    baseAlpha = 0.35;
+    multiplier = 0.3;
+  } else if (weight === 'light') {
+    baseAlpha = 0.1;
+    multiplier = 0.05;
+  } else {
+    baseAlpha = 0.7;
+    multiplier = 0.1;
+  }
+  baseAlpha *= config().baseAlphaMultiplier;
+  const alpha = config().flicker
+    ? baseAlpha + multiplier / 2
+    : 0.75 * multiplier + baseAlpha;
+  const v = Math.round(255 * alpha);
+  return `rgb(${v},${v},${v})`;
+}
