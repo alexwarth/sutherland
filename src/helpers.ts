@@ -103,6 +103,9 @@ function pointDistToLineSegment2(p: Position, v: Position, w: Position) {
  * atan2 increases counterclockwise, so clockwise a→b uses a decreasing angle sweep.
  */
 export function pointIsOnArc(p: Position, c: Position, a: Position, b: Position) {
+  if (pointDist(a, b) === 0) {
+    return true;
+  }
   const thetaStart = Math.atan2(a.y - c.y, a.x - c.x);
   const thetaEnd = Math.atan2(b.y - c.y, b.x - c.x);
   const thetaP = Math.atan2(p.y - c.y, p.x - c.x);
@@ -116,6 +119,10 @@ export function pointDistToArc(p: Position, c: Position, a: Position, b: Positio
   const r = pointDist(a, c);
   if (r === 0) {
     return pointDist(p, a);
+  }
+
+  if (pointDist(a, b) === 0) {
+    return Math.abs(pointDist(p, c) - r);
   }
 
   const dx = p.x - c.x;
