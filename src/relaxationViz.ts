@@ -326,7 +326,7 @@ function drawHoverPlotLayer({
     ghost,
   });
 
-  drawErrorVsValuePlot({
+  drawValueVsErrorPlot({
     left: layout.left,
     top: layout.yPlotTop,
     width: layout.width,
@@ -341,6 +341,7 @@ function drawHoverPlotLayer({
     maxValue: yRange.max,
     sampleCount: plotSamples ?? yRange.sampleCount,
     errorBounds: yErrorBounds,
+    arrowAxis: 0,
     ghost,
   });
 }
@@ -479,8 +480,6 @@ function drawValueVsErrorPlot({
       plotHeight,
       horizontalLabel: valueLabel,
       verticalLabel: errorLabel,
-      xAxis: 'bottom',
-      verticalLabelAt: 'top',
     });
   }
 
@@ -498,75 +497,6 @@ function drawValueVsErrorPlot({
   }
 }
 
-function drawErrorVsValuePlot({
-  left,
-  top,
-  width,
-  height,
-  valueLabel,
-  errorLabel,
-  var: v,
-  currentValue,
-  delta,
-  constraints,
-  minValue,
-  maxValue,
-  sampleCount,
-  errorBounds: bounds,
-  ghost,
-}: {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  valueLabel: string;
-  errorLabel: string;
-  var: Var<number>;
-  currentValue: number;
-  delta: number;
-  constraints: ConstraintSet;
-  minValue: number;
-  maxValue: number;
-  sampleCount: number;
-  errorBounds: { minError: number; maxError: number };
-  ghost: boolean;
-}) {
-  const samples = sampleSquaredError(constraints, v, minValue, maxValue, sampleCount);
-  const currentError = constraints.totalSquaredError();
-  const { minError, maxError } = bounds;
-
-  const plotTop = top;
-  const plotHeight = height;
-  const plotLeft = left + AXIS_LABEL_PAD;
-  const plotWidth = width - AXIS_LABEL_PAD;
-
-  if (!ghost) {
-    drawPlotAxes({
-      plotLeft,
-      plotTop,
-      plotWidth,
-      plotHeight,
-      horizontalLabel: errorLabel,
-      verticalLabel: valueLabel,
-      xAxis: 'top',
-      verticalLabelAt: 'bottom',
-    });
-  }
-
-  const toX = (error: number) =>
-    plotLeft + ((error - minError) / (maxError - minError)) * plotWidth;
-  const toY = (value: number) =>
-    plotTop + plotHeight - ((value - minValue) / (maxValue - minValue)) * plotHeight;
-
-  drawCurve(samples, (sample) => ({ x: toX(sample.error), y: toY(sample.value) }));
-
-  const marker = { x: toX(currentError), y: toY(currentValue) };
-  drawMarker(marker);
-  if (!ghost) {
-    drawPlotArrow(marker, delta, 1, ARROW_BLUE);
-  }
-}
-
 function drawPlotAxes({
   plotLeft,
   plotTop,
@@ -574,8 +504,6 @@ function drawPlotAxes({
   plotHeight,
   horizontalLabel,
   verticalLabel,
-  xAxis,
-  verticalLabelAt,
 }: {
   plotLeft: number;
   plotTop: number;
@@ -583,23 +511,14 @@ function drawPlotAxes({
   plotHeight: number;
   horizontalLabel: string;
   verticalLabel: string;
-  xAxis: 'bottom' | 'top';
-  verticalLabelAt: 'top' | 'bottom';
 }) {
   const oldLineWidth = ctx.lineWidth;
   ctx.lineWidth = 1;
   ctx.strokeStyle = PLOT_AXIS;
   ctx.beginPath();
-  if (xAxis === 'bottom') {
-    ctx.moveTo(plotLeft, plotTop);
-    ctx.lineTo(plotLeft, plotTop + plotHeight);
-    ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
-  } else {
-    ctx.moveTo(plotLeft, plotTop);
-    ctx.lineTo(plotLeft + plotWidth, plotTop);
-    ctx.moveTo(plotLeft, plotTop);
-    ctx.lineTo(plotLeft, plotTop + plotHeight);
-  }
+  ctx.moveTo(plotLeft, plotTop);
+  ctx.lineTo(plotLeft, plotTop + plotHeight);
+  ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
   ctx.stroke();
   ctx.lineWidth = oldLineWidth;
 
@@ -607,28 +526,16 @@ function drawPlotAxes({
   ctx.font = AXIS_LABEL_FONT;
   const oldTextAlign = ctx.textAlign;
   const oldTextBaseline = ctx.textBaseline;
-  if (xAxis === 'bottom') {
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText(horizontalLabel, plotLeft + plotWidth, plotTop + plotHeight + 4);
-  } else {
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText(horizontalLabel, plotLeft + plotWidth, plotTop - 4);
-  }
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'top';
+  ctx.fillText(horizontalLabel, plotLeft + plotWidth, plotTop + plotHeight + 4);
 
   ctx.save();
-  ctx.translate(plotLeft - 10, verticalLabelAt === 'top' ? plotTop : plotTop + plotHeight);
+  ctx.translate(plotLeft - 10, plotTop);
   ctx.rotate(-Math.PI / 2);
-  if (verticalLabelAt === 'top') {
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(verticalLabel, 0, 0);
-  } else {
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(verticalLabel, 0, 0);
-  }
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(verticalLabel, 0, 0);
   ctx.restore();
   ctx.textAlign = oldTextAlign;
   ctx.textBaseline = oldTextBaseline;
