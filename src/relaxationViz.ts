@@ -8,7 +8,7 @@ import { Var } from './state';
 
 const ARROW_YELLOW = 'rgba(255, 220, 50, 0.85)';
 const ARROW_BLUE = 'rgba(80, 160, 255, 0.95)';
-const PANEL_BG = 'rgba(0, 0, 0, 0.55)';
+const PANEL_BG_OPAQUE = 'rgba(0, 0, 0, 0.55)';
 const PLOT_CURVE = 'rgba(255, 200, 60, 0.95)';
 const PLOT_AXIS = 'rgba(180, 180, 180, 0.75)';
 const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
@@ -255,8 +255,7 @@ function renderHoverPlots(
   restoreVars(currentState);
   const deltas = collectDeltas(drawing);
 
-  ctx.fillStyle = PANEL_BG;
-  ctx.fillRect(layout.panelLeft, 0, layout.panelWidth, layout.panelHeight);
+  drawPanelBackground(layout);
 
   drawHoverPlotLayer({
     layout,
@@ -271,6 +270,14 @@ function renderHoverPlots(
     yErrorBounds,
     ghost: false,
   });
+}
+
+function drawPanelBackground(layout: ReturnType<typeof plotLayout>) {
+  const grad = ctx.createLinearGradient(layout.panelLeft, 0, innerWidth, 0);
+  grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  grad.addColorStop(1, PANEL_BG_OPAQUE);
+  ctx.fillStyle = grad;
+  ctx.fillRect(layout.panelLeft, 0, layout.panelWidth, layout.panelHeight);
 }
 
 function drawHoverPlotLayer({
