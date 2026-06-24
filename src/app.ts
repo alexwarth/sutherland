@@ -92,6 +92,7 @@ export function switchToDrawing(id: string) {
   }
 
   drawing().leave();
+  relaxationViz.clearPinnedHandle();
   _drawing.value = d;
   doWithoutMovingPointer(() => scope.reset());
   endEqualLength();

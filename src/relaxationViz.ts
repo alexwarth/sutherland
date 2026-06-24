@@ -6,14 +6,14 @@ import { Position } from './helpers';
 import { Handle } from './things';
 import { Var } from './state';
 
-const ARROW_YELLOW = 'rgba(255, 220, 50, 0.85)';
-const ARROW_BLUE = 'rgba(80, 160, 255, 0.95)';
+const ARROW_YELLOW = 'rgb(255, 220, 50)';
+const ARROW_BLUE = 'rgb(45, 110, 185)';
+const ARROW_LENGTH = 22;
+const ARROW_LINE_WIDTH = 2;
 const PANEL_BG_OPAQUE = 'rgba(0, 0, 0, 0.55)';
 const PLOT_CURVE = 'rgba(255, 200, 60, 0.95)';
 const PLOT_AXIS = 'rgba(180, 180, 180, 0.75)';
 const PLOT_MARKER = 'rgba(255, 255, 255, 0.9)';
-
-const ARROW_LENGTH = 22;
 const AXIS_LABEL_PAD = 18;
 const AXIS_LABEL_FONT = '11px system-ui, sans-serif';
 const AXIS_SUBSCRIPT_FONT = '8px system-ui, sans-serif';
@@ -24,6 +24,11 @@ const GHOST_PLOT_SAMPLES = 100;
 let enabled = false;
 let onionSkinEnabled = false;
 let futureStates: Map<Var<unknown>, unknown>[] = [];
+let pinnedHandle: Handle | null = null;
+
+export function clearPinnedHandle() {
+  pinnedHandle = null;
+}
 
 export function isEnabled() {
   return enabled;
@@ -104,14 +109,20 @@ export function render(drawing: Drawing, penPos: Position | null) {
   }
 
   const hovered = penPos ? drawing.handleAt(penPos) : null;
+  if (hovered) {
+    pinnedHandle = hovered;
+  } else if (pinnedHandle && !handleInDrawing(drawing, pinnedHandle)) {
+    pinnedHandle = null;
+  }
+
   const saved = snapshotVars(drawing);
 
   try {
     restoreVars(saved);
-    renderArrows(drawing, hovered, true);
-    if (hovered) {
-      const [xVar, yVar] = handleVars(hovered);
-      renderHoverPlots(drawing, hovered, xVar, yVar, saved);
+    renderArrows(drawing, pinnedHandle, true);
+    if (pinnedHandle) {
+      const [xVar, yVar] = handleVars(pinnedHandle);
+      renderHoverPlots(drawing, pinnedHandle, xVar, yVar, saved);
     }
   } finally {
     restoreVars(saved);
@@ -139,10 +150,10 @@ function renderArrows(drawing: Drawing, hovered: Handle | null, highlightHovered
   const deltas = collectDeltas(drawing);
   forEachHandle(drawing, (handle) => {
     const [xVar, yVar] = handleVars(handle);
-    const color =
-      highlightHovered && handle === hovered ? ARROW_BLUE : ARROW_YELLOW;
-    drawAxisArrow(handle, deltas.get(xVar) ?? 0, 0, color);
-    drawAxisArrow(handle, deltas.get(yVar) ?? 0, 1, color);
+    const pinned = highlightHovered && handle === hovered;
+    const color = pinned ? ARROW_BLUE : ARROW_YELLOW;
+    drawAxisArrow(handle, deltas.get(xVar) ?? 0, 0, color, ARROW_LINE_WIDTH);
+    drawAxisArrow(handle, deltas.get(yVar) ?? 0, 1, color, ARROW_LINE_WIDTH);
   });
 }
 
@@ -161,13 +172,29 @@ function forEachHandle(drawing: Drawing, fn: (handle: Handle) => void) {
   drawing.attachers.forEach(fn);
 }
 
+function handleInDrawing(drawing: Drawing, handle: Handle) {
+  let found = false;
+  forEachHandle(drawing, (h) => {
+    if (h === handle) {
+      found = true;
+    }
+  });
+  return found;
+}
+
 function handleVars(handle: Handle): [Var<number>, Var<number>] {
   const vars: Var<number>[] = [];
   handle.forEachRelaxableVar((v) => vars.push(v));
   return [vars[0], vars[1]];
 }
 
-function drawAxisArrow(handle: Handle, delta: number, axis: 0 | 1, color: string) {
+function drawAxisArrow(
+  handle: Handle,
+  delta: number,
+  axis: 0 | 1,
+  color: string,
+  lineWidth = ARROW_LINE_WIDTH,
+) {
   if (delta === 0) {
     return;
   }
@@ -179,28 +206,34 @@ function drawAxisArrow(handle: Handle, delta: number, axis: 0 | 1, color: string
       ? { x: start.x + sign * ARROW_LENGTH, y: start.y }
       : { x: start.x, y: start.y - sign * ARROW_LENGTH };
 
-  drawArrow(start, end, color);
+  drawArrow(start, end, color, lineWidth);
 }
 
-function drawArrow(start: Position, end: Position, color: string) {
+function drawArrow(start: Position, end: Position, color: string, lineWidth = ARROW_LINE_WIDTH) {
+  const oldLineWidth = ctx.lineWidth;
+  ctx.lineWidth = lineWidth;
+
   drawLine(start, end, color);
 
   const dx = end.x - start.x;
   const dy = end.y - start.y;
   const len = Math.hypot(dx, dy);
   if (len === 0) {
+    ctx.lineWidth = oldLineWidth;
     return;
   }
 
   const ux = dx / len;
   const uy = dy / len;
-  const headLen = 8;
+  const headLen = 4 + lineWidth * 2;
   const perpX = -uy;
   const perpY = ux;
   const tip = end;
   const base = { x: tip.x - ux * headLen, y: tip.y - uy * headLen };
   drawLine(tip, { x: base.x + perpX * headLen * 0.4, y: base.y + perpY * headLen * 0.4 }, color);
   drawLine(tip, { x: base.x - perpX * headLen * 0.4, y: base.y - perpY * headLen * 0.4 }, color);
+
+  ctx.lineWidth = oldLineWidth;
 }
 
 function renderHoverPlots(
