@@ -20,6 +20,11 @@ export function init() {
   canvasEl.addEventListener('pointerdown', onPointerDown);
   canvasEl.addEventListener('pointermove', onPointerMove);
   canvasEl.addEventListener('pointerup', onPointerUp);
+  // passive: false lets us preventDefault() so the browser doesn't scroll/zoom the page
+  canvasEl.addEventListener('wheel', onWheel, { passive: false });
+  // Safari reports trackpad pinches via proprietary gesture events instead of ctrl+wheel
+  canvasEl.addEventListener('gesturestart', onGestureStart as EventListener);
+  canvasEl.addEventListener('gesturechange', onGestureChange as EventListener);
 }
 
 let timeTravelling = false;
@@ -118,26 +123,6 @@ function onKeyDown(e: KeyboardEvent) {
     case 'h':
       app.horizontalOrVertical();
       break;
-    case '=':
-      if (app.scaleInstanceBy(1.05)) {
-        // found an instance, made it bigger
-      } else {
-        app.setScale(Math.min(scope.scale + 0.1, 10));
-      }
-      break;
-    case '-':
-      if (app.scaleInstanceBy(0.95)) {
-        // found an instance, made it smaller
-      } else {
-        app.setScale(Math.max(scope.scale - 0.1, 0.1));
-      }
-      break;
-    case 'q':
-      app.rotateInstanceBy((5 * Math.PI) / 180);
-      break;
-    case 'w':
-      app.rotateInstanceBy((-5 * Math.PI) / 180);
-      break;
     case 's':
       app.fullSize();
       break;
@@ -163,16 +148,10 @@ function onKeyUp(e: KeyboardEvent) {
     case 'Meta':
       app.endLines();
       drawingInProgress = false;
-      if (!penDown) {
-        app.pen.clearPos();
-      }
       break;
     case 'a':
       app.endArc();
       drawingInProgress = false;
-      if (!penDown) {
-        app.pen.clearPos();
-      }
       break;
     case 'e':
       app.endEqualLength();
@@ -229,6 +208,55 @@ function onPointerDown(e: PointerEvent) {
   }
 }
 
+function onWheel(e: WheelEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (app.drawing().isEmpty()) {
+    return;
+  }
+
+  if (e.shiftKey && app.rotateInstanceBy(e.deltaX * 0.01)) {
+    // SHIFT + side-to-side two-finger pan over an instance rotates it
+    // (fingers moving right = clockwise)
+  } else if (e.ctrlKey) {
+    // trackpad pinch (browsers report it as a ctrl+wheel event)
+    zoomBy(Math.exp(-e.deltaY * 0.01));
+  } else {
+    // two-finger pan (deltas are in screen pixels)
+    app.panBy(-e.deltaX / scope.scale, e.deltaY / scope.scale);
+  }
+}
+
+function zoomBy(m: number) {
+  if (app.scaleInstanceBy(m)) {
+    // the pointer is over an instance, so we changed its scale instead of the scope's
+  } else {
+    app.setScale(Math.min(Math.max(scope.scale * m, 0.1), 10));
+  }
+}
+
+// Safari-only gesture events (see init)
+
+interface GestureEvent extends Event {
+  scale: number;
+}
+
+let lastGestureScale = 1;
+
+function onGestureStart(e: GestureEvent) {
+  e.preventDefault();
+  lastGestureScale = e.scale;
+}
+
+function onGestureChange(e: GestureEvent) {
+  e.preventDefault();
+  if (!app.drawing().isEmpty()) {
+    zoomBy(e.scale / lastGestureScale);
+  }
+  lastGestureScale = e.scale;
+}
+
 function onPointerMove(e: PointerEvent) {
   if (timeTravelling) {
     maybeTimeTravelToWorldAt(e);
@@ -243,14 +271,7 @@ function onPointerMove(e: PointerEvent) {
     return;
   }
 
-  const oldPos = app.pen.pos ? { x: app.pen.pos.x, y: app.pen.pos.y } : null;
   app.pen.moveToScreenPos(e);
-
-  if (penDown && oldPos && !app.drawing().isEmpty() && !drawingInProgress && !drag) {
-    app.panBy(app.pen.pos!.x - oldPos.x, app.pen.pos!.y - oldPos.y);
-    return;
-  }
-
   app.pen.snapPos(drag?.thing);
 
   if (drag) {
@@ -264,9 +285,6 @@ function onPointerUp(e: PointerEvent) {
   canvasEl.releasePointerCapture(e.pointerId);
 
   penDown = false;
-  if (!keysDown['Meta']) {
-    app.pen.clearPos();
-  }
 
   if (drag?.thing instanceof Handle) {
     app.drawing().mergeAndAddImplicitConstraints(drag.thing);

@@ -44,9 +44,9 @@ vite
   - To **draw lines**, click around while holding down the "meta" key (⌘ or ⊞)
   - To **draw an arc**, hold down the `A` key: 1st click is the center, 2nd and 3rd are the end points
   - To **move a point / line / arc**, just drag it
-  - To **pan**, drag the background
+  - To **pan**, scroll with two fingers on the trackpad (or a mouse's scroll wheel)
   - To **re-center** the scope at the position of the cursor, press `C`
-  - To **zoom in / out**, press `+` / `-`
+  - To **zoom in / out**, do a pinch gesture on the trackpad (or `CTRL` + scroll wheel) while pointing at the background
   - To **delete a line / arc / instance**, point at it and press backspace
   - To **toggle flicker on / off**, press `F`
   - To **copy** the current drawing, press `SHIFT` + `C`
@@ -54,8 +54,8 @@ vite
 - Masters and instances:
   - To **switch drawings**, press one of the digit keys
   - To **instantiate a drawing**, press `SHIFT` + one of the digit keys
-  - To **rotate an instance**, press `Q` / `W` while pointing at it
-  - To **scale an instance**, press `+` / `-` while pointing at it
+  - To **rotate an instance**, point at it, then scroll side-to-side (two-finger pan on the trackpad) while holding `SHIFT` (right = clockwise)
+  - To **scale an instance**, do a pinch gesture on the trackpad (or `CTRL` + scroll wheel) while pointing at it
   - To **dismember an instance**, press `SHIFT` + `D` while pointing at it
 - Constraints:
   - **horizontal or vertical (HorV)**: point to a line and press `H`

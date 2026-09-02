@@ -488,7 +488,18 @@ export function endEqualLength() {
 }
 
 export function setScale(newScale: number) {
-  doWithoutMovingPointer(() => (scope.scale = newScale));
+  if (!pen.pos) {
+    scope.scale = newScale;
+  } else {
+    // zoom about the position that the pen is pointing at, i.e.,
+    // keep that point fixed on the screen
+    const penScreenPos = scope.toScreenPosition(pen.pos);
+    scope.scale = newScale;
+    scope.centerAt({
+      x: pen.pos.x - (penScreenPos.x - innerWidth / 2) / newScale,
+      y: pen.pos.y + (penScreenPos.y - innerHeight / 2) / newScale,
+    });
+  }
   status.set('scale=' + scope.scale.toFixed(1));
 }
 
