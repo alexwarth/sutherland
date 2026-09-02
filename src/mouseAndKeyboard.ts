@@ -223,9 +223,7 @@ function onWheel(e: WheelEvent) {
 
   if (e.ctrlKey) {
     // trackpad pinch (browsers report it as a ctrl+wheel event)
-    // -- works regardless of the state of the SHIFT key, so that the user can
-    // alternate between rotating and scaling an instance w/o releasing SHIFT
-    zoomBy(Math.exp(-e.deltaY * 0.01));
+    zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey);
   } else if (e.shiftKey && app.rotateInstanceBy(e.deltaX * 0.01)) {
     // SHIFT + side-to-side two-finger pan over an instance rotates it
     // (fingers moving right = clockwise)
@@ -235,9 +233,12 @@ function onWheel(e: WheelEvent) {
   }
 }
 
-function zoomBy(m: number) {
-  if (app.scaleInstanceBy(m)) {
-    // the pointer is over an instance, so we changed its scale instead of the scope's
+// SHIFT means "operate on the instance that the pen is pointing at" -- that way
+// the user can't accidentally scale an instance while zooming the whole canvas,
+// and can alternate between rotating and scaling an instance w/o releasing SHIFT.
+function zoomBy(m: number, shiftKey: boolean) {
+  if (shiftKey && app.scaleInstanceBy(m)) {
+    // scaled the instance that the pen is pointing at
   } else {
     app.setScale(Math.min(Math.max(scope.scale * m, 0.1), 10));
   }
@@ -247,6 +248,7 @@ function zoomBy(m: number) {
 
 interface GestureEvent extends Event {
   scale: number;
+  shiftKey: boolean;
 }
 
 let lastGestureScale = 1;
@@ -259,7 +261,7 @@ function onGestureStart(e: GestureEvent) {
 function onGestureChange(e: GestureEvent) {
   e.preventDefault();
   if (!app.drawing().isEmpty()) {
-    zoomBy(e.scale / lastGestureScale);
+    zoomBy(e.scale / lastGestureScale, e.shiftKey);
   }
   lastGestureScale = e.scale;
 }
