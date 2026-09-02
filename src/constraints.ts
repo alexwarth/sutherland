@@ -658,6 +658,14 @@ function renderMasterInset(master: Instance['master'], masterPoint: Handle, colo
   const pad = 15;
   const oldLineWidth = ctx.lineWidth;
   ctx.lineWidth = 1;
+  // paint the background black so the inset doesn't visually overlap w/ the drawing
+  ctx.fillStyle = 'black';
+  ctx.fillRect(
+    boxCenter.x - boxSize / 2 - pad,
+    boxCenter.y - boxSize / 2 - pad,
+    boxSize + 2 * pad,
+    boxSize + 2 * pad,
+  );
   ctx.strokeStyle = 'rgba(255,255,255,0.3)';
   ctx.strokeRect(
     boxCenter.x - boxSize / 2 - pad,
