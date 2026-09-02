@@ -68,3 +68,8 @@ vite
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
+- Constraint list:
+  - To toggle the **constraint list** on/off, press `L` (the current drawing's constraints are listed on the left side of the screen)
+  - To see **which parts of the drawing are involved in a constraint**, mouse over that constraint in the list
+  - (for an **attacher** constraint, a small rendering of the master appears at the top right of the screen, w/ the master-side attacher highlighted)
+  - To **delete a constraint**, press backspace while mousing over it in the list

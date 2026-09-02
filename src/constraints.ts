@@ -1,4 +1,5 @@
 import config from './config';
+import { ctx, drawArc, drawLine, drawPoint, drawRing } from './canvas';
 import { Handle, Instance, Thing } from './things';
 import {
   Position,
@@ -12,8 +13,11 @@ import {
 } from './helpers';
 import { Var } from './state';
 
+type Transform = (pos: Position) => Position;
+
 export abstract class Constraint {
   abstract get signature(): string;
+  abstract get displayName(): string;
   abstract computeError(): number;
   abstract map(
     thingMap: Map<Thing, Thing>,
@@ -27,6 +31,13 @@ export abstract class Constraint {
 
   // override in subclasses like weight constraint
   preRelax(): void { }
+
+  // highlights the parts of the drawing that are involved in this constraint
+  // (subclasses add lines, arcs, etc. as appropriate)
+  renderHighlight(transform: Transform, color: string) {
+    this.forEachThing((t) => t.render(transform, color, 2));
+    this.forEachHandle((h) => drawPoint(h, color, transform));
+  }
 
   // TODO: consider returning false in certain constraint type-specific conditions
   // e.g., point-on-line(p, a, b) where p == a or p == b
@@ -66,6 +77,10 @@ export class FixedPointConstraint extends Constraint {
 
   override get signature() {
     return `FP(${this.p.id})`;
+  }
+
+  override get displayName() {
+    return 'fixed point';
   }
 
   override computeError() {
@@ -126,6 +141,15 @@ export class HorizontalOrVerticalConstraint extends Constraint {
     const id1 = Math.min(this.a.id, this.b.id);
     const id2 = Math.max(this.a.id, this.b.id);
     return `HorV(${id1},${id2})`;
+  }
+
+  override get displayName() {
+    return 'horizontal or vertical';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    drawLine(this.a, this.b, color, transform);
+    super.renderHighlight(transform, color);
   }
 
   override computeError() {
@@ -190,6 +214,15 @@ export class FixedDistanceConstraint extends Constraint {
     const id1 = Math.min(this.a.id, this.b.id);
     const id2 = Math.max(this.a.id, this.b.id);
     return `D(${id1},${id2})`;
+  }
+
+  override get displayName() {
+    return 'fixed distance';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    drawLine(this.a, this.b, color, transform);
+    super.renderHighlight(transform, color);
   }
 
   override computeError() {
@@ -267,6 +300,16 @@ export class EqualDistanceConstraint extends Constraint {
 
   override get signature() {
     return `E(${this.a1.id},${this.b1.id},${this.a2.id},${this.b2.id})`;
+  }
+
+  override get displayName() {
+    return 'equal length';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    drawLine(this.a1, this.b1, color, transform);
+    drawLine(this.a2, this.b2, color, transform);
+    super.renderHighlight(transform, color);
   }
 
   override computeError() {
@@ -350,6 +393,15 @@ export class PointOnLineConstraint extends Constraint {
 
   override get signature() {
     return `POL(${this.p.id},${this.a.id},${this.b.id})`;
+  }
+
+  override get displayName() {
+    return 'point on line';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    drawLine(this.a, this.b, color, transform);
+    super.renderHighlight(transform, color);
   }
 
   override computeError() {
@@ -438,6 +490,15 @@ export class PointOnArcConstraint extends Constraint {
     return `POA(${this.p.id},${this.a.id},${this.b.id},${this.c.id})`;
   }
 
+  override get displayName() {
+    return 'point on arc';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    drawArc(this.c, this.a, this.b, color, transform);
+    super.renderHighlight(transform, color);
+  }
+
   override computeError() {
     return pointDistToArc(this.p, this.c, this.a, this.b);
   }
@@ -516,6 +577,20 @@ export class PointInstanceConstraint extends Constraint {
     return `PI(${this.instance.id},${this.masterPoint.id})`;
   }
 
+  override get displayName() {
+    return 'attacher';
+  }
+
+  override renderHighlight(transform: Transform, color: string) {
+    this.instance.render(transform, color, 2);
+    // the instance-side attacher is already drawn as a (yellow) point,
+    // so we draw a ring around it to make the highlight visible
+    drawRing(this.instancePoint, color, transform);
+    // the master-side attacher doesn't live in this drawing, so we show it
+    // on a small rendering of the master at the top right of the screen
+    renderMasterInset(this.instance.master, this.masterPoint, color);
+  }
+
   override computeError() {
     return pointDist(
       this.instancePoint,
@@ -562,6 +637,38 @@ export class PointInstanceConstraint extends Constraint {
   }
 }
 
+function renderMasterInset(master: Instance['master'], masterPoint: Handle, color: string) {
+  const boxSize = 200;
+  const margin = 35;
+
+  const { topLeft, bottomRight } = master.boundingBox();
+  const width = bottomRight.x - topLeft.x;
+  const height = topLeft.y - bottomRight.y;
+  const scale = boxSize / Math.max(width, height, 1);
+  const center = { x: (topLeft.x + bottomRight.x) / 2, y: (topLeft.y + bottomRight.y) / 2 };
+  const boxCenter = { x: innerWidth - margin - boxSize / 2, y: margin + boxSize / 2 };
+  const transform = ({ x, y }: Position) => ({
+    x: boxCenter.x + (x - center.x) * scale,
+    y: boxCenter.y - (y - center.y) * scale,
+  });
+
+  const pad = 15;
+  const oldLineWidth = ctx.lineWidth;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.strokeRect(
+    boxCenter.x - boxSize / 2 - pad,
+    boxCenter.y - boxSize / 2 - pad,
+    boxSize + 2 * pad,
+    boxSize + 2 * pad,
+  );
+  ctx.lineWidth = oldLineWidth;
+
+  master.render(transform);
+  drawPoint(masterPoint, color, transform);
+  drawRing(masterPoint, color, transform);
+}
+
 export class SizeConstraint extends Constraint {
   constructor(
     readonly instance: Instance,
@@ -572,6 +679,10 @@ export class SizeConstraint extends Constraint {
 
   override get signature() {
     return `S(${this.instance.id})`;
+  }
+
+  override get displayName() {
+    return this.scale === 1 ? 'full size' : `size x${this.scale}`;
   }
 
   override computeError() {
@@ -615,6 +726,10 @@ export class WeightConstraint extends Constraint {
 
   override get signature() {
     return `W(${this.a.id})`;
+  }
+
+  override get displayName() {
+    return 'weight';
   }
 
   private y0: number;

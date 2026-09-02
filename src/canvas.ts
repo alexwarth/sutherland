@@ -59,6 +59,18 @@ export function drawPoint(p: Position, fillStyle = flickeryWhite(), transform = 
   ctx.fill();
 }
 
+export function drawRing(p: Position, strokeStyle = flickeryWhite(), transform = identity) {
+  const tp = transform(p);
+  const radius = ctx.lineWidth * 4;
+  const oldLineWidth = ctx.lineWidth;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = strokeStyle;
+  ctx.beginPath();
+  ctx.arc(tp.x, tp.y, radius, 0, TAU);
+  ctx.stroke();
+  ctx.lineWidth = oldLineWidth;
+}
+
 export function drawLine(
   a: Position,
   b: Position,

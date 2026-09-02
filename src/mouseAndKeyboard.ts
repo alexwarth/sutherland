@@ -95,6 +95,9 @@ function onKeyDown(e: KeyboardEvent) {
     case 'T':
       enterTypingMode();
       return;
+    case 'l':
+      app.toggleConstraintList();
+      return;
     case 'r':
       relaxationViz.setMode(false);
       status.set(relaxationViz.toggleStatusLabel());
@@ -112,7 +115,9 @@ function onKeyDown(e: KeyboardEvent) {
 
   switch (e.key) {
     case 'Backspace':
-      app.del();
+      if (!app.deleteConstraintUnderPointer()) {
+        app.del();
+      }
       break;
     case '.':
       app.fixedPoint() || app.fixedDistance();

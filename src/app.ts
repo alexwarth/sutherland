@@ -9,6 +9,7 @@ import { Handle, Instance, Line, Thing } from './things';
 import { EqualDistanceConstraint } from './constraints';
 import { bookmarkedWorld, thisWorld, Var } from './state';
 import * as relaxationViz from './relaxationViz';
+import * as constraintList from './constraintList';
 
 // TODO: use hover for drawing lines, pencil down starts new segment (marcel)
 // TODO: refactor so that we can make more than one sketchpad
@@ -252,6 +253,7 @@ export function render() {
   relaxationViz.prepare(drawing());
   relaxationViz.renderOnionSkin(drawing());
   drawing().render();
+  constraintList.render(drawing());
   renderCrosshairs();
   status.render();
   renderDebugInfo();
@@ -372,6 +374,20 @@ export function solve() {
 export function toggleAutoSolve() {
   config().autoSolve = !config().autoSolve;
   status.set(`auto-solve ${config().autoSolve ? 'on' : 'off'}`);
+}
+
+export function toggleConstraintList() {
+  status.set(`constraint list ${constraintList.toggle() ? 'on' : 'off'}`);
+}
+
+export function deleteConstraintUnderPointer() {
+  const constraint = constraintList.constraintUnderPointer(drawing());
+  if (!constraint) {
+    return false;
+  }
+  drawing().constraints.remove(constraint);
+  status.set('delete ' + constraint.displayName);
+  return true;
 }
 
 export function del() {
