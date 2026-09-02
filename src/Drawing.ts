@@ -462,10 +462,11 @@ export class Drawing {
   }
 
   boundingBox(stopAt: Drawing = this): { topLeft: Position; bottomRight: Position } {
-    // TODO: include arcs...
     const ps = [...this.getPositions(false)];
     for (const thing of this.things) {
-      if (thing instanceof Instance && thing.master !== stopAt) {
+      if (thing instanceof Arc) {
+        ps.push(...thing.getBoundingBoxPoints());
+      } else if (thing instanceof Instance && thing.master !== stopAt) {
         const bb = thing.boundingBox(stopAt);
         ps.push(bb.topLeft);
         ps.push(bb.bottomRight);

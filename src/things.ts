@@ -235,6 +235,23 @@ export class Arc implements Thing {
     return Math.abs(pointDist(pos, this.c) - pointDist(this.a, this.c));
   }
 
+  /**
+   * The endpoints of this arc, plus the axis-extreme points of its circle
+   * (at 0, 90, 180, and 270 degrees) that lie on the arc. The bounding box
+   * of these points is the bounding box of the visible part of the arc.
+   */
+  getBoundingBoxPoints(): Position[] {
+    const r = pointDist(this.a, this.c);
+    const ps: Position[] = [this.a, this.b];
+    for (const theta of [0, TAU / 4, TAU / 2, (3 * TAU) / 4]) {
+      const p = { x: this.c.x + r * Math.cos(theta), y: this.c.y + r * Math.sin(theta) };
+      if (pointIsOnArc(p, this.c, this.a, this.b)) {
+        ps.push(p);
+      }
+    }
+    return ps;
+  }
+
   moveBy(dx: number, dy: number) {
     this.forEachHandle((h) => h.moveBy(dx, dy));
   }
