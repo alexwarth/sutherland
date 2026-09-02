@@ -68,6 +68,7 @@ vite
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
+  - To toggle the **tension/compression labels** on fixed-length constraints on/off, press `SHIFT` + `L` (they're off by default — mostly useful for bridge demos)
 - Constraint list:
   - To toggle the **constraint list** on/off, press `L` (the current drawing's constraints are listed on the left side of the screen)
   - To see **which parts of the drawing are involved in a constraint**, mouse over that constraint in the list

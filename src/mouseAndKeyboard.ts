@@ -98,6 +98,12 @@ function onKeyDown(e: KeyboardEvent) {
     case 'l':
       app.toggleConstraintList();
       return;
+    case 'L':
+      updateConfig({ showDistanceConstraintLabels: !config().showDistanceConstraintLabels });
+      status.set(
+        `tension/compression labels ${config().showDistanceConstraintLabels ? 'on' : 'off'}`,
+      );
+      return;
     case 'r':
       relaxationViz.setMode(false);
       status.set(relaxationViz.toggleStatusLabel());

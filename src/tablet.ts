@@ -521,6 +521,7 @@ const configScreen = new (class extends Screen {
   readonly alphaButton = new Button('opacity');
   readonly flickerButton = new Button('flicker');
   readonly ctrlPtsButton = new Button('ctrl pts');
+  readonly distLabelsButton = new Button('dist lbls');
   readonly defaultsButton = new Button('defaults');
   readonly backButton = new Button('back');
   readonly col1 = [
@@ -529,6 +530,7 @@ const configScreen = new (class extends Screen {
     this.alphaButton,
     this.flickerButton,
     this.ctrlPtsButton,
+    this.distLabelsButton,
     this.defaultsButton,
   ];
   readonly col2 = [this.backButton];
@@ -567,6 +569,11 @@ const configScreen = new (class extends Screen {
       this.ctrlPtsButton.leftX + 2 * config().tabletButtonWidth,
       this.ctrlPtsButton.topY,
     );
+    drawText(
+      config().showDistanceConstraintLabels ? 'on' : 'off',
+      this.distLabelsButton.leftX + 2 * config().tabletButtonWidth,
+      this.distLabelsButton.topY,
+    );
   }
 
   layOutButtons() {
@@ -596,6 +603,9 @@ const configScreen = new (class extends Screen {
         break;
       case this.ctrlPtsButton:
         updateConfig({ showControlPoints: !config().showControlPoints });
+        break;
+      case this.distLabelsButton:
+        updateConfig({ showDistanceConstraintLabels: !config().showDistanceConstraintLabels });
         break;
       case this.backButton:
         switchTo(mainScreen);

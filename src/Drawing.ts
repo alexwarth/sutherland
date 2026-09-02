@@ -64,7 +64,7 @@ export class Drawing {
     if (depth === 0) {
       this.attachers.forEach((h) => h.render(transform, config().masterSideAttacherColor));
       this.constraints.forEach((c) => {
-        if (c instanceof FixedDistanceConstraint) {
+        if (c instanceof FixedDistanceConstraint && config().showDistanceConstraintLabels) {
           let e = (c.computeError() * 100).toFixed();
           if (e === '-0') {
             e = '0';

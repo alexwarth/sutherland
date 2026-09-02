@@ -22,6 +22,7 @@ const defaultConfig = {
   weight: 25,
   distanceConstraintTextScale: 0.3,
   distanceConstraintLabelPct: 0.25,
+  showDistanceConstraintLabels: false,
   showImplicitConstraints: false,
   highlightReferents: true,
   maxDepth: 10,
