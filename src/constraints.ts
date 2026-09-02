@@ -36,7 +36,10 @@ export abstract class Constraint {
   // (subclasses add lines, arcs, etc. as appropriate)
   renderHighlight(transform: Transform, color: string) {
     this.forEachThing((t) => t.render(transform, color, 2));
-    this.forEachHandle((h) => drawPoint(h, color, transform));
+    this.forEachHandle((h) => {
+      drawPoint(h, color, transform);
+      drawRing(h, color, transform);
+    });
   }
 
   // TODO: consider returning false in certain constraint type-specific conditions
