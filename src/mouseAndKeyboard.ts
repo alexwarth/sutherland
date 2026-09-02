@@ -216,12 +216,14 @@ function onWheel(e: WheelEvent) {
     return;
   }
 
-  if (e.shiftKey && app.rotateInstanceBy(e.deltaX * 0.01)) {
+  if (e.ctrlKey) {
+    // trackpad pinch (browsers report it as a ctrl+wheel event)
+    // -- works regardless of the state of the SHIFT key, so that the user can
+    // alternate between rotating and scaling an instance w/o releasing SHIFT
+    zoomBy(Math.exp(-e.deltaY * 0.01));
+  } else if (e.shiftKey && app.rotateInstanceBy(e.deltaX * 0.01)) {
     // SHIFT + side-to-side two-finger pan over an instance rotates it
     // (fingers moving right = clockwise)
-  } else if (e.ctrlKey) {
-    // trackpad pinch (browsers report it as a ctrl+wheel event)
-    zoomBy(Math.exp(-e.deltaY * 0.01));
   } else {
     // two-finger pan (deltas are in screen pixels)
     app.panBy(-e.deltaX / scope.scale, e.deltaY / scope.scale);
