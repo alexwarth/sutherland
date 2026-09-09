@@ -515,7 +515,7 @@ export function setScale(newScale: number) {
       y: pen.pos.y + (penScreenPos.y - innerHeight / 2) / newScale,
     });
   }
-  status.set('scale=' + scope.scale.toFixed(1));
+  // status.set('scale=' + scope.scale.toFixed(1));
 }
 
 export function panBy(dx: number, dy: number) {
