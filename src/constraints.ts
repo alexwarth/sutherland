@@ -49,12 +49,11 @@ export abstract class Constraint {
     this.forEachThing((t) => {
       if (!things.has(t)) {
         valid = false;
-      } else {
-        this.forEachHandle((h) => {
-          if (!handles.has(h)) {
-            valid = false;
-          }
-        });
+      }
+    });
+    this.forEachHandle((h) => {
+      if (!handles.has(h)) {
+        valid = false;
       }
     });
     return valid;
