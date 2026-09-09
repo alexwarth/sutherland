@@ -230,9 +230,11 @@ function onWheel(e: WheelEvent) {
   if (e.ctrlKey) {
     // trackpad pinch (browsers report it as a ctrl+wheel event)
     zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey);
-  } else if (e.shiftKey && app.rotateInstanceBy(e.deltaX * 0.01)) {
+  } else if (e.shiftKey) {
     // SHIFT + side-to-side two-finger pan over an instance rotates it
-    // (fingers moving right = clockwise)
+    // (fingers moving right = clockwise) -- and never pans, so the user can't
+    // accidentally start rotating an instance while panning w/ SHIFT held
+    app.rotateInstanceBy(e.deltaX * 0.01);
   } else {
     // two-finger pan (deltas are in screen pixels)
     app.panBy(-e.deltaX / scope.scale, e.deltaY / scope.scale);
