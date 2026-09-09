@@ -61,12 +61,21 @@ export function render() {
 let typing = false;
 
 function onKeyDown(e: KeyboardEvent) {
+  const isBrowserShortcut = (e.metaKey || e.ctrlKey) && e.key !== 'Meta' && e.key !== 'Control';
+
   if (typing) {
-    handleTyped(e);
+    if (!isBrowserShortcut) {
+      handleTyped(e);
+    }
     return;
   }
 
   keysDown[e.key] = true;
+
+  if (isBrowserShortcut) {
+    // leave things like CMD-R (reload) and CMD-1 (switch tabs) to the browser
+    return;
+  }
 
   if ('Digit0' <= e.code && e.code <= 'Digit9') {
     const id = e.code.slice(5);
