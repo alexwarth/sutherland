@@ -56,6 +56,8 @@ vite
   - To **instantiate a drawing**, press `SHIFT` + one of the digit keys
   - To **rotate an instance**, point at it, then scroll side-to-side (two-finger pan on the trackpad) while holding `SHIFT` (right = clockwise)
   - To **scale an instance**, do a pinch gesture on the trackpad (or `CTRL` + scroll wheel) while pointing at it and holding `SHIFT`
+  - While rotating or scaling an instance, you can hold down `ALT` / `OPTION` (in addition to `SHIFT`) to get more control: the instance rotates / scales a quarter as much for the same movement
+  - Note that while `SHIFT` is down, these gestures only ever affect the instance you're pointing at — they never pan or zoom the canvas
   - To **dismember an instance**, press `SHIFT` + `D` while pointing at it
 - Constraints:
   - **horizontal or vertical (HorV)**: point to a line and press `H`

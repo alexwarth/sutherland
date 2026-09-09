@@ -229,24 +229,29 @@ function onWheel(e: WheelEvent) {
 
   if (e.ctrlKey) {
     // trackpad pinch (browsers report it as a ctrl+wheel event)
-    zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey);
+    zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey, e.altKey);
   } else if (e.shiftKey) {
     // SHIFT + side-to-side two-finger pan over an instance rotates it
     // (fingers moving right = clockwise) -- and never pans, so the user can't
-    // accidentally start rotating an instance while panning w/ SHIFT held
-    app.rotateInstanceBy(e.deltaX * 0.01);
+    // accidentally start rotating an instance while panning w/ SHIFT held.
+    // Holding ALT/OPTION quarters the rotation for the same movement, for extra precision.
+    const precision = e.altKey ? 0.25 : 1;
+    app.rotateInstanceBy(e.deltaX * 0.01 * precision);
   } else {
     // two-finger pan (deltas are in screen pixels)
     app.panBy(-e.deltaX / scope.scale, e.deltaY / scope.scale);
   }
 }
 
-// SHIFT means "operate on the instance that the pen is pointing at" -- that way
-// the user can't accidentally scale an instance while zooming the whole canvas,
-// and can alternate between rotating and scaling an instance w/o releasing SHIFT.
-function zoomBy(m: number, shiftKey: boolean) {
-  if (shiftKey && app.scaleInstanceBy(m)) {
-    // scaled the instance that the pen is pointing at
+// SHIFT means "operate on the instance that the pen is pointing at" -- and never
+// the whole canvas -- that way the user can't accidentally scale an instance while
+// zooming the canvas (or vice versa), and can alternate between rotating and
+// scaling an instance w/o releasing SHIFT.
+// Holding ALT/OPTION quarters the instance scaling for the same movement, for
+// extra precision (the scale factor is multiplicative, so that's the 4th root).
+function zoomBy(m: number, shiftKey: boolean, altKey: boolean) {
+  if (shiftKey) {
+    app.scaleInstanceBy(altKey ? Math.pow(m, 0.25) : m);
   } else {
     app.setScale(Math.min(Math.max(scope.scale * m, 0.1), 10));
   }
@@ -257,6 +262,7 @@ function zoomBy(m: number, shiftKey: boolean) {
 interface GestureEvent extends Event {
   scale: number;
   shiftKey: boolean;
+  altKey: boolean;
 }
 
 let lastGestureScale = 1;
@@ -269,7 +275,7 @@ function onGestureStart(e: GestureEvent) {
 function onGestureChange(e: GestureEvent) {
   e.preventDefault();
   if (!app.drawing().isEmpty()) {
-    zoomBy(e.scale / lastGestureScale, e.shiftKey);
+    zoomBy(e.scale / lastGestureScale, e.shiftKey, e.altKey);
   }
   lastGestureScale = e.scale;
 }
