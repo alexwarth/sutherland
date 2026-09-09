@@ -336,7 +336,7 @@ function enterTypingMode() {
     return;
   }
 
-  status.set('typing');
+  // status.set('typing');
   typing = true;
   origTypingPos = { ...app.pen.pos };
   typed = [];
