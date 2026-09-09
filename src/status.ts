@@ -27,8 +27,15 @@ export function setPos(newPos: 'top' | 'bottom') {
   pos = newPos;
 }
 
+let lastResizeTimeMillis = 0;
+
+window.addEventListener('resize', () => {
+  lastResizeTimeMillis = Date.now();
+});
+
 export function render() {
   const now = Date.now();
+  renderWindowSize(now);
   if (
     numSets !== lastNumSets ||
     message.value !== lastMessage ||
@@ -64,4 +71,19 @@ export function render() {
       thing?.render(scope.toScreenPosition, color, 2);
     }
   }
+}
+
+function renderWindowSize(now: number) {
+  const ageMillis = now - lastResizeTimeMillis;
+  if (lastResizeTimeMillis === 0 || ageMillis > config().statusTimeMillis) {
+    return;
+  }
+
+  const fontSizeInPixels = 40;
+  ctx.font = `${fontSizeInPixels}px Monaco`;
+  const text = `${innerWidth}x${innerHeight}`;
+  const width = ctx.measureText(text).width;
+  const alpha = 1 - easeOutQuint(ageMillis / config().statusTimeMillis);
+  ctx.fillStyle = `rgba(255,222,33,${alpha})`;
+  ctx.fillText(text, innerWidth - width - fontSizeInPixels / 2, 1.2 * fontSizeInPixels);
 }
