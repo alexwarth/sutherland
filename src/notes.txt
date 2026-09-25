@@ -1,0 +1,59 @@
+architecture
+
+Q: should things hold the constraints?
+  - a constraint about two+ things would just be held by one of them
+  - when a thing is removed, we construct a list of all things and vars,
+    then remove any constraints that are about things or handles or vars that no longer exist
+  - any point to doing it this way?
+    * maybe: once the last thing that 
+  - actually, this won't work b/c handles are not things and constraints tend to be about handles
+
+-----
+
+Sketchpad
+* drawings: Drawing[]
+* currentDrawing: Drawing
+* scope: { offset: ..., zoom: ... }
+* line/arc being drawn...
++ all UI code
+
+-----
+
+Drawing
+* things: Thing[]
+* attachers: Set<Handle> (from things)
+* constraints: ConstraintSet
++ deleteThingAt(pos)
+  - finds a thing, deletes it
+  - removes any constraints that are about variables or handles that no longer exist
++ multiplyScaleOfThingAt(pos, factor)
++ merge(oldHandle, newHandle)
+  - updates all things (refs to oldHandle are now to newHandle)
+  - updates all constraints, possibly discarding some (in case they become duplicates)
++ cleanUp()
+  - removes constraints that are about variables or handles that are no longer around
+  - removes attachers that were associated w/ handles from master that are no longer there
+
+-----
+
+Thing
+* handles: Handle[]
+* vars: Var[]
++ moveBy(dx, dy)
++ contains(pos)
++ forEachThing(...)
++ forEachVar(...)
+
+-----
+
+Constraint
+* things
+* handles
++ computeError
+
+-----
+
+Instance <: Thing
+* master: Drawing
+* attachers: Set<Handle> (correspond to attachers of master)
+* xVar, yVar, vectorX, vectorY: Var

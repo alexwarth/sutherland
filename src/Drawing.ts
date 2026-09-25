@@ -252,7 +252,7 @@ export class Drawing {
     const thing = this.thingAt(pointerPos);
     if (thing instanceof Line) {
       this.constraints.add(new HorizontalOrVerticalConstraint(thing.a, thing.b));
-      status.set('HorV', thing);
+      status.set('', thing);
       return true;
     } else {
       return false;

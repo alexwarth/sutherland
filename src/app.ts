@@ -366,7 +366,7 @@ export function instance() {
 
 export function solve() {
   if (!drawing().isEmpty()) {
-    status.set('solve');
+    // status.set('solve');
     drawing().relax();
   }
 }

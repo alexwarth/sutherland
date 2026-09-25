@@ -1,8 +1,8 @@
 const defaultConfig = {
   debug: false,
   flicker: true,
-  baseAlphaMultiplier: 1,
-  lineWidth: 3.5,
+  baseAlphaMultiplier: 1.75,
+  lineWidth: 4,
   autoSolve: false,
   minWorthwhileErrorImprovement: 0.05,
   masterSideAttacherColor: 'rgb(255,165,0)',

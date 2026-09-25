@@ -182,7 +182,7 @@ export function flickeryWhite(weight: 'light' | 'normal' | 'bold' = 'normal') {
   const alpha = config().flicker
     ? Math.random() * multiplier + baseAlpha
     : 0.75 * multiplier + baseAlpha;
-  return `rgba(255,255,255,${alpha})`;
+  return `rgba(225,225,225,${alpha})`;
 }
 
 export function flickeryWhiteEquivalentGray(weight: 'light' | 'normal' | 'bold' = 'normal') {
