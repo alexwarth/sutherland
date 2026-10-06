@@ -31,6 +31,69 @@ export interface Thing {
   replaceHandle(oldHandle: Handle, newHandle: Handle): void;
   forEachRelaxableVar(fn: (v: Var<number>) => void): void;
   forEachVar(fn: (v: Var<any>) => void): void;
+  serialize(s: Serializer): SerializedThing;
+}
+
+// ---------- serialization ----------
+// (handles are referred to by their index in a global handle table,
+// and things are referred to by their index in their drawing's list of things)
+
+export interface Serializer {
+  handleIdx(h: Handle): number;
+  thingIdx(t: Thing): number;
+  drawingId(d: Drawing): string;
+}
+
+export interface Deserializer {
+  handle(idx: number): Handle;
+  thing(idx: number): Thing;
+  drawing(id: string): Drawing;
+}
+
+export type SerializedThing =
+  | { type: 'handle'; h: number }
+  | { type: 'line'; a: number; b: number; isGuide: boolean }
+  | { type: 'arc'; a: number; b: number; c: number }
+  | {
+    type: 'instance';
+    master: string;
+    x: number;
+    y: number;
+    size: number;
+    angle: number;
+    attachers: number[];
+  };
+
+export function deserializeThing(t: SerializedThing, d: Deserializer): Thing {
+  switch (t.type) {
+    case 'handle':
+      return d.handle(t.h);
+    case 'line': {
+      const line = new Line(origin, origin, t.isGuide);
+      line.a = d.handle(t.a);
+      line.b = d.handle(t.b);
+      return line;
+    }
+    case 'arc': {
+      const arc = new Arc(origin, origin, origin);
+      arc.a = d.handle(t.a);
+      arc.b = d.handle(t.b);
+      arc.c = d.handle(t.c);
+      return arc;
+    }
+    case 'instance':
+      return new Instance(
+        d.drawing(t.master),
+        t.x,
+        t.y,
+        t.size,
+        t.angle,
+        null,
+        t.attachers.map((idx) => d.handle(idx)),
+      );
+    default:
+      throw new Error(`don't know how to deserialize a ${(t as any).type}!`);
+  }
 }
 
 export class Handle implements Thing {
@@ -94,6 +157,10 @@ export class Handle implements Thing {
 
   forEachVar(fn: (v: Var<any>) => void) {
     this.forEachRelaxableVar(fn);
+  }
+
+  serialize(s: Serializer): SerializedThing {
+    return { type: 'handle', h: s.handleIdx(this) };
   }
 
   toString() {
@@ -181,6 +248,10 @@ export class Line implements Thing {
     fn(this._a);
     fn(this._b);
     this.forEachRelaxableVar(fn);
+  }
+
+  serialize(s: Serializer): SerializedThing {
+    return { type: 'line', a: s.handleIdx(this.a), b: s.handleIdx(this.b), isGuide: this.isGuide };
   }
 }
 
@@ -295,6 +366,15 @@ export class Arc implements Thing {
     fn(this._c);
     this.forEachRelaxableVar(fn);
   }
+
+  serialize(s: Serializer): SerializedThing {
+    return {
+      type: 'arc',
+      a: s.handleIdx(this.a),
+      b: s.handleIdx(this.b),
+      c: s.handleIdx(this.c),
+    };
+  }
 }
 
 export class Instance implements Thing {
@@ -338,14 +418,21 @@ export class Instance implements Thing {
     y: number,
     size: number,
     angle: number,
-    parent: Drawing,
+    parent: Drawing | null,
+    // when attachers are supplied (e.g., by the deserializer), the caller is responsible
+    // for supplying the corresponding point-instance constraints, too
+    attachers?: Handle[],
   ) {
     this._x = new Var(x);
     this._y = new Var(y);
     this._angleAndSizeVecX = new Var(size * Math.cos(angle));
     this._angleAndSizeVecY = new Var(size * Math.sin(angle));
     this._attachers = new Var(
-      master.attachers.map((masterSideAttacher) => this.createAttacher(masterSideAttacher, parent)),
+      attachers
+        ? new List(...attachers)
+        : master.attachers.map((masterSideAttacher) =>
+          this.createAttacher(masterSideAttacher, parent!),
+        ),
     );
   }
 
@@ -452,5 +539,17 @@ export class Instance implements Thing {
     fn(this._attachers);
     this.attachers.forEachVar(fn);
     this.forEachRelaxableVar(fn);
+  }
+
+  serialize(s: Serializer): SerializedThing {
+    return {
+      type: 'instance',
+      master: s.drawingId(this.master),
+      x: this.x,
+      y: this.y,
+      size: this.size,
+      angle: this.angle,
+      attachers: this.attachers.toArray().map((h) => s.handleIdx(h)),
+    };
   }
 }

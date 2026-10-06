@@ -1,6 +1,7 @@
 import config, { restoreDefaultConfig, updateConfig } from './config';
 import scope from './scope';
 import * as app from './app';
+import * as persistence from './persistence';
 import * as status from './status';
 import * as wrapper from './wrapper';
 import * as NativeEvents from './NativeEvents';
@@ -197,6 +198,8 @@ const mainScreen = new (class extends Screen {
   readonly timeButton = new Button('TIME');
   readonly configButton = new Button('config');
   readonly reloadButton = new Button('reload');
+  readonly saveButton = new Button('save');
+  readonly loadButton = new Button('load');
   readonly col1 = [
     makeDrawingButton('1'),
     makeDrawingButton('2'),
@@ -221,7 +224,7 @@ const mainScreen = new (class extends Screen {
     this.clearButton,
     this.timeButton,
   ];
-  readonly col3 = [this.configButton, this.reloadButton];
+  readonly col3 = [this.configButton, this.reloadButton, this.saveButton, this.loadButton];
 
   pencilClickInProgress = false;
   drag: { thing: Thing; offset: { x: number; y: number } } | null = null;
@@ -380,6 +383,12 @@ const mainScreen = new (class extends Screen {
         break;
       case this.reloadButton:
         location.reload();
+        break;
+      case this.saveButton:
+        persistence.save();
+        break;
+      case this.loadButton:
+        persistence.load();
         break;
       case this.configButton:
         switchTo(configScreen);

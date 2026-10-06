@@ -1,6 +1,7 @@
 import { thisWorld } from './state';
 import * as canvas from './canvas';
 import * as app from './app';
+import * as persistence from './persistence';
 import * as tablet from './tablet';
 import * as demos from './demos';
 import * as mouseAndKeyboard from './mouseAndKeyboard';
@@ -40,3 +41,4 @@ onFrame();
 
 (window as any).app = app;
 (window as any).demos = demos;
+(window as any).persistence = persistence;

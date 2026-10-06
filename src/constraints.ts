@@ -1,6 +1,6 @@
 import config from './config';
 import { ctx, drawArc, drawLine, drawPoint, drawRing } from './canvas';
-import { Handle, Instance, Thing } from './things';
+import { Deserializer, Handle, Instance, Serializer, Thing } from './things';
 import {
   Position,
   origin,
@@ -15,6 +15,106 @@ import { Var } from './state';
 
 type Transform = (pos: Position) => Position;
 
+// ---------- serialization ----------
+// (handles are referred to by their index in a global handle table,
+// and things are referred to by their index in their drawing's list of things)
+
+interface SerializedFixedPointConstraint {
+  type: 'fixed point';
+  p: number;
+  pos: Position;
+}
+
+interface SerializedHorizontalOrVerticalConstraint {
+  type: 'horv';
+  a: number;
+  b: number;
+}
+
+interface SerializedFixedDistanceConstraint {
+  type: 'fixed distance';
+  a: number;
+  b: number;
+  distance: number;
+}
+
+interface SerializedEqualDistanceConstraint {
+  type: 'equal distance';
+  a1: number;
+  b1: number;
+  a2: number;
+  b2: number;
+}
+
+interface SerializedPointOnLineConstraint {
+  type: 'point on line';
+  p: number;
+  a: number;
+  b: number;
+}
+
+interface SerializedPointOnArcConstraint {
+  type: 'point on arc';
+  p: number;
+  a: number;
+  b: number;
+  c: number;
+}
+
+interface SerializedPointInstanceConstraint {
+  type: 'point instance';
+  instancePoint: number;
+  instance: number;
+  masterPoint: number;
+}
+
+interface SerializedSizeConstraint {
+  type: 'size';
+  instance: number;
+  scale: number;
+}
+
+interface SerializedWeightConstraint {
+  type: 'weight';
+  a: number;
+}
+
+export type SerializedConstraint =
+  | SerializedFixedPointConstraint
+  | SerializedHorizontalOrVerticalConstraint
+  | SerializedFixedDistanceConstraint
+  | SerializedEqualDistanceConstraint
+  | SerializedPointOnLineConstraint
+  | SerializedPointOnArcConstraint
+  | SerializedPointInstanceConstraint
+  | SerializedSizeConstraint
+  | SerializedWeightConstraint;
+
+export function deserializeConstraint(c: SerializedConstraint, d: Deserializer): Constraint {
+  switch (c.type) {
+    case 'fixed point':
+      return FixedPointConstraint.deserialize(c, d);
+    case 'horv':
+      return HorizontalOrVerticalConstraint.deserialize(c, d);
+    case 'fixed distance':
+      return FixedDistanceConstraint.deserialize(c, d);
+    case 'equal distance':
+      return EqualDistanceConstraint.deserialize(c, d);
+    case 'point on line':
+      return PointOnLineConstraint.deserialize(c, d);
+    case 'point on arc':
+      return PointOnArcConstraint.deserialize(c, d);
+    case 'point instance':
+      return PointInstanceConstraint.deserialize(c, d);
+    case 'size':
+      return SizeConstraint.deserialize(c, d);
+    case 'weight':
+      return WeightConstraint.deserialize(c, d);
+    default:
+      throw new Error(`don't know how to deserialize a ${(c as any).type} constraint!`);
+  }
+}
+
 export abstract class Constraint {
   abstract get signature(): string;
   abstract get displayName(): string;
@@ -28,6 +128,7 @@ export abstract class Constraint {
   abstract forEachThing(fn: (t: Thing) => void): void;
   abstract forEachHandle(fn: (t: Handle) => void): void;
   abstract replaceHandle(oldHandle: Handle, newHandle: Handle): void;
+  abstract serialize(s: Serializer): SerializedConstraint;
 
   // override in subclasses like weight constraint
   preRelax(): void { }
@@ -75,6 +176,14 @@ export class FixedPointConstraint extends Constraint {
     super();
     this._p = new Var(p);
     this.pos = { x, y }; // note: we hold onto a clone of the point!
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return { type: 'fixed point', p: s.handleIdx(this.p), pos: { ...this.pos } };
+  }
+
+  static deserialize(c: SerializedFixedPointConstraint, d: Deserializer) {
+    return new FixedPointConstraint(d.handle(c.p), c.pos);
   }
 
   override get signature() {
@@ -137,6 +246,14 @@ export class HorizontalOrVerticalConstraint extends Constraint {
     super();
     this._a = new Var(a);
     this._b = new Var(b);
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return { type: 'horv', a: s.handleIdx(this.a), b: s.handleIdx(this.b) };
+  }
+
+  static deserialize(c: SerializedHorizontalOrVerticalConstraint, d: Deserializer) {
+    return new HorizontalOrVerticalConstraint(d.handle(c.a), d.handle(c.b));
   }
 
   override get signature() {
@@ -205,11 +322,24 @@ export class FixedDistanceConstraint extends Constraint {
 
   private readonly distance: number;
 
-  constructor(a: Handle, b: Handle) {
+  constructor(a: Handle, b: Handle, distance = pointDist(a, b)) {
     super();
     this._a = new Var(a);
     this._b = new Var(b);
-    this.distance = pointDist(a, b);
+    this.distance = distance;
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return {
+      type: 'fixed distance',
+      a: s.handleIdx(this.a),
+      b: s.handleIdx(this.b),
+      distance: this.distance,
+    };
+  }
+
+  static deserialize(c: SerializedFixedDistanceConstraint, d: Deserializer) {
+    return new FixedDistanceConstraint(d.handle(c.a), d.handle(c.b), c.distance);
   }
 
   override get signature() {
@@ -298,6 +428,25 @@ export class EqualDistanceConstraint extends Constraint {
     this._b1 = new Var(b1);
     this._a2 = new Var(a2);
     this._b2 = new Var(b2);
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return {
+      type: 'equal distance',
+      a1: s.handleIdx(this.a1),
+      b1: s.handleIdx(this.b1),
+      a2: s.handleIdx(this.a2),
+      b2: s.handleIdx(this.b2),
+    };
+  }
+
+  static deserialize(c: SerializedEqualDistanceConstraint, d: Deserializer) {
+    return new EqualDistanceConstraint(
+      d.handle(c.a1),
+      d.handle(c.b1),
+      d.handle(c.a2),
+      d.handle(c.b2),
+    );
   }
 
   override get signature() {
@@ -391,6 +540,19 @@ export class PointOnLineConstraint extends Constraint {
     this._p = new Var(p);
     this._a = new Var(a);
     this._b = new Var(b);
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return {
+      type: 'point on line',
+      p: s.handleIdx(this.p),
+      a: s.handleIdx(this.a),
+      b: s.handleIdx(this.b),
+    };
+  }
+
+  static deserialize(c: SerializedPointOnLineConstraint, d: Deserializer) {
+    return new PointOnLineConstraint(d.handle(c.p), d.handle(c.a), d.handle(c.b));
   }
 
   override get signature() {
@@ -488,6 +650,20 @@ export class PointOnArcConstraint extends Constraint {
     this._c = new Var(c);
   }
 
+  override serialize(s: Serializer): SerializedConstraint {
+    return {
+      type: 'point on arc',
+      p: s.handleIdx(this.p),
+      a: s.handleIdx(this.a),
+      b: s.handleIdx(this.b),
+      c: s.handleIdx(this.c),
+    };
+  }
+
+  static deserialize(c: SerializedPointOnArcConstraint, d: Deserializer) {
+    return new PointOnArcConstraint(d.handle(c.p), d.handle(c.a), d.handle(c.b), d.handle(c.c));
+  }
+
   override get signature() {
     return `POA(${this.p.id},${this.a.id},${this.b.id},${this.c.id})`;
   }
@@ -573,6 +749,23 @@ export class PointInstanceConstraint extends Constraint {
     super();
     this._instancePoint = new Var(instancePoint);
     this._masterPoint = new Var(masterPoint);
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return {
+      type: 'point instance',
+      instancePoint: s.handleIdx(this.instancePoint),
+      instance: s.thingIdx(this.instance),
+      masterPoint: s.handleIdx(this.masterPoint),
+    };
+  }
+
+  static deserialize(c: SerializedPointInstanceConstraint, d: Deserializer) {
+    return new PointInstanceConstraint(
+      d.handle(c.instancePoint),
+      d.thing(c.instance) as Instance,
+      d.handle(c.masterPoint),
+    );
   }
 
   override get signature() {
@@ -687,6 +880,14 @@ export class SizeConstraint extends Constraint {
     super();
   }
 
+  override serialize(s: Serializer): SerializedConstraint {
+    return { type: 'size', instance: s.thingIdx(this.instance), scale: this.scale };
+  }
+
+  static deserialize(c: SerializedSizeConstraint, d: Deserializer) {
+    return new SizeConstraint(d.thing(c.instance) as Instance, c.scale);
+  }
+
   override get signature() {
     return `S(${this.instance.id})`;
   }
@@ -732,6 +933,14 @@ export class WeightConstraint extends Constraint {
   constructor(a: Handle) {
     super();
     this._a = new Var(a);
+  }
+
+  override serialize(s: Serializer): SerializedConstraint {
+    return { type: 'weight', a: s.handleIdx(this.a) };
+  }
+
+  static deserialize(c: SerializedWeightConstraint, d: Deserializer) {
+    return new WeightConstraint(d.handle(c.a));
   }
 
   override get signature() {

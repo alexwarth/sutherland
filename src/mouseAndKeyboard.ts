@@ -8,6 +8,7 @@ import { pointDiff, Position } from './helpers';
 import { maybeTimeTravelToWorldAt, topLevelWorld, thisWorld, bookmarkedWorld } from './state';
 import { letterDrawings } from './font';
 import * as relaxationViz from './relaxationViz';
+import * as persistence from './persistence';
 
 const keysDown: { [key: string]: boolean } = {};
 let penDown = false;
@@ -62,6 +63,17 @@ let typing = false;
 
 function onKeyDown(e: KeyboardEvent) {
   const isBrowserShortcut = (e.metaKey || e.ctrlKey) && e.key !== 'Meta' && e.key !== 'Control';
+
+  if (isBrowserShortcut && (e.key === 's' || e.key === 'o')) {
+    // CMD-S saves and CMD-O loads (instead of the browser's save page / open file)
+    e.preventDefault();
+    if (e.key === 's') {
+      persistence.save();
+    } else {
+      persistence.load();
+    }
+    return;
+  }
 
   if (typing) {
     if (!isBrowserShortcut) {

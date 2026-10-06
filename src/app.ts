@@ -518,6 +518,17 @@ export function setScale(newScale: number) {
   // status.set('scale=' + scope.scale.toFixed(1));
 }
 
+export function showLoadedState(id: string, scale: number, center: Position) {
+  drawingInProgress = null;
+  endEqualLength();
+  relaxationViz.clearPinnedHandle();
+  _drawing.value = drawings[id] ?? drawings['1'];
+  doWithoutMovingPointer(() => {
+    scope.scale = scale;
+    scope.centerAt(center);
+  });
+}
+
 export function panBy(dx: number, dy: number) {
   doWithoutMovingPointer(() => {
     scope.center.x -= dx;
