@@ -30,6 +30,7 @@ const defaultConfig = {
   tabletButtonWidth: 100,
   lefty: false,
   onionSkinAlpha: 0,
+  useWorlds: false,
 };
 
 export type Config = typeof defaultConfig;

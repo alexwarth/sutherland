@@ -255,25 +255,28 @@ export function maybeTimeTravelToWorldAt(p: Position) {
   }
 }
 
-// export class Var<T> {
-//   constructor(public value: T) {}
-// }
-
 let nextVarId = 0;
 
 export class Var<T> {
   readonly id = nextVarId++;
+
+  // only used when config().useWorlds is false
+  private _value: T;
 
   constructor(value: T) {
     this.value = value;
   }
 
   get value(): T {
-    return _thisWorld.get(this);
+    return config().useWorlds ? _thisWorld.get(this) : this._value;
   }
 
   set value(newValue: T) {
-    _thisWorld.set(this, newValue);
+    if (config().useWorlds) {
+      _thisWorld.set(this, newValue);
+    } else {
+      this._value = newValue;
+    }
   }
 }
 
