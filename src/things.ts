@@ -505,7 +505,7 @@ export class Instance implements Thing {
 
   render(transform: Transform, color?: string, depth = 0) {
     this.master.render((pos) => transform(this.transform(pos)), color, depth);
-    if (depth === 1) {
+    if (depth === 1 && config().showInstanceSideAttachers) {
       // draw instance-side attachers
       this.attachers.withDo(this.master.attachers, (attacher, mAttacher) => {
         const tAttacher = transform(attacher);

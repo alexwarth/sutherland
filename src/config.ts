@@ -7,6 +7,7 @@ const defaultConfig = {
   minWorthwhileErrorImprovement: 0.05,
   masterSideAttacherColor: 'rgb(255,165,0)',
   instanceSideAttacherColor: 'rgb(255,222,33)',
+  showInstanceSideAttachers: true,
   showControlPoints: true,
   controlPointColor: 'rgba(255,222,33,.2)',
   axisColor: 'rgba(255,222,33,0.125)',

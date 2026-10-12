@@ -161,6 +161,9 @@ function onKeyDown(e: KeyboardEvent) {
     case 'A':
       app.toggleAttacher();
       break;
+    case 'Z':
+      app.toggleShowInstanceSideAttachers();
+      break;
     case 'c':
       app.reCenter();
       break;

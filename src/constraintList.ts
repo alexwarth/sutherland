@@ -3,7 +3,7 @@ import { ctx } from './canvas';
 import { Constraint } from './constraints';
 import { Drawing } from './Drawing';
 
-let visible = false;
+let visible = true;
 
 // the list lives at fixed screen coordinates, so we track the raw pointer
 // position instead of going through the pen (whose position gets snapped)

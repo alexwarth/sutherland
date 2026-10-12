@@ -376,6 +376,10 @@ export function toggleAutoSolve() {
   status.set(`auto-solve ${config().autoSolve ? 'on' : 'off'}`);
 }
 
+export function toggleShowInstanceSideAttachers() {
+  config().showInstanceSideAttachers = !config().showInstanceSideAttachers;
+}
+
 export function toggleConstraintList() {
   status.set(`constraint list ${constraintList.toggle() ? 'on' : 'off'}`);
 }
