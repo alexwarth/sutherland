@@ -185,7 +185,7 @@ export class Drawing {
         if (config().showImplicitConstraints) {
           status.set('(point on line)', handle, thing);
         }
-      } else if (thing instanceof Arc) {
+      } else if (thing instanceof Arc && handle !== thing.a && handle !== thing.b) {
         this.constraints.add(new PointOnArcConstraint(handle, thing.a, thing.b, thing.c));
         if (config().showImplicitConstraints) {
           status.set('(point on arc)', handle, thing);
