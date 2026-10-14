@@ -55,10 +55,9 @@ export default class ConstraintSet {
   relax(vars: Set<Var<number>>) {
     this.forEach((c) => c.preRelax());
     const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
-    const minWorthwhileErrorImprovement = config().minWorthwhileErrorImprovement * epsilon;
     let ans = false;
     for (const v of vars) {
-      ans = this.relaxWithVar(v, epsilon, minWorthwhileErrorImprovement) || ans;
+      ans = this.relaxWithVar(v, epsilon) || ans;
     }
     return ans;
   }
@@ -70,26 +69,43 @@ export default class ConstraintSet {
   probeRelaxationDeltas(vars: Iterable<Var<number>>) {
     this.forEach((c) => c.preRelax());
     const epsilon = scope.scale > 0 ? 1 / scope.scale : 1;
-    const minWorthwhileErrorImprovement = config().minWorthwhileErrorImprovement * epsilon;
     const deltas = new Map<Var<number>, number>();
     for (const v of vars) {
-      deltas.set(v, this.relaxationStep(v, epsilon, minWorthwhileErrorImprovement));
+      deltas.set(v, this.relaxationStep(v, epsilon));
     }
     return deltas;
   }
 
-  private relaxWithVar(v: Var<number>, epsilon: number, minWorthwhileErrorImprovement: number) {
-    const origValue = v.value;
-    const step = this.relaxationStep(v, epsilon, minWorthwhileErrorImprovement);
+  private relaxWithVar(v: Var<number>, epsilon: number) {
+    const step = this.relaxationStep(v, epsilon);
     if (step !== 0) {
-      v.value = origValue + step;
+      v.value += step;
       return true;
     }
-    v.value = origValue;
     return false;
   }
 
-  private relaxationStep(v: Var<number>, epsilon: number, minWorthwhileErrorImprovement: number) {
+  // Try a step of epsilon (one pixel). If that's too big to help (both +epsilon and
+  // -epsilon make things worse), try half of it, and so on, down to about a thousandth
+  // of a pixel. We have to go that small because when vars are chained together by
+  // constraints, each one can only move once its neighbor has moved, and it needs a
+  // step about half the size of the one its neighbor just took.
+  private relaxationStep(v: Var<number>, epsilon: number) {
+    for (let n = 0; n < 10; n++) {
+      const step = this.relaxationStepOfSize(v, epsilon);
+      if (step !== 0) {
+        return step;
+      }
+      epsilon /= 2;
+    }
+    return 0;
+  }
+
+  private relaxationStepOfSize(v: Var<number>, epsilon: number) {
+    // The error is a sum of squares, so the improvement we can expect from a step of
+    // epsilon shrinks like epsilon^2 -- the threshold has to shrink the same way.
+    const minWorthwhileErrorImprovement = config().minWorthwhileErrorImprovement * epsilon ** 2;
+
     const origValue = v.value;
     const errorToBeat = this.computeError() - minWorthwhileErrorImprovement;
 
