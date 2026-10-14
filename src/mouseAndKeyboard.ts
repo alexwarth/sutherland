@@ -243,6 +243,15 @@ function onPointerDown(e: PointerEvent) {
   }
 }
 
+// macOS keeps sending wheel events after the fingers lift off the trackpad
+// (momentum scrolling), and the browser doesn't tell us which events are momentum.
+// So we treat a run of wheel events w/ no gap longer than WHEEL_GESTURE_GAP_MS as
+// a single gesture, decide what it is from the modifiers on its first event, and
+// stick w/ that decision for the rest of the run. That way releasing SHIFT in the
+// middle of rotating an instance doesn't turn the momentum tail into a pan.
+const WHEEL_GESTURE_GAP_MS = 150;
+let wheelGesture: { kind: 'instance' | 'pan'; lastTime: number } | null = null;
+
 function onWheel(e: WheelEvent) {
   e.preventDefault();
   e.stopPropagation();
@@ -253,8 +262,23 @@ function onWheel(e: WheelEvent) {
 
   if (e.ctrlKey) {
     // trackpad pinch (browsers report it as a ctrl+wheel event)
+    // (touching the trackpad ends any momentum scrolling, so this is a fresh gesture)
+    wheelGesture = null;
     zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey, e.altKey);
-  } else if (e.shiftKey) {
+    return;
+  }
+
+  const now = performance.now();
+  if (!wheelGesture || now - wheelGesture.lastTime > WHEEL_GESTURE_GAP_MS) {
+    wheelGesture = { kind: e.shiftKey ? 'instance' : 'pan', lastTime: now };
+  }
+  wheelGesture.lastTime = now;
+
+  if (wheelGesture.kind === 'instance') {
+    if (!e.shiftKey) {
+      // SHIFT was released mid-gesture, so this is the momentum tail -- ignore it
+      return;
+    }
     // SHIFT + two-finger pan over an instance: side-to-side rotates it
     // (fingers moving right = clockwise) and up-and-down scales it (fingers
     // moving down = bigger), so the user can do both in a single fluid gesture.
