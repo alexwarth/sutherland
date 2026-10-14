@@ -17,6 +17,7 @@ import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing } from './things';
 import { thisWorld, List, Var } from './state';
+import { drawAttacher } from './canvas';
 
 export class Drawing {
   private readonly _things = new Var(new List<Thing>());
@@ -60,9 +61,20 @@ export class Drawing {
       return;
     }
 
-    this.things.forEach((t) => t.render(transform, color, depth + 1));
+    // render the instances first, then this drawing's own things, so that the
+    // latter (e.g., attachers that happen to be instance points) end up on top
+    this.things.forEach((t) => {
+      if (t instanceof Instance) {
+        t.render(transform, color, depth + 1);
+      }
+    });
+    this.things.forEach((t) => {
+      if (!(t instanceof Instance)) {
+        t.render(transform, color, depth + 1);
+      }
+    });
     if (depth === 0) {
-      this.attachers.forEach((h) => h.render(transform, config().masterSideAttacherColor));
+      this.attachers.forEach((h) => drawAttacher(h, config().masterSideAttacherColor, transform));
       this.constraints.forEach((c) => {
         if (c instanceof FixedDistanceConstraint && config().showDistanceConstraintLabels) {
           let e = (c.computeError() * 100).toFixed();

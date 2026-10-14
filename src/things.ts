@@ -1,6 +1,6 @@
 import config from './config';
 import scope from './scope';
-import { drawArc, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
+import { drawArc, drawAttacher, drawLine, drawPoint, drawText, flickeryWhite } from './canvas';
 import { PointInstanceConstraint } from './constraints';
 import { Drawing } from './Drawing';
 import { List, Var } from './state';
@@ -506,15 +506,22 @@ export class Instance implements Thing {
   render(transform: Transform, color?: string, depth = 0) {
     this.master.render((pos) => transform(this.transform(pos)), color, depth);
     if (depth === 1 && config().showInstanceSideAttachers) {
-      // draw instance-side attachers
+      // 1. attachers (rings), ...
+      this.master.attachers.forEach((mAttacher) => {
+        drawAttacher(transform(this.transform(mAttacher)), config().masterSideAttacherColor);
+      });
+      // 2. ... then the lines from the attachers to the instance points, ...
       this.attachers.withDo(this.master.attachers, (attacher, mAttacher) => {
-        const tAttacher = transform(attacher);
         drawLine(
           transform(this.transform(mAttacher)),
-          tAttacher,
+          transform(attacher),
           config().instanceSideAttacherColor,
         );
-        drawPoint(tAttacher, config().instanceSideAttacherColor);
+      });
+      // 3. ... then instance points on top, so a satisfied point-instance
+      // constraint shows only the instance point
+      this.attachers.forEach((attacher) => {
+        drawPoint(transform(attacher), config().instanceSideAttacherColor);
       });
     }
   }
