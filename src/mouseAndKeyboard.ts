@@ -255,12 +255,18 @@ function onWheel(e: WheelEvent) {
     // trackpad pinch (browsers report it as a ctrl+wheel event)
     zoomBy(Math.exp(-e.deltaY * 0.01), e.shiftKey, e.altKey);
   } else if (e.shiftKey) {
-    // SHIFT + side-to-side two-finger pan over an instance rotates it
-    // (fingers moving right = clockwise) -- and never pans, so the user can't
-    // accidentally start rotating an instance while panning w/ SHIFT held.
-    // Holding ALT/OPTION quarters the rotation for the same movement, for extra precision.
+    // SHIFT + two-finger pan over an instance: side-to-side rotates it
+    // (fingers moving right = clockwise) and up-and-down scales it (fingers
+    // moving down = bigger), so the user can do both in a single fluid gesture.
+    // It never pans, so the user can't accidentally start transforming an
+    // instance while panning w/ SHIFT held.
+    // Holding ALT/OPTION quarters the rotation / scaling for the same movement,
+    // for extra precision (the scale factor is multiplicative, so that's the 4th root).
     const precision = e.altKey ? 0.25 : 1;
-    app.rotateInstanceBy(e.deltaX * 0.01 * precision);
+    const dTheta = e.deltaX * 0.01 * precision;
+    const scaleMultiplier = Math.exp(e.deltaY * 0.01 * precision);
+    app.rotateInstanceBy(dTheta);
+    app.scaleInstanceBy(scaleMultiplier);
   } else {
     // two-finger pan (deltas are in screen pixels)
     app.panBy(-e.deltaX / scope.scale, e.deltaY / scope.scale);
