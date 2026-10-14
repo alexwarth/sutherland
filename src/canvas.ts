@@ -62,11 +62,13 @@ export function drawPoint(p: Position, fillStyle = flickeryWhite(), transform = 
 // a hollow point whose outer radius matches drawPoint's, so a point drawn on top of it covers it completely
 export function drawAttacher(p: Position, strokeStyle = flickeryWhite(), transform = identity) {
   const tp = transform(p);
-  const lineWidth = ctx.lineWidth;
+  const oldLineWidth = ctx.lineWidth;
+  ctx.lineWidth = oldLineWidth / 2;
   ctx.strokeStyle = strokeStyle;
   ctx.beginPath();
-  ctx.arc(tp.x, tp.y, lineWidth * 1.5, 0, TAU);
+  ctx.arc(tp.x, tp.y, oldLineWidth * 1.75, 0, TAU);
   ctx.stroke();
+  ctx.lineWidth = oldLineWidth;
 }
 
 export function drawRing(p: Position, strokeStyle = flickeryWhite(), transform = identity) {
