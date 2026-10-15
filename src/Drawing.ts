@@ -17,7 +17,7 @@ import ConstraintSet from './ConstraintSet';
 import { Position, boundingBox, pointDist, rotateAround, scaleAround } from './helpers';
 import { Arc, Handle, Instance, Line, Thing } from './things';
 import { thisWorld, List, Var } from './state';
-import { drawAttacher } from './canvas';
+import { drawHollowPoint, drawPoint } from './canvas';
 
 export class Drawing {
   private readonly _things = new Var(new List<Thing>());
@@ -74,7 +74,18 @@ export class Drawing {
       }
     });
     if (depth === 0) {
-      this.attachers.forEach((h) => drawAttacher(h, config().masterSideAttacherColor, transform));
+      // an attacher that is also an instance point is drawn as a ring,
+      // so that the instance point (drawn above) shows through
+      const instancePoints = new Set<Handle>();
+      this.things.forEach((t) => {
+        if (t instanceof Instance) {
+          t.attachers.forEach((h) => instancePoints.add(h));
+        }
+      });
+      this.attachers.forEach((h) => {
+        const draw = instancePoints.has(h) ? drawHollowPoint : drawPoint;
+        draw(h, config().masterSideAttacherColor, transform);
+      });
       this.constraints.forEach((c) => {
         if (c instanceof FixedDistanceConstraint && config().showDistanceConstraintLabels) {
           let e = (c.computeError() * 100).toFixed();
