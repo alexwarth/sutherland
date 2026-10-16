@@ -21,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out sutherland
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: yarn
@@ -35,7 +35,7 @@ jobs:
         run: yarn build
 
       - name: Check out alexwarth.github.io
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: alexwarth/alexwarth.github.io
           ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
