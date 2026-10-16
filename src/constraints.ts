@@ -773,7 +773,7 @@ export class PointInstanceConstraint extends Constraint {
   }
 
   override get displayName() {
-    return 'instance-point';
+    return 'instance point';
   }
 
   override renderHighlight(transform: Transform, color: string) {
