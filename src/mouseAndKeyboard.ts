@@ -26,6 +26,16 @@ export function init() {
   // Safari reports trackpad pinches via proprietary gesture events instead of ctrl+wheel
   canvasEl.addEventListener('gesturestart', onGestureStart as EventListener);
   canvasEl.addEventListener('gesturechange', onGestureChange as EventListener);
+  // key-ups get lost when the window loses focus while a key is held (e.g., CMD-T opens a
+  // new tab before the key-up for 't' arrives), which would leave us thinking the key is
+  // still down -- and in the case of 't', stuck in time travel mode w/ a visible cursor
+  window.addEventListener('blur', releaseAllKeys);
+}
+
+function releaseAllKeys() {
+  for (const key of Object.keys(keysDown)) {
+    onKeyUp({ key } as KeyboardEvent);
+  }
 }
 
 let timeTravelling = false;
