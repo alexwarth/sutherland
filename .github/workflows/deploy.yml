@@ -1,0 +1,57 @@
+# Builds the site and publishes it to alexwarth.github.io/projects/sutherland/
+# on every push to main (or on demand via the "Run workflow" button).
+#
+# Requires one repository secret on alexwarth/sutherland:
+#   PAGES_DEPLOY_KEY  — private half of an SSH deploy key that has *write*
+#                       access to the alexwarth/alexwarth.github.io repo.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; queue them instead.
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out sutherland
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build (vite build --mode deploy → ./sutherland)
+        run: yarn build
+
+      - name: Check out alexwarth.github.io
+        uses: actions/checkout@v4
+        with:
+          repository: alexwarth/alexwarth.github.io
+          ssh-key: ${{ secrets.PAGES_DEPLOY_KEY }}
+          path: pages
+
+      - name: Copy build into pages repo and push
+        run: |
+          rm -rf pages/projects/sutherland
+          cp -R sutherland pages/projects/sutherland
+          cd pages
+          git add -A projects/sutherland
+          if git diff --cached --quiet; then
+            echo "Build output is identical to what is already deployed; nothing to push."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "latest version of sketchpad (sutherland@${GITHUB_SHA::7})"
+          git push
