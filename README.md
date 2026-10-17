@@ -41,7 +41,7 @@ vite
   - To **designate/undesignate a point as an attacher**, point at it and press `SHIFT` + `A`
   - To make several lines have **equal length**, click on them while pressing `E`
   - To add a **fixed length constraint to a line**, point at it and press `.`
-  - To add a **fixed position constraint to a point**, point at it and press `.`
+  - To add a **fixed position constraint to a point**, point at it and press `.` (moving a fixed point unfixes it, like in Sketchpad)
   - ...
   - To **run the solver**, hold down the `SPACE` key
   - To toggle **auto-solve mode** on/off, press `SHIFT` + `S`
@@ -73,7 +73,7 @@ vite
   - To **designate/undesignate a point as an attacher**, point at it with the pencil and tap `ATT`
   - To make several lines have **equal length**, hard-press on them with the pencil while you hold down the `EQ` button
   - To add a **fixed length constraint to a line**, point at it with the pencil and tap `FIX`
-  - To add a **fixed position constraint to a point**, point at it with the pencil and tap `FIX`
+  - To add a **fixed position constraint to a point**, point at it with the pencil and tap `FIX` (moving a fixed point unfixes it, like in Sketchpad)
   - To **constrain an instance to the master's full size**, tap `SIZE` while pointing at it with the pencil
   - To **attach a weight to a point**, point at it with the pencil and tap `WEIGHT`
   - To **run the solver**, hold down the `SOLVE` button

@@ -244,12 +244,14 @@ function onPointerDown(e: PointerEvent) {
   const handle = app.handle();
   if (handle) {
     drag = { thing: handle, offset: { x: 0, y: 0 } };
+    app.drawing().unfix(handle);
     return;
   }
 
   const thing = app.thing();
   if (thing) {
     drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
+    app.drawing().unfix(thing);
   }
 }
 

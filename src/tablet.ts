@@ -491,12 +491,14 @@ const mainScreen = new (class extends Screen {
     const handle = app.handle();
     if (handle) {
       this.drag = { thing: handle, offset: { x: 0, y: 0 } };
+      app.drawing().unfix(handle);
       return;
     }
 
     const thing = app.thing();
     if (thing) {
       this.drag = { thing, offset: pointDiff(app.pen.pos!, thing) };
+      app.drawing().unfix(thing);
     }
   }
 

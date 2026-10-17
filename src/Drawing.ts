@@ -249,6 +249,26 @@ export class Drawing {
     }
   }
 
+  // In Sketchpad, moving an object with the light pen unfixes it (thesis, Appendix B).
+  unfix(thing: Thing) {
+    const handles = new Set<Handle>();
+    thing.forEachHandle((h) => handles.add(h));
+    const unfixed: Handle[] = [];
+    this.constraints.forEach((c) => {
+      if (c instanceof FixedPointConstraint) {
+        c.forEachHandle((h) => {
+          if (handles.has(h)) {
+            this.constraints.remove(c);
+            unfixed.push(h);
+          }
+        });
+      }
+    });
+    if (unfixed.length > 0) {
+      status.set('unfixed', unfixed[0]);
+    }
+  }
+
   weight(pointerPos: Position) {
     const h = this.handleAt(pointerPos, null);
     if (h) {
